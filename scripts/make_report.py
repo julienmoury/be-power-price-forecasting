@@ -298,10 +298,20 @@ def main() -> None:
     ax.barh(labels, values, color=colors, height=0.6, edgecolor="white", linewidth=2)
     for y, v in enumerate(values):
         ax.text(v + 0.05, y, f"{v:.2f}", va="center", fontsize=8, color=INK)
-    ax.axvline(mae(real, naive), color=ORANGE, lw=2, ls=":", label="Naive benchmark")
+    naive_mae = mae(real, naive)
+    ax.axvline(naive_mae, color=ORANGE, lw=2, ls=":")
+    ax.text(
+        naive_mae - 0.1,
+        len(labels) - 0.45,
+        f"naive {naive_mae:.2f}",
+        ha="right",
+        va="bottom",
+        fontsize=8,
+        color=INK,
+    )
+    ax.set_ylim(-0.5, len(labels) - 0.1)
     ax.set_xlabel("MAE of the LEAR ensemble (EUR/MWh)", color=INK)
-    ax.set_title("Value of the French fundamentals", color=INK, fontsize=10)
-    ax.legend(frameon=False, fontsize=8, loc="lower right")
+    ax.set_title("Value of the French fundamentals", color=INK, fontsize=10, pad=14)
     fig.tight_layout()
     fig.savefig(FIG / "ablations.png")
     plt.close(fig)

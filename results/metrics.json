@@ -39,6 +39,20 @@
    "sMAPE % (ours)": 14.965968235115263,
    "sMAPE % (published)": 14.546306080539312,
    "mean |ours - published|": 0.8806833745278159
+  },
+  "LEAR 56, exog. lags D-1/D-2 (pre-2024 library)": {
+   "MAE (ours)": 7.245382990613553,
+   "MAE (published)": 6.924321577380953,
+   "sMAPE % (ours)": 16.955015234421275,
+   "sMAPE % (published)": 16.197430755977432,
+   "mean |ours - published|": 2.2907129500915753
+  },
+  "LEAR 84, exog. lags D-1/D-2 (pre-2024 library)": {
+   "MAE (ours)": 7.284554873626374,
+   "MAE (published)": 6.798319253663004,
+   "sMAPE % (ours)": 17.254706156656265,
+   "sMAPE % (published)": 15.954408946426584,
+   "mean |ours - published|": 2.4694691183608057
   }
  },
  "accuracy": {
@@ -143,6 +157,10 @@
   }
  },
  "calibration_windows": {
+  "28": {
+   "MAE": 7.419107481341575,
+   "rMAE": 0.9012996288315843
+  },
   "56": {
    "MAE": 7.226305784913003,
    "rMAE": 0.8778773913365495
@@ -150,6 +168,18 @@
   "84": {
    "MAE": 7.1965752518315025,
    "rMAE": 0.8742656201769172
+  },
+  "182": {
+   "MAE": 7.099992808550824,
+   "rMAE": 0.8625324406132776
+  },
+  "364": {
+   "MAE": 6.788022546760531,
+   "rMAE": 0.8246331809159051
+  },
+  "728": {
+   "MAE": 6.52689197275641,
+   "rMAE": 0.7929101077540193
   },
   "1092": {
    "MAE": 6.606400448031136,
@@ -169,6 +199,24 @@
    "MAE 1456": 6.645144233001374,
    "delta vs baseline": NaN,
    "DM p (baseline better)": NaN
+  },
+  "without FR load forecast": {
+   "MAE ensemble": 6.399730471697573,
+   "MAE 56": 7.343270463999542,
+   "MAE 84": 7.406992774782508,
+   "MAE 1092": 6.664204230196886,
+   "MAE 1456": 6.7269772371794865,
+   "delta vs baseline": 0.12144341854109442,
+   "DM p (baseline better)": 0.00025965530174654194
+  },
+  "without FR generation forecast": {
+   "MAE ensemble": 6.344895792782737,
+   "MAE 56": 7.435992289320056,
+   "MAE 84": 7.355726939674907,
+   "MAE 1092": 6.519507368990385,
+   "MAE 1456": 6.587901989812272,
+   "delta vs baseline": 0.06660873962625846,
+   "DM p (baseline better)": 0.004286312515713209
   },
   "without any exogenous input": {
    "MAE ensemble": 6.793343860863095,
@@ -278,14 +326,5 @@
    "DM p (ens. better than naive)": 0.0
   }
  },
- "missing": [
-  "lear_cw182",
-  "lear_cw28",
-  "lear_cw364",
-  "lear_cw728",
-  "lear_exoglags12_cw56",
-  "lear_exoglags12_cw84",
-  "lear_no_gen_fr_*",
-  "lear_no_load_fr_*"
- ]
+ "missing": []
 }

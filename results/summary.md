@@ -6,6 +6,8 @@
 | LEAR 1092 | 6.606 | 6.594 | 16.919 | 16.867 | 0.141 |
 | LEAR 1456 | 6.645 | 6.634 | 17.361 | 17.293 | 0.197 |
 | LEAR Ensemble | 6.278 | 6.140 | 14.966 | 14.546 | 0.881 |
+| LEAR 56, exog. lags D-1/D-2 (pre-2024 library) | 7.245 | 6.924 | 16.955 | 16.197 | 2.291 |
+| LEAR 84, exog. lags D-1/D-2 (pre-2024 library) | 7.285 | 6.798 | 17.255 | 15.954 | 2.469 |
 
 ## Accuracy on the test period (728 days)
 |  | MAE | RMSE | sMAPE_pct | rMAE |
@@ -47,8 +49,12 @@
 ## Calibration window
 |  | MAE | rMAE |
 |---|---|---|
+| 28 | 7.419 | 0.901 |
 | 56 | 7.226 | 0.878 |
 | 84 | 7.197 | 0.874 |
+| 182 | 7.100 | 0.863 |
+| 364 | 6.788 | 0.825 |
+| 728 | 6.527 | 0.793 |
 | 1092 | 6.606 | 0.803 |
 | 1456 | 6.645 | 0.807 |
 
@@ -56,6 +62,8 @@
 |  | MAE ensemble | MAE 56 | MAE 84 | MAE 1092 | MAE 1456 | delta vs baseline | DM p (baseline better) |
 |---|---|---|---|---|---|---|---|
 | all inputs (baseline) | 6.278 | 7.226 | 7.197 | 6.606 | 6.645 | nan | nan |
+| without FR load forecast | 6.400 | 7.343 | 7.407 | 6.664 | 6.727 | 0.121 | 0.000 |
+| without FR generation forecast | 6.345 | 7.436 | 7.356 | 6.520 | 6.588 | 0.067 | 0.004 |
 | without any exogenous input | 6.793 | 8.187 | 8.003 | 6.679 | 6.722 | 0.515 | 0.000 |
 
 ## Sub-periods
@@ -70,4 +78,3 @@
 | weekday peak 08-20h | 520.000 | 50.369 | 10.413 | 8.116 | 22.053 | 9.165 | 9.077 | 8.473 | 8.532 | 0.000 |
 | weekday off-peak | 520.000 | 37.626 | 6.635 | 5.068 | 23.616 | 5.860 | 5.779 | 5.290 | 5.286 | 0.000 |
 
-Missing experiments: ['lear_cw182', 'lear_cw28', 'lear_cw364', 'lear_cw728', 'lear_exoglags12_cw56', 'lear_exoglags12_cw84', 'lear_no_gen_fr_*', 'lear_no_load_fr_*']

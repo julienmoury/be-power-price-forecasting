@@ -12,6 +12,7 @@ from pathlib import Path
 
 from be_power_forecast.backtest import lear_backtest
 from be_power_forecast.data.sources import BE_TEST_BEGIN, BE_TEST_END, EpftoolboxZenodoSource
+from be_power_forecast.models.lear import DEFAULT_SPEC, FeatureSpec
 
 OUT = Path(__file__).resolve().parents[1] / "results" / "forecasts"
 
@@ -26,14 +27,21 @@ ABLATIONS = {
 }
 
 
+# Exogenous lags D-1, D-2, D (epftoolbox before commit f234b08, June 2024) instead of
+# D-1, D-7, D: checks whether the library version explains the gap to published forecasts.
+LAGS_D2 = FeatureSpec(exogenous_lags=(1, 2, 0))
+
+
 def experiments():
     for cw in PAPER_WINDOWS:
-        yield f"lear_cw{cw}", cw, []
+        yield f"lear_cw{cw}", cw, [], DEFAULT_SPEC
     for name, drop in ABLATIONS.items():
         for cw in PAPER_WINDOWS:
-            yield f"lear_{name}_cw{cw}", cw, drop
+            yield f"lear_{name}_cw{cw}", cw, drop, DEFAULT_SPEC
     for cw in EXTRA_WINDOWS:
-        yield f"lear_cw{cw}", cw, []
+        yield f"lear_cw{cw}", cw, [], DEFAULT_SPEC
+    for cw in (56, 84):
+        yield f"lear_exoglags12_cw{cw}", cw, [], LAGS_D2
 
 
 def main() -> None:
@@ -44,13 +52,13 @@ def main() -> None:
 
     OUT.mkdir(parents=True, exist_ok=True)
     df = EpftoolboxZenodoSource("BE").load()
-    for name, cw, drop in experiments():
+    for name, cw, drop, spec in experiments():
         path = OUT / f"{name}.csv"
         if path.exists() or (args.only and name not in args.only):
             continue
         start = time.time()
         fc = lear_backtest(
-            df.drop(columns=drop), BE_TEST_BEGIN, BE_TEST_END, cw, n_jobs=args.n_jobs
+            df.drop(columns=drop), BE_TEST_BEGIN, BE_TEST_END, cw, spec, n_jobs=args.n_jobs
         )
         fc.to_csv(path, float_format="%.6f")
         print(f"{name}: {len(fc)} days in {time.time() - start:.0f}s", flush=True)

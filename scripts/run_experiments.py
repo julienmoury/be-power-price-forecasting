@@ -7,6 +7,7 @@ Usage: python scripts/run_experiments.py [--only NAME ...] [--n-jobs N]
 from __future__ import annotations
 
 import argparse
+import json
 import time
 from pathlib import Path
 
@@ -43,7 +44,7 @@ def experiments():
         yield f"lear_cw{cw}", cw, [], DEFAULT_SPEC
     for cw in (56, 84):
         yield f"lear_exoglags12_cw{cw}", cw, [], LAGS_D2
-    # LightGBM challenger: longest LEAR window, retrained weekly, default hyperparameters.
+    # LightGBM challenger: longest LEAR window, retrained weekly, tuned hyperparameters.
     yield "lgbm_cw1456", 1456, [], DEFAULT_SPEC
 
 
@@ -60,15 +61,22 @@ def main() -> None:
         if path.exists() or (args.only and name not in args.only):
             continue
         start = time.time()
-        run = lgbm_backtest if name.startswith("lgbm") else lear_backtest
-        fc = run(
-            df.drop(columns=drop),
-            BE_TEST_BEGIN,
-            BE_TEST_END,
-            calibration_window=cw,
-            spec=spec,
-            n_jobs=args.n_jobs,
-        )
+        if name.startswith("lgbm"):
+            # Hyperparameters frozen beforehand by scripts/tune_lgbm.py --phase A.
+            tuning = json.loads((OUT.parent / "lgbm_tuning_A.json").read_text())
+            fc = lgbm_backtest(
+                df.drop(columns=drop),
+                BE_TEST_BEGIN,
+                BE_TEST_END,
+                tuning["best"],
+                calibration_window=cw,
+                spec=spec,
+                n_jobs=args.n_jobs,
+            )
+        else:
+            fc = lear_backtest(
+                df.drop(columns=drop), BE_TEST_BEGIN, BE_TEST_END, cw, spec, n_jobs=args.n_jobs
+            )
         fc.to_csv(path, float_format="%.6f")
         print(f"{name}: {len(fc)} days in {time.time() - start:.0f}s", flush=True)
 

@@ -197,10 +197,18 @@ def main() -> None:
         "dm_p_lear_ens_better_than_challenger": {
             k: float(dm_test(real, v, ens)[1]) for k, v in challengers.items()
         },
+        # Phase A only: the published DNN forecasts cover 2015-2016; the DNN is not retrained.
+        "dm_p_dnn_published_better_than_lear_ens": float(
+            dm_test(real, ens, pub_daily["DNN Ensemble"])[1]
+        ),
     }
+    tuning_path = ROOT / "results" / "lgbm_tuning_A.json"
+    if tuning_path.exists():
+        out["challengers"]["lgbm_tuning"] = json.loads(tuning_path.read_text())
     md += ["## Challengers (same 728 test days)", fmt_table(chal, 3), ""]
     md += ["One-sided multivariate DM p-values", "```",
-           json.dumps({k: out["challengers"][k] for k in list(out["challengers"])[1:]}, indent=1),
+           json.dumps({k: v for k, v in out["challengers"].items() if k.startswith("dm_")},
+                      indent=1),
            "```", ""]  # fmt: skip
 
     # ---- 2c. MAE-gap attribution by hour, season and price regime ---------------------------

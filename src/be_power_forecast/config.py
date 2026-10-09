@@ -47,3 +47,8 @@ EXOGENOUS_SETS = {
 }
 
 PAPER_WINDOWS = (56, 84, 1092, 1456)
+
+# LightGBM grid search: the 364 days before each test period. Only 1092 days of history
+# exist before either period, so the search uses a 1092-day window (the test uses 1456).
+TUNING_PERIODS = {"A": ("2014-01-05", "2015-01-03"), "B": ("2018-01-01", "2018-12-30")}
+TUNING_WINDOW = 1092

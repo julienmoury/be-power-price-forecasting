@@ -2,14 +2,16 @@
 
 Same design matrix as LEAR (``build_features``), same target days, same rule: only data
 before the forecast day enter training (exogenous forecasts of the day are inputs). The
-target is asinh-median transformed as in LEAR. Hyperparameters are the LightGBM defaults,
-fixed and not tuned, so that no choice is fitted to the data or made by hand. Models are
-retrained every ``retrain_every`` days on the ``calibration_window`` days before the
-retraining day; in between, the last models forecast each day from that day's inputs.
+target is asinh-median transformed as in LEAR. Hyperparameters are chosen once per phase by
+a walk-forward grid search on the 364 days before the test period (:func:`tune`) and then
+frozen. Models are retrained every ``retrain_every`` days on the ``calibration_window``
+days before the retraining day; in between, the last models forecast each day from that
+day's inputs.
 """
 
 from __future__ import annotations
 
+import itertools
 import multiprocessing
 import os
 from concurrent.futures import ProcessPoolExecutor
@@ -22,9 +24,13 @@ from be_power_forecast.config import SEED
 from be_power_forecast.models.lear import DEFAULT_SPEC, WINDOW_BUFFER, FeatureSpec, build_features
 from be_power_forecast.models.scaling import InvariantScaler
 
-# LightGBM 4.x defaults, written out so that a library upgrade cannot change them silently.
-PARAMS = {"num_leaves": 31, "learning_rate": 0.1, "n_estimators": 100, "min_child_samples": 20}
+GRID = {
+    "num_leaves": (15, 31),
+    "learning_rate": (0.03, 0.1),
+    "n_estimators": (300, 600),
+}
 FIXED = {
+    "min_child_samples": 20,
     "random_state": SEED,
     "deterministic": True,
     "force_row_wise": True,
@@ -61,7 +67,7 @@ def lgbm_backtest(
     df: pd.DataFrame,
     begin: str,
     end: str,
-    params: dict = PARAMS,
+    params: dict,
     calibration_window: int = 1456,
     retrain_every: int = 7,
     spec: FeatureSpec = DEFAULT_SPEC,
@@ -92,3 +98,26 @@ def lgbm_backtest(
         with ProcessPoolExecutor(n_jobs, ctx, initializer=_init, initargs=(X, Y)) as pool:
             parts = [p[1:] for p in pool.map(_fit_forecast, jobs)]
     return pd.DataFrame(np.vstack(parts), index=dates[target], columns=HOURS)
+
+
+def tune(
+    df: pd.DataFrame,
+    begin: str,
+    end: str,
+    calibration_window: int,
+    n_jobs: int | None = None,
+) -> tuple[dict, list[dict]]:
+    """Grid search by walk-forward MAE on ``[begin, end]``, retraining weekly as in the test.
+
+    Returns the best parameters and the MAE of every grid point.
+    """
+    price = df["Price"].to_numpy().reshape(-1, 24)
+    days = pd.DatetimeIndex(df.index[::24])
+    scores = []
+    for values in itertools.product(*GRID.values()):
+        params = dict(zip(GRID, values, strict=True))
+        fc = lgbm_backtest(df, begin, end, params, calibration_window, n_jobs=n_jobs)
+        real = price[days.get_indexer(fc.index)]
+        scores.append({**params, "MAE": float(np.mean(np.abs(fc.to_numpy() - real)))})
+    best = min(scores, key=lambda s: s["MAE"])
+    return {k: best[k] for k in GRID}, scores

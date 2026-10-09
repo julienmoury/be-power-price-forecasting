@@ -56,19 +56,17 @@
 | LEAR 1456 | 6.645 | 16.422 | 17.361 | 0.807 |
 | LEAR Ens. | 6.278 | 16.044 | 14.966 | 0.763 |
 | DNN ens. (published) | 5.870 | 15.966 | 13.446 | 0.713 |
-| LightGBM 1456 | 6.469 | 16.359 | 15.279 | 0.786 |
 
 One-sided multivariate DM p-values
 ```
 {
  "dm_p_challenger_better_than_lear_ens": {
-  "DNN ens. (published)": 8.207101664936545e-10,
-  "LightGBM 1456": 0.9932100722365205
+  "DNN ens. (published)": 8.207101664936545e-10
  },
  "dm_p_lear_ens_better_than_challenger": {
-  "DNN ens. (published)": 0.9999999991792898,
-  "LightGBM 1456": 0.006789927763479531
- }
+  "DNN ens. (published)": 0.9999999991792898
+ },
+ "dm_p_dnn_published_better_than_lear_ens": 8.207101664936545e-10
 }
 ```
 
@@ -90,25 +88,6 @@ One-sided multivariate DM p-values
 | total | 17472.000 | 6.278 | 8.203 | 1.000 | -1.925 | -1.925 | 1.000 |
 
 Hour contributions, LEAR ens. vs naive: 0: -0.092, 1: -0.075, 2: -0.081, 3: -0.081, 4: -0.075, 5: -0.067, 6: -0.071, 7: -0.106, 8: -0.089, 9: -0.095, 10: -0.095, 11: -0.096, 12: -0.083, 13: -0.070, 14: -0.084, 15: -0.073, 16: -0.082, 17: -0.077, 18: -0.104, 19: -0.095, 20: -0.071, 21: -0.047, 22: -0.054, 23: -0.063, total: -1.925
-
-## Attribution of the MAE gap, LightGBM vs LEAR ens., by season
-|  | hours | MAE_A | MAE_B | weight | gap | contribution | share |
-|---|---|---|---|---|---|---|---|
-| DJF | 4272.000 | 5.259 | 5.041 | 0.245 | 0.218 | 0.053 | 0.279 |
-| JJA | 4416.000 | 5.665 | 5.300 | 0.253 | 0.365 | 0.092 | 0.483 |
-| MAM | 4416.000 | 5.207 | 5.017 | 0.253 | 0.191 | 0.048 | 0.252 |
-| SON | 4368.000 | 9.742 | 9.753 | 0.250 | -0.012 | -0.003 | -0.015 |
-| total | 17472.000 | 6.469 | 6.278 | 1.000 | 0.191 | 0.191 | 1.000 |
-
-## Attribution of the MAE gap, LightGBM vs LEAR ens., by regime
-|  | hours | MAE_A | MAE_B | weight | gap | contribution | share |
-|---|---|---|---|---|---|---|---|
-| negative | 2.000 | 19.386 | 11.724 | 0.000 | 7.662 | 0.001 | 0.005 |
-| normal | 16601.000 | 5.035 | 4.926 | 0.950 | 0.109 | 0.104 | 0.544 |
-| spike | 869.000 | 33.832 | 32.098 | 0.050 | 1.734 | 0.086 | 0.452 |
-| total | 17472.000 | 6.469 | 6.278 | 1.000 | 0.191 | 0.191 | 1.000 |
-
-Hour contributions, LightGBM vs LEAR ens.: 0: -0.002, 1: -0.005, 2: -0.001, 3: +0.002, 4: +0.001, 5: -0.004, 6: +0.010, 7: +0.018, 8: -0.001, 9: +0.010, 10: +0.004, 11: +0.004, 12: +0.009, 13: +0.004, 14: +0.010, 15: +0.007, 16: +0.015, 17: +0.019, 18: +0.028, 19: +0.023, 20: +0.012, 21: +0.005, 22: +0.020, 23: +0.003, total: +0.191
 
 ## Attribution of the MAE gap, DNN ens. (published) vs LEAR ens., by season
 |  | hours | MAE_A | MAE_B | weight | gap | contribution | share |
@@ -161,3 +140,4 @@ Hour contributions, DNN ens. (published) vs LEAR ens.: 0: -0.013, 1: -0.014, 2: 
 | weekday peak 08-20h | 520.000 | 50.369 | 10.413 | 8.116 | 22.053 | 9.165 | 9.077 | 8.473 | 8.532 | 0.000 |
 | weekday off-peak | 520.000 | 37.626 | 6.635 | 5.068 | 23.616 | 5.860 | 5.779 | 5.290 | 5.286 | 0.000 |
 
+Missing experiments: ['lgbm_cw1456']

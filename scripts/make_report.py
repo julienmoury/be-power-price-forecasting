@@ -319,6 +319,9 @@ def main() -> None:
     if missing:
         md.append(f"Missing experiments: {sorted(set(missing))}")
     out["missing"] = sorted(set(missing))
+    data_report = ROOT / "results" / "data_report.json"  # written by build_phase_b.py
+    if data_report.exists():
+        out["data_report"] = json.loads(data_report.read_text())
     (ROOT / "results" / "summary.md").write_text("\n".join(md) + "\n")
     (ROOT / "results" / "metrics.json").write_text(json.dumps(out, indent=1, default=float))
     print("\n".join(md))

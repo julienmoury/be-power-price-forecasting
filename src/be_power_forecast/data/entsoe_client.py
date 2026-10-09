@@ -98,7 +98,7 @@ class EntsoeClient:
 
         Naive ``start``/``end`` are read as Europe/Brussels times.
         ``wind_solar`` is the sum of the solar, onshore and offshore wind forecasts.
-        Prices keep the hourly series before the 15-minute go-live, the 15-minute after.
+        Prices are hourly before the 15-minute go-live and 15-minute after.
         """
         build, freq = DOCUMENTS[kind]
         start, end = _aware(start), _aware(end)
@@ -122,13 +122,11 @@ def _aware(ts) -> pd.Timestamp:
 
 def _parse(kind: str, text: str) -> pd.Series:
     if kind == "prices":
-        p = parse_prices(text)
-        return pd.concat(
-            [
-                p["60min"][p["60min"].index < QUARTER_HOUR_GO_LIVE],
-                p["15min"][p["15min"].index >= QUARTER_HOUR_GO_LIVE],
-            ]
-        )
+        # As entsoe-py: before the 15-minute go-live, every resolution (some hourly days
+        # are published as PT15M) is reduced to hours by taking the first value.
+        s = pd.concat([x for x in parse_prices(text).values() if len(x)]).sort_index()
+        hourly = s[s.index < QUARTER_HOUR_GO_LIVE].resample("1h").first().dropna()
+        return pd.concat([hourly, s[s.index >= QUARTER_HOUR_GO_LIVE]])
     if kind == "load":
         return parse_loads(text)
     frame = parse_generation(text)

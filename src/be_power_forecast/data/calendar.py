@@ -3,7 +3,7 @@
 A market day is a local delivery day (00:00-24:00 Europe/Brussels). Rules:
 
 * sub-hourly values (15-minute products since 1 October 2025) are averaged to hours; an
-  hour with a missing quarter-hour is missing;
+  hour not fully covered (e.g. a missing quarter-hour) is missing;
 * 23-hour day (last Sunday of March): the missing 02:00 is linearly interpolated from
   01:00 and 03:00;
 * 25-hour day (last Sunday of October): the two occurrences of 02:00 are averaged;
@@ -21,12 +21,17 @@ HOURS = list(range(24))
 
 
 def hourly_mean(series: pd.Series) -> pd.Series:
-    """Average a UTC-indexed series to hours; hours with a missing sub-period are NaN."""
-    step = series.index.to_series().diff().min() if len(series) > 1 else pd.Timedelta("1h")
-    per_hour = max(int(pd.Timedelta("1h") / step), 1)
-    grouped = series.resample("1h")
-    out = grouped.mean()
-    return out.where(grouped.count() == per_hour)
+    """Average a UTC-indexed series to hours; an hour not fully covered is NaN.
+
+    Each value covers its own resolution (the step to its neighbours), so a series whose
+    resolution changes (hourly to 15-minute) is handled hour by hour.
+    """
+    series = series.dropna()
+    steps = series.index.to_series().diff()
+    step = pd.concat([steps, steps.shift(-1)], axis=1).min(axis=1)
+    covered = step.clip(upper=pd.Timedelta("1h")).fillna(pd.Timedelta("1h"))
+    complete = covered.resample("1h").sum() == pd.Timedelta("1h")
+    return series.resample("1h").mean().where(complete)
 
 
 def hours_in_day(days: pd.DatetimeIndex) -> pd.Series:

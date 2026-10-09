@@ -120,3 +120,14 @@ def test_backtest_skips_dropped_days():
     skipped = pd.date_range("2020-04-20", "2020-04-23")
     assert fc.index.intersection(skipped).empty
     assert len(fc) == 11 - 4 and np.isfinite(fc.to_numpy()).all()
+
+
+def test_resolution_change_is_handled_hour_by_hour():
+    hourly = pd.Series(1.0, index=pd.date_range("2025-09-29 22:00", periods=24, freq="h", tz="UTC"))
+    quarter = pd.Series(
+        np.arange(96, dtype=float),
+        index=pd.date_range("2025-09-30 22:00", periods=96, freq="15min", tz="UTC"),
+    )
+    days, report = to_local_days(pd.concat([hourly, quarter]))
+    assert report["dropped_days"] == [] and len(days) == 2
+    assert days.iloc[0].eq(1.0).all() and days.iloc[1, 0] == 1.5

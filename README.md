@@ -29,8 +29,8 @@ All numbers below are produced by `scripts/make_report.py` from the forecasts in
 - **Test period**: 2015-01-04 to 2016-12-31 (728 days), the period of the paper.
 - Data access is behind a `PriceSource` interface
   ([`data/sources.py`](src/be_power_forecast/data/sources.py)); an ENTSO-E source (phase B,
-  2019–2026, needs `ENTSOE_API_KEY`) plugs in without touching the model. It is written
-  but **not exercised yet** (no API key).
+  2019–2026, needs `ENTSOE_API_KEY`) plugs in without touching the model; its data are
+  downloaded to a git-ignored local cache and never committed (see Limitations).
 
 ## Method
 
@@ -153,6 +153,14 @@ products (1 October 2025) are outside this sample.
 
 - Sample ends in 2016: no negative-price regime of the 2020s, no 2022 crisis, no
   15-minute products. Phase B (ENTSO-E) is prepared but not run.
+- ENTSO-E re-use terms (official "List of Data available for free re-use", version of
+  18/10/2023, Legal Terms and Conditions of the Transparency Platform; checked on
+  2026-10-09): only the day-ahead load forecasts (art. 6.1.b) are on the list, under
+  CC BY 4.0; the day-ahead prices (12.1.d), generation forecasts (14.1.c) and wind and
+  solar forecasts (14.1.d) are not. No raw ENTSO-E data are therefore committed: they stay
+  in a git-ignored local cache, CI uses synthetic XML fixtures, and the repository only
+  holds our forecasts and aggregated metrics. Reproducing phase B needs your own
+  ENTSO-E API token.
 - The published LEAR forecasts of the paper are not reproduced day by day by the public
   code (see above); the comparison is at aggregate level.
 - The Zenodo record of the benchmark dataset states its licence only as "Other (Open)",

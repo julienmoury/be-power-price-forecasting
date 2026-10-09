@@ -1,4 +1,4 @@
-"""Run every LEAR backtest used in the README and save forecasts to results/forecasts/.
+"""Run every backtest of the README (LEAR, LightGBM) and save forecasts to results/forecasts/.
 
 Each experiment is skipped if its CSV already exists, so the script can be resumed.
 Usage: python scripts/run_experiments.py [--only NAME ...] [--n-jobs N]
@@ -12,6 +12,7 @@ from pathlib import Path
 
 from be_power_forecast.backtest import lear_backtest
 from be_power_forecast.data.sources import BE_TEST_BEGIN, BE_TEST_END, EpftoolboxZenodoSource
+from be_power_forecast.models.challenger import lgbm_backtest
 from be_power_forecast.models.lear import DEFAULT_SPEC, FeatureSpec
 
 OUT = Path(__file__).resolve().parents[1] / "results" / "forecasts"
@@ -42,6 +43,8 @@ def experiments():
         yield f"lear_cw{cw}", cw, [], DEFAULT_SPEC
     for cw in (56, 84):
         yield f"lear_exoglags12_cw{cw}", cw, [], LAGS_D2
+    # LightGBM challenger: longest LEAR window, retrained weekly, default hyperparameters.
+    yield "lgbm_cw1456", 1456, [], DEFAULT_SPEC
 
 
 def main() -> None:
@@ -57,8 +60,14 @@ def main() -> None:
         if path.exists() or (args.only and name not in args.only):
             continue
         start = time.time()
-        fc = lear_backtest(
-            df.drop(columns=drop), BE_TEST_BEGIN, BE_TEST_END, cw, spec, n_jobs=args.n_jobs
+        run = lgbm_backtest if name.startswith("lgbm") else lear_backtest
+        fc = run(
+            df.drop(columns=drop),
+            BE_TEST_BEGIN,
+            BE_TEST_END,
+            calibration_window=cw,
+            spec=spec,
+            n_jobs=args.n_jobs,
         )
         fc.to_csv(path, float_format="%.6f")
         print(f"{name}: {len(fc)} days in {time.time() - start:.0f}s", flush=True)

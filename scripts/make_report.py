@@ -19,6 +19,12 @@ from be_power_forecast.data.sources import (
     BE_TEST_END,
     EpftoolboxZenodoSource,
 )
+from be_power_forecast.evaluation.attribution import (
+    hour_segments,
+    mae_gap_attribution,
+    regime_segments,
+    season_segments,
+)
 from be_power_forecast.evaluation.dm import dm_matrix, dm_test
 from be_power_forecast.evaluation.metrics import mae, naive_forecast, rmae, rmse, smape
 from be_power_forecast.models.lear import ensemble
@@ -174,6 +180,54 @@ def main() -> None:
         fmt_table(dm, 4),
         "",
     ]
+
+    # ---- 2b. Challengers: LightGBM (ours) and the published DNN ensemble -------------------
+    challengers = {"DNN ens. (published)": pub_daily["DNN Ensemble"]}
+    lgbm = load("lgbm_cw1456")
+    if lgbm is None:
+        missing.append("lgbm_cw1456")
+    else:
+        challengers["LightGBM 1456"] = lgbm
+    chal = pd.DataFrame({k: scores(real, v) for k, v in {**models, **challengers}.items()}).T
+    out["challengers"] = {
+        "accuracy": chal.to_dict(orient="index"),
+        "dm_p_challenger_better_than_lear_ens": {
+            k: float(dm_test(real, ens, v)[1]) for k, v in challengers.items()
+        },
+        "dm_p_lear_ens_better_than_challenger": {
+            k: float(dm_test(real, v, ens)[1]) for k, v in challengers.items()
+        },
+    }
+    md += ["## Challengers (same 728 test days)", fmt_table(chal, 3), ""]
+    md += ["One-sided multivariate DM p-values", "```",
+           json.dumps({k: out["challengers"][k] for k in list(out["challengers"])[1:]}, indent=1),
+           "```", ""]  # fmt: skip
+
+    # ---- 2c. MAE-gap attribution by hour, season and price regime ---------------------------
+    history = df["Price"].loc[: pd.Timestamp(BE_TEST_END) + pd.Timedelta(hours=23)]
+    partitions = {
+        "hour": hour_segments(real.index),
+        "season": season_segments(real.index),
+        "regime": regime_segments(real, history),
+    }
+    pairs = {"LEAR ens. vs naive": (ens, naive)}
+    if lgbm is not None:
+        pairs["LightGBM vs LEAR ens."] = (lgbm, ens)
+    pairs["DNN ens. (published) vs LEAR ens."] = (pub_daily["DNN Ensemble"], ens)
+    out["attribution"] = {}
+    for pair, (cand, ref) in pairs.items():
+        out["attribution"][pair] = {}
+        for part, seg in partitions.items():
+            att = mae_gap_attribution(real, cand, ref, seg)
+            att.index = att.index.astype(str)
+            out["attribution"][pair][part] = att.to_dict(orient="index")
+            if part != "hour":
+                md += [f"## Attribution of the MAE gap, {pair}, by {part}", fmt_table(att, 3), ""]
+        hours = pd.DataFrame(out["attribution"][pair]["hour"]).T["contribution"]
+        md += [
+            f"Hour contributions, {pair}: " + ", ".join(f"{h}: {v:+.3f}" for h, v in hours.items()),
+            "",
+        ]
 
     # ---- 3. Robustness: calibration window -------------------------------------------------
     win = pd.DataFrame(

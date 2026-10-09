@@ -177,7 +177,9 @@ class LEAR:
         first = t - self.calibration_window + WINDOW_BUFFER
         if first < max(spec.max_lag, WINDOW_BUFFER):
             raise ValueError("not enough history for this calibration window")
-        self.recalibrate(X[first:t], Y[first:t])
+        # Days dropped by the data rules (NaN rows or lags) leave the sample; none in BE.csv.
+        ok = np.isfinite(X[first:t]).all(axis=1) & np.isfinite(Y[first:t]).all(axis=1)
+        self.recalibrate(X[first:t][ok], Y[first:t][ok])
         return self.predict(X[t])[0]
 
 

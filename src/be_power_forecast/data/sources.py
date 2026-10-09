@@ -8,13 +8,20 @@ not require touching the model.
 
 from __future__ import annotations
 
-import os
 from abc import ABC, abstractmethod
 from pathlib import Path
 
 import pandas as pd
 
-from be_power_forecast.config import PHASE_A_TEST, RAW_DIR
+from be_power_forecast.config import (
+    CACHE_DIR,
+    EXOGENOUS_SETS,
+    PHASE_A_TEST,
+    PHASE_B_DOWNLOAD,
+    RAW_DIR,
+)
+from be_power_forecast.data.calendar import standard_frame
+from be_power_forecast.data.entsoe_client import EntsoeClient
 
 ZENODO_URL = "https://zenodo.org/records/4624805/files/{market}.csv"
 
@@ -27,8 +34,12 @@ class PriceSource(ABC):
         """Return the standard frame (``Price`` + exogenous columns, hourly index)."""
 
 
-def validate_standard_frame(df: pd.DataFrame) -> pd.DataFrame:
-    """Check the standard-frame contract and return the frame unchanged."""
+def validate_standard_frame(df: pd.DataFrame, allow_missing_days: bool = False) -> pd.DataFrame:
+    """Check the standard-frame contract and return the frame unchanged.
+
+    With ``allow_missing_days``, missing values are accepted only as whole days missing in
+    every column (days dropped by the rules of ``data/calendar.py``).
+    """
     if df.columns[0] != "Price":
         raise ValueError("first column must be 'Price'")
     if not isinstance(df.index, pd.DatetimeIndex):
@@ -38,7 +49,11 @@ def validate_standard_frame(df: pd.DataFrame) -> pd.DataFrame:
     steps = df.index.to_series().diff().dropna().unique()
     if len(steps) != 1 or steps[0] != pd.Timedelta(hours=1):
         raise ValueError("index must be regular hourly")
-    if df.isna().any().any():
+    day_missing = df.isna().to_numpy().reshape(-1, 24 * df.shape[1])
+    if allow_missing_days:
+        if (day_missing.any(axis=1) != day_missing.all(axis=1)).any():
+            raise ValueError("missing values must cover whole days in every column")
+    elif day_missing.any():
         raise ValueError("frame contains missing values")
     return df
 
@@ -74,53 +89,52 @@ class EpftoolboxZenodoSource(PriceSource):
 class EntsoeSource(PriceSource):
     """ENTSO-E Transparency Platform source (phase B, needs ``ENTSOE_API_KEY``).
 
-    Not exercised yet: no API key was available when this repository was built. Since
-    1 October 2025 the SDAC day-ahead market clears in 15-minute products, so quarter-hour
-    prices are averaged to hourly values to keep the 24-prices-per-day contract.
+    Belgian day-ahead price plus the exogenous set ``"FR"`` (French load and generation
+    forecasts, as in the benchmark), ``"BE"`` (Belgian load and wind + solar forecasts) or
+    ``"FR+BE"``. Days are local Brussels delivery days; 15-minute values are averaged to
+    hours and DST days follow the rules of ``data/calendar.py``. Dropped days are rows of
+    NaN. Raw downloads are cached as parquet in ``cache_dir`` (git-ignored).
     """
+
+    SERIES = {
+        "Price": ("prices", "BE"),
+        "Generation forecast FR": ("generation", "FR"),
+        "Load forecast FR": ("load", "FR"),
+        "Wind and solar forecast BE": ("wind_solar", "BE"),
+        "Load forecast BE": ("load", "BE"),
+    }
 
     def __init__(
         self,
-        start: str,
-        end: str,
-        price_zone: str = "BE",
-        exogenous_zone: str = "BE",
-        tz: str = "Europe/Brussels",
+        start: str = PHASE_B_DOWNLOAD[0],
+        end: str = PHASE_B_DOWNLOAD[1],
+        exogenous: str = "FR",
+        cache_dir: Path | str = CACHE_DIR,
+        client=None,
     ):
-        self.start = pd.Timestamp(start, tz=tz)
-        self.end = pd.Timestamp(end, tz=tz)
-        self.price_zone = price_zone
-        self.exogenous_zone = exogenous_zone
+        self.start, self.end = start, end
+        self.columns = ["Price", *EXOGENOUS_SETS[exogenous]]
+        self.cache_dir = Path(cache_dir)
+        self.client = client
+        self.report: dict = {}
+
+    def raw(self, name: str) -> pd.Series:
+        """UTC series of one column, from the cache or downloaded (end day included)."""
+        kind, area = self.SERIES[name]
+        path = self.cache_dir / f"{kind}_{area}_{self.start}_{self.end}.parquet"
+        if path.exists():
+            return pd.read_parquet(path).iloc[:, 0]
+        if self.client is None:
+            self.client = EntsoeClient()
+        end = pd.Timestamp(self.end) + pd.Timedelta(days=1)
+        s = self.client.query(kind, area, self.start, end)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        s.to_frame().to_parquet(path)
+        return s
 
     def load(self) -> pd.DataFrame:
-        api_key = os.environ.get("ENTSOE_API_KEY")
-        if not api_key:
-            raise RuntimeError("set the ENTSOE_API_KEY environment variable")
-        from entsoe import EntsoePandasClient  # optional dependency
-
-        client = EntsoePandasClient(api_key=api_key)
-        price = client.query_day_ahead_prices(self.price_zone, start=self.start, end=self.end)
-        load = client.query_load_forecast(self.exogenous_zone, start=self.start, end=self.end)
-        gen = client.query_generation_forecast(self.exogenous_zone, start=self.start, end=self.end)
-        frames = [
-            price.rename("Price"),
-            _first_column(gen, "Generation forecast"),
-            _first_column(load, "Load forecast"),
-        ]
-        hourly = [f.resample("1h").mean() for f in frames]
-        df = pd.concat(hourly, axis=1).dropna()
-        # Local time has 23/25-hour days at DST changes; UTC keeps 24 regular steps per
-        # day (days then run 01:00-00:00 CET instead of 00:00-24:00).
-        df.index = df.index.tz_convert("UTC").tz_localize(None)
-        df = df.loc[df.index.normalize()[0] + pd.Timedelta(days=1) :]
-        n_full = (len(df) // 24) * 24
-        return validate_standard_frame(df.iloc[:n_full])
-
-
-def _first_column(obj: pd.Series | pd.DataFrame, name: str) -> pd.Series:
-    if isinstance(obj, pd.DataFrame):
-        obj = obj.iloc[:, 0]
-    return obj.rename(name)
+        frame, self.report = standard_frame({c: self.raw(c) for c in self.columns})
+        return validate_standard_frame(frame, allow_missing_days=True)
 
 
 def train_test_split(df: pd.DataFrame, begin_test: str, end_test: str):

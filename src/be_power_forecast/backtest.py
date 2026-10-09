@@ -44,9 +44,12 @@ def lear_backtest(
 
     Only data strictly before each forecast day enters its calibration (exogenous
     forecasts of the target day are inputs, as they are published before gate closure).
+    Days dropped by the data rules (rows of NaN in the frame) are skipped.
     """
     X, Y, dates = build_features(df, spec)
-    target = np.flatnonzero((dates >= pd.Timestamp(begin)) & (dates <= pd.Timestamp(end)))
+    in_test = (dates >= pd.Timestamp(begin)) & (dates <= pd.Timestamp(end))
+    # Days whose inputs or prices were dropped by the data rules are not forecast.
+    target = np.flatnonzero(in_test & np.isfinite(X).all(axis=1) & np.isfinite(Y).all(axis=1))
     n_jobs = n_jobs or os.cpu_count() or 1
     chunks = [c for c in np.array_split(target, n_jobs * 4) if len(c)]
     jobs = [(X, Y, c, calibration_window, spec, alpha_selection) for c in chunks]

@@ -235,3 +235,46 @@ Data and reference files from the same project:
    See the License for the specific language governing permissions and
    limitations under the License.
 ```
+
+## EnergieID/entsoe-py
+
+- Source: https://github.com/EnergieID/entsoe-py (commit `0cae400`, 4 Sep 2026)
+- Authors: EnergieID cvba-so and contributors
+- License: MIT (repository `LICENSE` file, reproduced below)
+
+Adapted files and modifications:
+
+| File in this repository | Original file(s) | Modifications |
+|---|---|---|
+| `src/be_power_forecast/data/entsoe_parser.py` | `entsoe/series_parsers.py` (`_extract_timeseries`, `_resolution_to_timedelta`, `_parse_timeseries_generic`), `entsoe/parsers.py` (`parse_prices`, `parse_loads`, `_parse_generation_timeseries`, `parse_generation`) | `xml.etree.ElementTree` instead of BeautifulSoup; only documents A44, A65, A71, A69 and resolutions PT15M/PT30M/PT60M; curve type A03 forward-fill kept; no netting, per-plant or EIC options; UTC-indexed float output. |
+| `src/be_power_forecast/data/entsoe_client.py` | `entsoe/entsoe.py` (`_base_request`, `_datetime_to_str`, `query_day_ahead_prices`, `query_load_forecast`, `query_generation_forecast`, `query_wind_and_solar_forecast`), `entsoe/mappings.py` (`Area.BE`, `Area.FR`), `entsoe/decorators.py` (`year_limited`, `month_limited`) | Request parameters of the four documents only; one retry with back-off instead of the decorators; yearly (A44) and monthly (A65, A71, A69) request chunks; token from `ENTSOE_API_KEY` only; SDAC hourly/15-minute series selection simplified. |
+
+Reference file: `tests/reference/entsoe_parsed_reference.csv` is the output of the original
+parsers (commit `0cae400`) on the synthetic fixtures of `tests/fixtures/entsoe/`, written by
+`scripts/make_entsoe_reference.py`.
+
+### MIT License (full text)
+
+```
+MIT License
+
+Copyright (c) 2017 EnergieID cvba-so
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```

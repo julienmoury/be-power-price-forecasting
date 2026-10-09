@@ -1,0 +1,817 @@
+file,timestamp,series,value
+generation_A71.xml,2025-01-13T23:00:00Z,Actual Aggregated,60934.0
+generation_A71.xml,2025-01-14T00:00:00Z,Actual Aggregated,62648.0
+generation_A71.xml,2025-01-14T01:00:00Z,Actual Aggregated,64745.0
+generation_A71.xml,2025-01-14T02:00:00Z,Actual Aggregated,64584.0
+generation_A71.xml,2025-01-14T03:00:00Z,Actual Aggregated,66043.0
+generation_A71.xml,2025-01-14T04:00:00Z,Actual Aggregated,69138.0
+generation_A71.xml,2025-01-14T05:00:00Z,Actual Aggregated,69091.0
+generation_A71.xml,2025-01-14T06:00:00Z,Actual Aggregated,68860.0
+generation_A71.xml,2025-01-14T07:00:00Z,Actual Aggregated,67994.0
+generation_A71.xml,2025-01-14T08:00:00Z,Actual Aggregated,66858.0
+generation_A71.xml,2025-01-14T09:00:00Z,Actual Aggregated,64543.0
+generation_A71.xml,2025-01-14T10:00:00Z,Actual Aggregated,62519.0
+generation_A71.xml,2025-01-14T11:00:00Z,Actual Aggregated,60307.0
+generation_A71.xml,2025-01-14T12:00:00Z,Actual Aggregated,58786.0
+generation_A71.xml,2025-01-14T13:00:00Z,Actual Aggregated,54882.0
+generation_A71.xml,2025-01-14T14:00:00Z,Actual Aggregated,54580.0
+generation_A71.xml,2025-01-14T15:00:00Z,Actual Aggregated,52969.0
+generation_A71.xml,2025-01-14T16:00:00Z,Actual Aggregated,51433.0
+generation_A71.xml,2025-01-14T17:00:00Z,Actual Aggregated,50430.0
+generation_A71.xml,2025-01-14T18:00:00Z,Actual Aggregated,51750.0
+generation_A71.xml,2025-01-14T19:00:00Z,Actual Aggregated,53243.0
+generation_A71.xml,2025-01-14T20:00:00Z,Actual Aggregated,52346.0
+generation_A71.xml,2025-01-14T21:00:00Z,Actual Aggregated,55575.0
+generation_A71.xml,2025-01-14T22:00:00Z,Actual Aggregated,57748.0
+generation_A71.xml,2025-01-14T23:00:00Z,Actual Aggregated,59207.0
+generation_A71.xml,2025-01-15T00:00:00Z,Actual Aggregated,61586.0
+generation_A71.xml,2025-01-15T01:00:00Z,Actual Aggregated,62639.0
+generation_A71.xml,2025-01-15T02:00:00Z,Actual Aggregated,65040.0
+generation_A71.xml,2025-01-15T03:00:00Z,Actual Aggregated,65949.0
+generation_A71.xml,2025-01-15T04:00:00Z,Actual Aggregated,67953.0
+generation_A71.xml,2025-01-15T05:00:00Z,Actual Aggregated,68328.0
+generation_A71.xml,2025-01-15T06:00:00Z,Actual Aggregated,68044.0
+generation_A71.xml,2025-01-15T07:00:00Z,Actual Aggregated,68240.0
+generation_A71.xml,2025-01-15T08:00:00Z,Actual Aggregated,66139.0
+generation_A71.xml,2025-01-15T09:00:00Z,Actual Aggregated,63625.0
+generation_A71.xml,2025-01-15T10:00:00Z,Actual Aggregated,61463.0
+generation_A71.xml,2025-01-15T11:00:00Z,Actual Aggregated,58642.0
+generation_A71.xml,2025-01-15T12:00:00Z,Actual Aggregated,57435.0
+generation_A71.xml,2025-01-15T13:00:00Z,Actual Aggregated,55243.0
+generation_A71.xml,2025-01-15T14:00:00Z,Actual Aggregated,55584.0
+generation_A71.xml,2025-01-15T15:00:00Z,Actual Aggregated,54047.0
+generation_A71.xml,2025-01-15T16:00:00Z,Actual Aggregated,53080.0
+generation_A71.xml,2025-01-15T17:00:00Z,Actual Aggregated,53495.0
+generation_A71.xml,2025-01-15T18:00:00Z,Actual Aggregated,49846.0
+generation_A71.xml,2025-01-15T19:00:00Z,Actual Aggregated,53013.0
+generation_A71.xml,2025-01-15T20:00:00Z,Actual Aggregated,54549.0
+generation_A71.xml,2025-01-15T21:00:00Z,Actual Aggregated,56071.0
+generation_A71.xml,2025-01-15T22:00:00Z,Actual Aggregated,60223.0
+load_A65_dst_autumn.xml,2025-10-25T22:00:00Z,Forecasted Load,50743.0
+load_A65_dst_autumn.xml,2025-10-25T23:00:00Z,Forecasted Load,50985.0
+load_A65_dst_autumn.xml,2025-10-26T00:00:00Z,Forecasted Load,55009.0
+load_A65_dst_autumn.xml,2025-10-26T01:00:00Z,Forecasted Load,55489.0
+load_A65_dst_autumn.xml,2025-10-26T02:00:00Z,Forecasted Load,56903.0
+load_A65_dst_autumn.xml,2025-10-26T03:00:00Z,Forecasted Load,56457.0
+load_A65_dst_autumn.xml,2025-10-26T04:00:00Z,Forecasted Load,58788.0
+load_A65_dst_autumn.xml,2025-10-26T05:00:00Z,Forecasted Load,56506.0
+load_A65_dst_autumn.xml,2025-10-26T06:00:00Z,Forecasted Load,55007.0
+load_A65_dst_autumn.xml,2025-10-26T07:00:00Z,Forecasted Load,57204.0
+load_A65_dst_autumn.xml,2025-10-26T08:00:00Z,Forecasted Load,53982.0
+load_A65_dst_autumn.xml,2025-10-26T09:00:00Z,Forecasted Load,52804.0
+load_A65_dst_autumn.xml,2025-10-26T10:00:00Z,Forecasted Load,52863.0
+load_A65_dst_autumn.xml,2025-10-26T11:00:00Z,Forecasted Load,50196.0
+load_A65_dst_autumn.xml,2025-10-26T12:00:00Z,Forecasted Load,47872.0
+load_A65_dst_autumn.xml,2025-10-26T13:00:00Z,Forecasted Load,46662.0
+load_A65_dst_autumn.xml,2025-10-26T14:00:00Z,Forecasted Load,43494.0
+load_A65_dst_autumn.xml,2025-10-26T15:00:00Z,Forecasted Load,43967.0
+load_A65_dst_autumn.xml,2025-10-26T16:00:00Z,Forecasted Load,43743.0
+load_A65_dst_autumn.xml,2025-10-26T17:00:00Z,Forecasted Load,43270.0
+load_A65_dst_autumn.xml,2025-10-26T18:00:00Z,Forecasted Load,42663.0
+load_A65_dst_autumn.xml,2025-10-26T19:00:00Z,Forecasted Load,39920.0
+load_A65_dst_autumn.xml,2025-10-26T20:00:00Z,Forecasted Load,45423.0
+load_A65_dst_autumn.xml,2025-10-26T21:00:00Z,Forecasted Load,46502.0
+load_A65_dst_autumn.xml,2025-10-26T22:00:00Z,Forecasted Load,47765.0
+load_A65_dst_spring.xml,2025-03-29T23:00:00Z,Forecasted Load,53956.0
+load_A65_dst_spring.xml,2025-03-30T00:00:00Z,Forecasted Load,58934.0
+load_A65_dst_spring.xml,2025-03-30T01:00:00Z,Forecasted Load,60991.0
+load_A65_dst_spring.xml,2025-03-30T02:00:00Z,Forecasted Load,61636.0
+load_A65_dst_spring.xml,2025-03-30T03:00:00Z,Forecasted Load,62293.0
+load_A65_dst_spring.xml,2025-03-30T04:00:00Z,Forecasted Load,63288.0
+load_A65_dst_spring.xml,2025-03-30T05:00:00Z,Forecasted Load,62025.0
+load_A65_dst_spring.xml,2025-03-30T06:00:00Z,Forecasted Load,62511.0
+load_A65_dst_spring.xml,2025-03-30T07:00:00Z,Forecasted Load,61625.0
+load_A65_dst_spring.xml,2025-03-30T08:00:00Z,Forecasted Load,59269.0
+load_A65_dst_spring.xml,2025-03-30T09:00:00Z,Forecasted Load,59221.0
+load_A65_dst_spring.xml,2025-03-30T10:00:00Z,Forecasted Load,54554.0
+load_A65_dst_spring.xml,2025-03-30T11:00:00Z,Forecasted Load,53378.0
+load_A65_dst_spring.xml,2025-03-30T12:00:00Z,Forecasted Load,49235.0
+load_A65_dst_spring.xml,2025-03-30T13:00:00Z,Forecasted Load,50340.0
+load_A65_dst_spring.xml,2025-03-30T14:00:00Z,Forecasted Load,49077.0
+load_A65_dst_spring.xml,2025-03-30T15:00:00Z,Forecasted Load,47910.0
+load_A65_dst_spring.xml,2025-03-30T16:00:00Z,Forecasted Load,49979.0
+load_A65_dst_spring.xml,2025-03-30T17:00:00Z,Forecasted Load,47956.0
+load_A65_dst_spring.xml,2025-03-30T18:00:00Z,Forecasted Load,46639.0
+load_A65_dst_spring.xml,2025-03-30T19:00:00Z,Forecasted Load,51900.0
+load_A65_dst_spring.xml,2025-03-30T20:00:00Z,Forecasted Load,49701.0
+load_A65_dst_spring.xml,2025-03-30T21:00:00Z,Forecasted Load,53642.0
+prices_A44_hourly.xml,2025-01-13T23:00:00Z,60min,53.66
+prices_A44_hourly.xml,2025-01-14T00:00:00Z,60min,68.4
+prices_A44_hourly.xml,2025-01-14T01:00:00Z,60min,57.33
+prices_A44_hourly.xml,2025-01-14T02:00:00Z,60min,88.84
+prices_A44_hourly.xml,2025-01-14T03:00:00Z,60min,86.76
+prices_A44_hourly.xml,2025-01-14T04:00:00Z,60min,81.81
+prices_A44_hourly.xml,2025-01-14T05:00:00Z,60min,82.5
+prices_A44_hourly.xml,2025-01-14T06:00:00Z,60min,86.58
+prices_A44_hourly.xml,2025-01-14T07:00:00Z,60min,79.51
+prices_A44_hourly.xml,2025-01-14T08:00:00Z,60min,75.87
+prices_A44_hourly.xml,2025-01-14T09:00:00Z,60min,78.26
+prices_A44_hourly.xml,2025-01-14T10:00:00Z,60min,70.59
+prices_A44_hourly.xml,2025-01-14T11:00:00Z,60min,-12.5
+prices_A44_hourly.xml,2025-01-14T12:00:00Z,60min,52.85
+prices_A44_hourly.xml,2025-01-14T13:00:00Z,60min,48.79
+prices_A44_hourly.xml,2025-01-14T14:00:00Z,60min,37.41
+prices_A44_hourly.xml,2025-01-14T15:00:00Z,60min,35.12
+prices_A44_hourly.xml,2025-01-14T16:00:00Z,60min,40.24
+prices_A44_hourly.xml,2025-01-14T17:00:00Z,60min,33.96
+prices_A44_hourly.xml,2025-01-14T18:00:00Z,60min,24.86
+prices_A44_hourly.xml,2025-01-14T19:00:00Z,60min,34.53
+prices_A44_hourly.xml,2025-01-14T20:00:00Z,60min,47.58
+prices_A44_hourly.xml,2025-01-14T21:00:00Z,60min,45.64
+prices_A44_hourly.xml,2025-01-14T22:00:00Z,60min,52.34
+prices_A44_hourly.xml,2025-01-14T23:00:00Z,60min,65.13
+prices_A44_hourly.xml,2025-01-15T00:00:00Z,60min,81.07
+prices_A44_hourly.xml,2025-01-15T01:00:00Z,60min,66.79
+prices_A44_hourly.xml,2025-01-15T02:00:00Z,60min,88.46
+prices_A44_hourly.xml,2025-01-15T03:00:00Z,60min,71.81
+prices_A44_hourly.xml,2025-01-15T04:00:00Z,60min,85.55
+prices_A44_hourly.xml,2025-01-15T05:00:00Z,60min,75.64
+prices_A44_hourly.xml,2025-01-15T06:00:00Z,60min,94.96
+prices_A44_hourly.xml,2025-01-15T07:00:00Z,60min,88.32
+prices_A44_hourly.xml,2025-01-15T08:00:00Z,60min,86.78
+prices_A44_hourly.xml,2025-01-15T09:00:00Z,60min,65.42
+prices_A44_hourly.xml,2025-01-15T10:00:00Z,60min,71.95
+prices_A44_hourly.xml,2025-01-15T11:00:00Z,60min,-12.5
+prices_A44_hourly.xml,2025-01-15T12:00:00Z,60min,49.87
+prices_A44_hourly.xml,2025-01-15T13:00:00Z,60min,51.55
+prices_A44_hourly.xml,2025-01-15T14:00:00Z,60min,49.34
+prices_A44_hourly.xml,2025-01-15T15:00:00Z,60min,39.98
+prices_A44_hourly.xml,2025-01-15T16:00:00Z,60min,30.83
+prices_A44_hourly.xml,2025-01-15T17:00:00Z,60min,28.39
+prices_A44_hourly.xml,2025-01-15T18:00:00Z,60min,47.41
+prices_A44_hourly.xml,2025-01-15T19:00:00Z,60min,43.1
+prices_A44_hourly.xml,2025-01-15T20:00:00Z,60min,48.08
+prices_A44_hourly.xml,2025-01-15T21:00:00Z,60min,64.97
+prices_A44_hourly.xml,2025-01-15T22:00:00Z,60min,47.0
+prices_A44_quarter_hour.xml,2025-10-01T22:00:00Z,15min,80.48
+prices_A44_quarter_hour.xml,2025-10-01T22:15:00Z,15min,86.84
+prices_A44_quarter_hour.xml,2025-10-01T22:30:00Z,15min,76.21
+prices_A44_quarter_hour.xml,2025-10-01T22:45:00Z,15min,71.49
+prices_A44_quarter_hour.xml,2025-10-01T23:00:00Z,15min,61.16
+prices_A44_quarter_hour.xml,2025-10-01T23:15:00Z,15min,61.16
+prices_A44_quarter_hour.xml,2025-10-01T23:30:00Z,15min,61.16
+prices_A44_quarter_hour.xml,2025-10-01T23:45:00Z,15min,70.88
+prices_A44_quarter_hour.xml,2025-10-02T00:00:00Z,15min,70.18
+prices_A44_quarter_hour.xml,2025-10-02T00:15:00Z,15min,76.16
+prices_A44_quarter_hour.xml,2025-10-02T00:30:00Z,15min,85.52
+prices_A44_quarter_hour.xml,2025-10-02T00:45:00Z,15min,72.04
+prices_A44_quarter_hour.xml,2025-10-02T01:00:00Z,15min,69.79
+prices_A44_quarter_hour.xml,2025-10-02T01:15:00Z,15min,70.77
+prices_A44_quarter_hour.xml,2025-10-02T01:30:00Z,15min,72.09
+prices_A44_quarter_hour.xml,2025-10-02T01:45:00Z,15min,69.34
+prices_A44_quarter_hour.xml,2025-10-02T02:00:00Z,15min,74.35
+prices_A44_quarter_hour.xml,2025-10-02T02:15:00Z,15min,92.77
+prices_A44_quarter_hour.xml,2025-10-02T02:30:00Z,15min,78.35
+prices_A44_quarter_hour.xml,2025-10-02T02:45:00Z,15min,85.73
+prices_A44_quarter_hour.xml,2025-10-02T03:00:00Z,15min,74.41
+prices_A44_quarter_hour.xml,2025-10-02T03:15:00Z,15min,85.88
+prices_A44_quarter_hour.xml,2025-10-02T03:30:00Z,15min,70.86
+prices_A44_quarter_hour.xml,2025-10-02T03:45:00Z,15min,79.36
+prices_A44_quarter_hour.xml,2025-10-02T04:00:00Z,15min,103.04
+prices_A44_quarter_hour.xml,2025-10-02T04:15:00Z,15min,80.28
+prices_A44_quarter_hour.xml,2025-10-02T04:30:00Z,15min,93.75
+prices_A44_quarter_hour.xml,2025-10-02T04:45:00Z,15min,88.16
+prices_A44_quarter_hour.xml,2025-10-02T05:00:00Z,15min,82.92
+prices_A44_quarter_hour.xml,2025-10-02T05:15:00Z,15min,78.46
+prices_A44_quarter_hour.xml,2025-10-02T05:30:00Z,15min,78.46
+prices_A44_quarter_hour.xml,2025-10-02T05:45:00Z,15min,81.0
+prices_A44_quarter_hour.xml,2025-10-02T06:00:00Z,15min,93.87
+prices_A44_quarter_hour.xml,2025-10-02T06:15:00Z,15min,75.03
+prices_A44_quarter_hour.xml,2025-10-02T06:30:00Z,15min,80.29
+prices_A44_quarter_hour.xml,2025-10-02T06:45:00Z,15min,82.52
+prices_A44_quarter_hour.xml,2025-10-02T07:00:00Z,15min,80.66
+prices_A44_quarter_hour.xml,2025-10-02T07:15:00Z,15min,66.61
+prices_A44_quarter_hour.xml,2025-10-02T07:30:00Z,15min,69.91
+prices_A44_quarter_hour.xml,2025-10-02T07:45:00Z,15min,72.32
+prices_A44_quarter_hour.xml,2025-10-02T08:00:00Z,15min,65.67
+prices_A44_quarter_hour.xml,2025-10-02T08:15:00Z,15min,76.48
+prices_A44_quarter_hour.xml,2025-10-02T08:30:00Z,15min,74.27
+prices_A44_quarter_hour.xml,2025-10-02T08:45:00Z,15min,52.38
+prices_A44_quarter_hour.xml,2025-10-02T09:00:00Z,15min,52.03
+prices_A44_quarter_hour.xml,2025-10-02T09:15:00Z,15min,54.62
+prices_A44_quarter_hour.xml,2025-10-02T09:30:00Z,15min,64.2
+prices_A44_quarter_hour.xml,2025-10-02T09:45:00Z,15min,77.9
+prices_A44_quarter_hour.xml,2025-10-02T10:00:00Z,15min,-12.5
+prices_A44_quarter_hour.xml,2025-10-02T10:15:00Z,15min,60.37
+prices_A44_quarter_hour.xml,2025-10-02T10:30:00Z,15min,48.23
+prices_A44_quarter_hour.xml,2025-10-02T10:45:00Z,15min,46.75
+prices_A44_quarter_hour.xml,2025-10-02T11:00:00Z,15min,37.87
+prices_A44_quarter_hour.xml,2025-10-02T11:15:00Z,15min,51.74
+prices_A44_quarter_hour.xml,2025-10-02T11:30:00Z,15min,58.01
+prices_A44_quarter_hour.xml,2025-10-02T11:45:00Z,15min,46.09
+prices_A44_quarter_hour.xml,2025-10-02T12:00:00Z,15min,58.67
+prices_A44_quarter_hour.xml,2025-10-02T12:15:00Z,15min,47.69
+prices_A44_quarter_hour.xml,2025-10-02T12:30:00Z,15min,44.49
+prices_A44_quarter_hour.xml,2025-10-02T12:45:00Z,15min,47.65
+prices_A44_quarter_hour.xml,2025-10-02T13:00:00Z,15min,46.22
+prices_A44_quarter_hour.xml,2025-10-02T13:15:00Z,15min,50.39
+prices_A44_quarter_hour.xml,2025-10-02T13:30:00Z,15min,33.75
+prices_A44_quarter_hour.xml,2025-10-02T13:45:00Z,15min,20.91
+prices_A44_quarter_hour.xml,2025-10-02T14:00:00Z,15min,39.27
+prices_A44_quarter_hour.xml,2025-10-02T14:15:00Z,15min,32.68
+prices_A44_quarter_hour.xml,2025-10-02T14:30:00Z,15min,36.69
+prices_A44_quarter_hour.xml,2025-10-02T14:45:00Z,15min,49.64
+prices_A44_quarter_hour.xml,2025-10-02T15:00:00Z,15min,27.03
+prices_A44_quarter_hour.xml,2025-10-02T15:15:00Z,15min,41.6
+prices_A44_quarter_hour.xml,2025-10-02T15:30:00Z,15min,42.78
+prices_A44_quarter_hour.xml,2025-10-02T15:45:00Z,15min,38.74
+prices_A44_quarter_hour.xml,2025-10-02T16:00:00Z,15min,43.95
+prices_A44_quarter_hour.xml,2025-10-02T16:15:00Z,15min,31.39
+prices_A44_quarter_hour.xml,2025-10-02T16:30:00Z,15min,29.76
+prices_A44_quarter_hour.xml,2025-10-02T16:45:00Z,15min,43.79
+prices_A44_quarter_hour.xml,2025-10-02T17:00:00Z,15min,41.61
+prices_A44_quarter_hour.xml,2025-10-02T17:15:00Z,15min,41.61
+prices_A44_quarter_hour.xml,2025-10-02T17:30:00Z,15min,38.6
+prices_A44_quarter_hour.xml,2025-10-02T17:45:00Z,15min,50.57
+prices_A44_quarter_hour.xml,2025-10-02T18:00:00Z,15min,36.09
+prices_A44_quarter_hour.xml,2025-10-02T18:15:00Z,15min,30.73
+prices_A44_quarter_hour.xml,2025-10-02T18:30:00Z,15min,23.87
+prices_A44_quarter_hour.xml,2025-10-02T18:45:00Z,15min,32.39
+prices_A44_quarter_hour.xml,2025-10-02T19:00:00Z,15min,48.87
+prices_A44_quarter_hour.xml,2025-10-02T19:15:00Z,15min,31.8
+prices_A44_quarter_hour.xml,2025-10-02T19:30:00Z,15min,41.16
+prices_A44_quarter_hour.xml,2025-10-02T19:45:00Z,15min,62.96
+prices_A44_quarter_hour.xml,2025-10-02T20:00:00Z,15min,54.27
+prices_A44_quarter_hour.xml,2025-10-02T20:15:00Z,15min,63.27
+prices_A44_quarter_hour.xml,2025-10-02T20:30:00Z,15min,42.5
+prices_A44_quarter_hour.xml,2025-10-02T20:45:00Z,15min,32.28
+prices_A44_quarter_hour.xml,2025-10-02T21:00:00Z,15min,65.66
+prices_A44_quarter_hour.xml,2025-10-02T21:15:00Z,15min,43.79
+prices_A44_quarter_hour.xml,2025-10-02T21:30:00Z,15min,57.46
+prices_A44_quarter_hour.xml,2025-10-02T21:45:00Z,15min,57.46
+wind_solar_A69.xml,2025-01-13T23:00:00Z,Solar,946.0
+wind_solar_A69.xml,2025-01-13T23:00:00Z,Wind Offshore,884.0
+wind_solar_A69.xml,2025-01-13T23:00:00Z,Wind Onshore,875.0
+wind_solar_A69.xml,2025-01-13T23:15:00Z,Solar,926.0
+wind_solar_A69.xml,2025-01-13T23:15:00Z,Wind Offshore,916.0
+wind_solar_A69.xml,2025-01-13T23:15:00Z,Wind Onshore,899.0
+wind_solar_A69.xml,2025-01-13T23:30:00Z,Solar,929.0
+wind_solar_A69.xml,2025-01-13T23:30:00Z,Wind Offshore,939.0
+wind_solar_A69.xml,2025-01-13T23:30:00Z,Wind Onshore,918.0
+wind_solar_A69.xml,2025-01-13T23:45:00Z,Solar,906.0
+wind_solar_A69.xml,2025-01-13T23:45:00Z,Wind Offshore,925.0
+wind_solar_A69.xml,2025-01-13T23:45:00Z,Wind Onshore,916.0
+wind_solar_A69.xml,2025-01-14T00:00:00Z,Solar,915.0
+wind_solar_A69.xml,2025-01-14T00:00:00Z,Wind Offshore,937.0
+wind_solar_A69.xml,2025-01-14T00:00:00Z,Wind Onshore,945.0
+wind_solar_A69.xml,2025-01-14T00:15:00Z,Solar,956.0
+wind_solar_A69.xml,2025-01-14T00:15:00Z,Wind Offshore,913.0
+wind_solar_A69.xml,2025-01-14T00:15:00Z,Wind Onshore,961.0
+wind_solar_A69.xml,2025-01-14T00:30:00Z,Solar,950.0
+wind_solar_A69.xml,2025-01-14T00:30:00Z,Wind Offshore,936.0
+wind_solar_A69.xml,2025-01-14T00:30:00Z,Wind Onshore,957.0
+wind_solar_A69.xml,2025-01-14T00:45:00Z,Solar,936.0
+wind_solar_A69.xml,2025-01-14T00:45:00Z,Wind Offshore,926.0
+wind_solar_A69.xml,2025-01-14T00:45:00Z,Wind Onshore,953.0
+wind_solar_A69.xml,2025-01-14T01:00:00Z,Solar,965.0
+wind_solar_A69.xml,2025-01-14T01:00:00Z,Wind Offshore,1002.0
+wind_solar_A69.xml,2025-01-14T01:00:00Z,Wind Onshore,992.0
+wind_solar_A69.xml,2025-01-14T01:15:00Z,Solar,981.0
+wind_solar_A69.xml,2025-01-14T01:15:00Z,Wind Offshore,984.0
+wind_solar_A69.xml,2025-01-14T01:15:00Z,Wind Onshore,977.0
+wind_solar_A69.xml,2025-01-14T01:30:00Z,Solar,999.0
+wind_solar_A69.xml,2025-01-14T01:30:00Z,Wind Offshore,995.0
+wind_solar_A69.xml,2025-01-14T01:30:00Z,Wind Onshore,989.0
+wind_solar_A69.xml,2025-01-14T01:45:00Z,Solar,987.0
+wind_solar_A69.xml,2025-01-14T01:45:00Z,Wind Offshore,985.0
+wind_solar_A69.xml,2025-01-14T01:45:00Z,Wind Onshore,975.0
+wind_solar_A69.xml,2025-01-14T02:00:00Z,Solar,991.0
+wind_solar_A69.xml,2025-01-14T02:00:00Z,Wind Offshore,969.0
+wind_solar_A69.xml,2025-01-14T02:00:00Z,Wind Onshore,992.0
+wind_solar_A69.xml,2025-01-14T02:15:00Z,Solar,1002.0
+wind_solar_A69.xml,2025-01-14T02:15:00Z,Wind Offshore,1005.0
+wind_solar_A69.xml,2025-01-14T02:15:00Z,Wind Onshore,1019.0
+wind_solar_A69.xml,2025-01-14T02:30:00Z,Solar,1010.0
+wind_solar_A69.xml,2025-01-14T02:30:00Z,Wind Offshore,996.0
+wind_solar_A69.xml,2025-01-14T02:30:00Z,Wind Onshore,1020.0
+wind_solar_A69.xml,2025-01-14T02:45:00Z,Solar,991.0
+wind_solar_A69.xml,2025-01-14T02:45:00Z,Wind Offshore,995.0
+wind_solar_A69.xml,2025-01-14T02:45:00Z,Wind Onshore,1009.0
+wind_solar_A69.xml,2025-01-14T03:00:00Z,Solar,1032.0
+wind_solar_A69.xml,2025-01-14T03:00:00Z,Wind Offshore,1018.0
+wind_solar_A69.xml,2025-01-14T03:00:00Z,Wind Onshore,1017.0
+wind_solar_A69.xml,2025-01-14T03:15:00Z,Solar,1061.0
+wind_solar_A69.xml,2025-01-14T03:15:00Z,Wind Offshore,1023.0
+wind_solar_A69.xml,2025-01-14T03:15:00Z,Wind Onshore,1025.0
+wind_solar_A69.xml,2025-01-14T03:30:00Z,Solar,1039.0
+wind_solar_A69.xml,2025-01-14T03:30:00Z,Wind Offshore,1021.0
+wind_solar_A69.xml,2025-01-14T03:30:00Z,Wind Onshore,1008.0
+wind_solar_A69.xml,2025-01-14T03:45:00Z,Solar,1002.0
+wind_solar_A69.xml,2025-01-14T03:45:00Z,Wind Offshore,1014.0
+wind_solar_A69.xml,2025-01-14T03:45:00Z,Wind Onshore,1024.0
+wind_solar_A69.xml,2025-01-14T04:00:00Z,Solar,1032.0
+wind_solar_A69.xml,2025-01-14T04:00:00Z,Wind Offshore,1013.0
+wind_solar_A69.xml,2025-01-14T04:00:00Z,Wind Onshore,1021.0
+wind_solar_A69.xml,2025-01-14T04:15:00Z,Solar,1001.0
+wind_solar_A69.xml,2025-01-14T04:15:00Z,Wind Offshore,1033.0
+wind_solar_A69.xml,2025-01-14T04:15:00Z,Wind Onshore,1007.0
+wind_solar_A69.xml,2025-01-14T04:30:00Z,Solar,1001.0
+wind_solar_A69.xml,2025-01-14T04:30:00Z,Wind Offshore,1056.0
+wind_solar_A69.xml,2025-01-14T04:30:00Z,Wind Onshore,1037.0
+wind_solar_A69.xml,2025-01-14T04:45:00Z,Solar,1047.0
+wind_solar_A69.xml,2025-01-14T04:45:00Z,Wind Offshore,1006.0
+wind_solar_A69.xml,2025-01-14T04:45:00Z,Wind Onshore,1032.0
+wind_solar_A69.xml,2025-01-14T05:00:00Z,Solar,1036.0
+wind_solar_A69.xml,2025-01-14T05:00:00Z,Wind Offshore,1023.0
+wind_solar_A69.xml,2025-01-14T05:00:00Z,Wind Onshore,1009.0
+wind_solar_A69.xml,2025-01-14T05:15:00Z,Solar,1022.0
+wind_solar_A69.xml,2025-01-14T05:15:00Z,Wind Offshore,1032.0
+wind_solar_A69.xml,2025-01-14T05:15:00Z,Wind Onshore,1020.0
+wind_solar_A69.xml,2025-01-14T05:30:00Z,Solar,996.0
+wind_solar_A69.xml,2025-01-14T05:30:00Z,Wind Offshore,1031.0
+wind_solar_A69.xml,2025-01-14T05:30:00Z,Wind Onshore,1032.0
+wind_solar_A69.xml,2025-01-14T05:45:00Z,Solar,1010.0
+wind_solar_A69.xml,2025-01-14T05:45:00Z,Wind Offshore,1022.0
+wind_solar_A69.xml,2025-01-14T05:45:00Z,Wind Onshore,980.0
+wind_solar_A69.xml,2025-01-14T06:00:00Z,Solar,1033.0
+wind_solar_A69.xml,2025-01-14T06:00:00Z,Wind Offshore,1065.0
+wind_solar_A69.xml,2025-01-14T06:00:00Z,Wind Onshore,1034.0
+wind_solar_A69.xml,2025-01-14T06:15:00Z,Solar,1028.0
+wind_solar_A69.xml,2025-01-14T06:15:00Z,Wind Offshore,1035.0
+wind_solar_A69.xml,2025-01-14T06:15:00Z,Wind Onshore,1033.0
+wind_solar_A69.xml,2025-01-14T06:30:00Z,Solar,1037.0
+wind_solar_A69.xml,2025-01-14T06:30:00Z,Wind Offshore,1007.0
+wind_solar_A69.xml,2025-01-14T06:30:00Z,Wind Onshore,1036.0
+wind_solar_A69.xml,2025-01-14T06:45:00Z,Solar,1048.0
+wind_solar_A69.xml,2025-01-14T06:45:00Z,Wind Offshore,987.0
+wind_solar_A69.xml,2025-01-14T06:45:00Z,Wind Onshore,1010.0
+wind_solar_A69.xml,2025-01-14T07:00:00Z,Solar,1011.0
+wind_solar_A69.xml,2025-01-14T07:00:00Z,Wind Offshore,1014.0
+wind_solar_A69.xml,2025-01-14T07:00:00Z,Wind Onshore,991.0
+wind_solar_A69.xml,2025-01-14T07:15:00Z,Solar,1021.0
+wind_solar_A69.xml,2025-01-14T07:15:00Z,Wind Offshore,1039.0
+wind_solar_A69.xml,2025-01-14T07:15:00Z,Wind Onshore,1024.0
+wind_solar_A69.xml,2025-01-14T07:30:00Z,Solar,1005.0
+wind_solar_A69.xml,2025-01-14T07:30:00Z,Wind Offshore,1011.0
+wind_solar_A69.xml,2025-01-14T07:30:00Z,Wind Onshore,982.0
+wind_solar_A69.xml,2025-01-14T07:45:00Z,Solar,993.0
+wind_solar_A69.xml,2025-01-14T07:45:00Z,Wind Offshore,960.0
+wind_solar_A69.xml,2025-01-14T07:45:00Z,Wind Onshore,1011.0
+wind_solar_A69.xml,2025-01-14T08:00:00Z,Solar,991.0
+wind_solar_A69.xml,2025-01-14T08:00:00Z,Wind Offshore,971.0
+wind_solar_A69.xml,2025-01-14T08:00:00Z,Wind Onshore,983.0
+wind_solar_A69.xml,2025-01-14T08:15:00Z,Solar,1006.0
+wind_solar_A69.xml,2025-01-14T08:15:00Z,Wind Offshore,991.0
+wind_solar_A69.xml,2025-01-14T08:15:00Z,Wind Onshore,971.0
+wind_solar_A69.xml,2025-01-14T08:30:00Z,Solar,964.0
+wind_solar_A69.xml,2025-01-14T08:30:00Z,Wind Offshore,1001.0
+wind_solar_A69.xml,2025-01-14T08:30:00Z,Wind Onshore,987.0
+wind_solar_A69.xml,2025-01-14T08:45:00Z,Solar,996.0
+wind_solar_A69.xml,2025-01-14T08:45:00Z,Wind Offshore,978.0
+wind_solar_A69.xml,2025-01-14T08:45:00Z,Wind Onshore,995.0
+wind_solar_A69.xml,2025-01-14T09:00:00Z,Solar,994.0
+wind_solar_A69.xml,2025-01-14T09:00:00Z,Wind Offshore,970.0
+wind_solar_A69.xml,2025-01-14T09:00:00Z,Wind Onshore,965.0
+wind_solar_A69.xml,2025-01-14T09:15:00Z,Solar,960.0
+wind_solar_A69.xml,2025-01-14T09:15:00Z,Wind Offshore,979.0
+wind_solar_A69.xml,2025-01-14T09:15:00Z,Wind Onshore,955.0
+wind_solar_A69.xml,2025-01-14T09:30:00Z,Solar,956.0
+wind_solar_A69.xml,2025-01-14T09:30:00Z,Wind Offshore,974.0
+wind_solar_A69.xml,2025-01-14T09:30:00Z,Wind Onshore,921.0
+wind_solar_A69.xml,2025-01-14T09:45:00Z,Solar,918.0
+wind_solar_A69.xml,2025-01-14T09:45:00Z,Wind Offshore,931.0
+wind_solar_A69.xml,2025-01-14T09:45:00Z,Wind Onshore,958.0
+wind_solar_A69.xml,2025-01-14T10:00:00Z,Solar,977.0
+wind_solar_A69.xml,2025-01-14T10:00:00Z,Wind Offshore,943.0
+wind_solar_A69.xml,2025-01-14T10:00:00Z,Wind Onshore,936.0
+wind_solar_A69.xml,2025-01-14T10:15:00Z,Solar,944.0
+wind_solar_A69.xml,2025-01-14T10:15:00Z,Wind Offshore,909.0
+wind_solar_A69.xml,2025-01-14T10:15:00Z,Wind Onshore,921.0
+wind_solar_A69.xml,2025-01-14T10:30:00Z,Solar,921.0
+wind_solar_A69.xml,2025-01-14T10:30:00Z,Wind Offshore,898.0
+wind_solar_A69.xml,2025-01-14T10:30:00Z,Wind Onshore,941.0
+wind_solar_A69.xml,2025-01-14T10:45:00Z,Solar,910.0
+wind_solar_A69.xml,2025-01-14T10:45:00Z,Wind Offshore,919.0
+wind_solar_A69.xml,2025-01-14T10:45:00Z,Wind Onshore,881.0
+wind_solar_A69.xml,2025-01-14T11:00:00Z,Solar,908.0
+wind_solar_A69.xml,2025-01-14T11:00:00Z,Wind Offshore,874.0
+wind_solar_A69.xml,2025-01-14T11:00:00Z,Wind Onshore,891.0
+wind_solar_A69.xml,2025-01-14T11:15:00Z,Solar,879.0
+wind_solar_A69.xml,2025-01-14T11:15:00Z,Wind Offshore,894.0
+wind_solar_A69.xml,2025-01-14T11:15:00Z,Wind Onshore,891.0
+wind_solar_A69.xml,2025-01-14T11:30:00Z,Solar,887.0
+wind_solar_A69.xml,2025-01-14T11:30:00Z,Wind Offshore,888.0
+wind_solar_A69.xml,2025-01-14T11:30:00Z,Wind Onshore,877.0
+wind_solar_A69.xml,2025-01-14T11:45:00Z,Solar,857.0
+wind_solar_A69.xml,2025-01-14T11:45:00Z,Wind Offshore,889.0
+wind_solar_A69.xml,2025-01-14T11:45:00Z,Wind Onshore,830.0
+wind_solar_A69.xml,2025-01-14T12:00:00Z,Solar,874.0
+wind_solar_A69.xml,2025-01-14T12:00:00Z,Wind Offshore,844.0
+wind_solar_A69.xml,2025-01-14T12:00:00Z,Wind Onshore,871.0
+wind_solar_A69.xml,2025-01-14T12:15:00Z,Solar,844.0
+wind_solar_A69.xml,2025-01-14T12:15:00Z,Wind Offshore,863.0
+wind_solar_A69.xml,2025-01-14T12:15:00Z,Wind Onshore,856.0
+wind_solar_A69.xml,2025-01-14T12:30:00Z,Solar,864.0
+wind_solar_A69.xml,2025-01-14T12:30:00Z,Wind Offshore,846.0
+wind_solar_A69.xml,2025-01-14T12:30:00Z,Wind Onshore,867.0
+wind_solar_A69.xml,2025-01-14T12:45:00Z,Solar,838.0
+wind_solar_A69.xml,2025-01-14T12:45:00Z,Wind Offshore,867.0
+wind_solar_A69.xml,2025-01-14T12:45:00Z,Wind Onshore,877.0
+wind_solar_A69.xml,2025-01-14T13:00:00Z,Solar,837.0
+wind_solar_A69.xml,2025-01-14T13:00:00Z,Wind Offshore,819.0
+wind_solar_A69.xml,2025-01-14T13:00:00Z,Wind Onshore,829.0
+wind_solar_A69.xml,2025-01-14T13:15:00Z,Solar,878.0
+wind_solar_A69.xml,2025-01-14T13:15:00Z,Wind Offshore,805.0
+wind_solar_A69.xml,2025-01-14T13:15:00Z,Wind Onshore,832.0
+wind_solar_A69.xml,2025-01-14T13:30:00Z,Solar,832.0
+wind_solar_A69.xml,2025-01-14T13:30:00Z,Wind Offshore,827.0
+wind_solar_A69.xml,2025-01-14T13:30:00Z,Wind Onshore,822.0
+wind_solar_A69.xml,2025-01-14T13:45:00Z,Solar,816.0
+wind_solar_A69.xml,2025-01-14T13:45:00Z,Wind Offshore,796.0
+wind_solar_A69.xml,2025-01-14T13:45:00Z,Wind Onshore,814.0
+wind_solar_A69.xml,2025-01-14T14:00:00Z,Solar,805.0
+wind_solar_A69.xml,2025-01-14T14:00:00Z,Wind Offshore,781.0
+wind_solar_A69.xml,2025-01-14T14:00:00Z,Wind Onshore,802.0
+wind_solar_A69.xml,2025-01-14T14:15:00Z,Solar,780.0
+wind_solar_A69.xml,2025-01-14T14:15:00Z,Wind Offshore,815.0
+wind_solar_A69.xml,2025-01-14T14:15:00Z,Wind Onshore,805.0
+wind_solar_A69.xml,2025-01-14T14:30:00Z,Solar,812.0
+wind_solar_A69.xml,2025-01-14T14:30:00Z,Wind Offshore,801.0
+wind_solar_A69.xml,2025-01-14T14:30:00Z,Wind Onshore,813.0
+wind_solar_A69.xml,2025-01-14T14:45:00Z,Solar,817.0
+wind_solar_A69.xml,2025-01-14T14:45:00Z,Wind Offshore,732.0
+wind_solar_A69.xml,2025-01-14T14:45:00Z,Wind Onshore,772.0
+wind_solar_A69.xml,2025-01-14T15:00:00Z,Solar,784.0
+wind_solar_A69.xml,2025-01-14T15:00:00Z,Wind Offshore,767.0
+wind_solar_A69.xml,2025-01-14T15:00:00Z,Wind Onshore,817.0
+wind_solar_A69.xml,2025-01-14T15:15:00Z,Solar,809.0
+wind_solar_A69.xml,2025-01-14T15:15:00Z,Wind Offshore,759.0
+wind_solar_A69.xml,2025-01-14T15:15:00Z,Wind Onshore,788.0
+wind_solar_A69.xml,2025-01-14T15:30:00Z,Solar,773.0
+wind_solar_A69.xml,2025-01-14T15:30:00Z,Wind Offshore,787.0
+wind_solar_A69.xml,2025-01-14T15:30:00Z,Wind Onshore,781.0
+wind_solar_A69.xml,2025-01-14T15:45:00Z,Solar,740.0
+wind_solar_A69.xml,2025-01-14T15:45:00Z,Wind Offshore,799.0
+wind_solar_A69.xml,2025-01-14T15:45:00Z,Wind Onshore,732.0
+wind_solar_A69.xml,2025-01-14T16:00:00Z,Solar,758.0
+wind_solar_A69.xml,2025-01-14T16:00:00Z,Wind Offshore,807.0
+wind_solar_A69.xml,2025-01-14T16:00:00Z,Wind Onshore,769.0
+wind_solar_A69.xml,2025-01-14T16:15:00Z,Solar,749.0
+wind_solar_A69.xml,2025-01-14T16:15:00Z,Wind Offshore,780.0
+wind_solar_A69.xml,2025-01-14T16:15:00Z,Wind Onshore,750.0
+wind_solar_A69.xml,2025-01-14T16:30:00Z,Solar,761.0
+wind_solar_A69.xml,2025-01-14T16:30:00Z,Wind Offshore,746.0
+wind_solar_A69.xml,2025-01-14T16:30:00Z,Wind Onshore,776.0
+wind_solar_A69.xml,2025-01-14T16:45:00Z,Solar,777.0
+wind_solar_A69.xml,2025-01-14T16:45:00Z,Wind Offshore,745.0
+wind_solar_A69.xml,2025-01-14T16:45:00Z,Wind Onshore,782.0
+wind_solar_A69.xml,2025-01-14T17:00:00Z,Solar,748.0
+wind_solar_A69.xml,2025-01-14T17:00:00Z,Wind Offshore,748.0
+wind_solar_A69.xml,2025-01-14T17:00:00Z,Wind Onshore,786.0
+wind_solar_A69.xml,2025-01-14T17:15:00Z,Solar,764.0
+wind_solar_A69.xml,2025-01-14T17:15:00Z,Wind Offshore,774.0
+wind_solar_A69.xml,2025-01-14T17:15:00Z,Wind Onshore,762.0
+wind_solar_A69.xml,2025-01-14T17:30:00Z,Solar,770.0
+wind_solar_A69.xml,2025-01-14T17:30:00Z,Wind Offshore,789.0
+wind_solar_A69.xml,2025-01-14T17:30:00Z,Wind Onshore,765.0
+wind_solar_A69.xml,2025-01-14T17:45:00Z,Solar,754.0
+wind_solar_A69.xml,2025-01-14T17:45:00Z,Wind Offshore,733.0
+wind_solar_A69.xml,2025-01-14T17:45:00Z,Wind Onshore,775.0
+wind_solar_A69.xml,2025-01-14T18:00:00Z,Solar,753.0
+wind_solar_A69.xml,2025-01-14T18:00:00Z,Wind Offshore,781.0
+wind_solar_A69.xml,2025-01-14T18:00:00Z,Wind Onshore,732.0
+wind_solar_A69.xml,2025-01-14T18:15:00Z,Solar,774.0
+wind_solar_A69.xml,2025-01-14T18:15:00Z,Wind Offshore,789.0
+wind_solar_A69.xml,2025-01-14T18:15:00Z,Wind Onshore,764.0
+wind_solar_A69.xml,2025-01-14T18:30:00Z,Solar,791.0
+wind_solar_A69.xml,2025-01-14T18:30:00Z,Wind Offshore,781.0
+wind_solar_A69.xml,2025-01-14T18:30:00Z,Wind Onshore,766.0
+wind_solar_A69.xml,2025-01-14T18:45:00Z,Solar,768.0
+wind_solar_A69.xml,2025-01-14T18:45:00Z,Wind Offshore,837.0
+wind_solar_A69.xml,2025-01-14T18:45:00Z,Wind Onshore,788.0
+wind_solar_A69.xml,2025-01-14T19:00:00Z,Solar,770.0
+wind_solar_A69.xml,2025-01-14T19:00:00Z,Wind Offshore,793.0
+wind_solar_A69.xml,2025-01-14T19:00:00Z,Wind Onshore,775.0
+wind_solar_A69.xml,2025-01-14T19:15:00Z,Solar,785.0
+wind_solar_A69.xml,2025-01-14T19:15:00Z,Wind Offshore,788.0
+wind_solar_A69.xml,2025-01-14T19:15:00Z,Wind Onshore,801.0
+wind_solar_A69.xml,2025-01-14T19:30:00Z,Solar,798.0
+wind_solar_A69.xml,2025-01-14T19:30:00Z,Wind Offshore,804.0
+wind_solar_A69.xml,2025-01-14T19:30:00Z,Wind Onshore,789.0
+wind_solar_A69.xml,2025-01-14T19:45:00Z,Solar,789.0
+wind_solar_A69.xml,2025-01-14T19:45:00Z,Wind Offshore,789.0
+wind_solar_A69.xml,2025-01-14T19:45:00Z,Wind Onshore,814.0
+wind_solar_A69.xml,2025-01-14T20:00:00Z,Solar,799.0
+wind_solar_A69.xml,2025-01-14T20:00:00Z,Wind Offshore,785.0
+wind_solar_A69.xml,2025-01-14T20:00:00Z,Wind Onshore,844.0
+wind_solar_A69.xml,2025-01-14T20:15:00Z,Solar,807.0
+wind_solar_A69.xml,2025-01-14T20:15:00Z,Wind Offshore,819.0
+wind_solar_A69.xml,2025-01-14T20:15:00Z,Wind Onshore,839.0
+wind_solar_A69.xml,2025-01-14T20:30:00Z,Solar,798.0
+wind_solar_A69.xml,2025-01-14T20:30:00Z,Wind Offshore,839.0
+wind_solar_A69.xml,2025-01-14T20:30:00Z,Wind Onshore,835.0
+wind_solar_A69.xml,2025-01-14T20:45:00Z,Solar,822.0
+wind_solar_A69.xml,2025-01-14T20:45:00Z,Wind Offshore,821.0
+wind_solar_A69.xml,2025-01-14T20:45:00Z,Wind Onshore,846.0
+wind_solar_A69.xml,2025-01-14T21:00:00Z,Solar,822.0
+wind_solar_A69.xml,2025-01-14T21:00:00Z,Wind Offshore,849.0
+wind_solar_A69.xml,2025-01-14T21:00:00Z,Wind Onshore,826.0
+wind_solar_A69.xml,2025-01-14T21:15:00Z,Solar,869.0
+wind_solar_A69.xml,2025-01-14T21:15:00Z,Wind Offshore,834.0
+wind_solar_A69.xml,2025-01-14T21:15:00Z,Wind Onshore,826.0
+wind_solar_A69.xml,2025-01-14T21:30:00Z,Solar,839.0
+wind_solar_A69.xml,2025-01-14T21:30:00Z,Wind Offshore,878.0
+wind_solar_A69.xml,2025-01-14T21:30:00Z,Wind Onshore,833.0
+wind_solar_A69.xml,2025-01-14T21:45:00Z,Solar,865.0
+wind_solar_A69.xml,2025-01-14T21:45:00Z,Wind Offshore,860.0
+wind_solar_A69.xml,2025-01-14T21:45:00Z,Wind Onshore,860.0
+wind_solar_A69.xml,2025-01-14T22:00:00Z,Solar,872.0
+wind_solar_A69.xml,2025-01-14T22:00:00Z,Wind Offshore,875.0
+wind_solar_A69.xml,2025-01-14T22:00:00Z,Wind Onshore,892.0
+wind_solar_A69.xml,2025-01-14T22:15:00Z,Solar,854.0
+wind_solar_A69.xml,2025-01-14T22:15:00Z,Wind Offshore,887.0
+wind_solar_A69.xml,2025-01-14T22:15:00Z,Wind Onshore,861.0
+wind_solar_A69.xml,2025-01-14T22:30:00Z,Solar,860.0
+wind_solar_A69.xml,2025-01-14T22:30:00Z,Wind Offshore,858.0
+wind_solar_A69.xml,2025-01-14T22:30:00Z,Wind Onshore,891.0
+wind_solar_A69.xml,2025-01-14T22:45:00Z,Solar,883.0
+wind_solar_A69.xml,2025-01-14T22:45:00Z,Wind Offshore,888.0
+wind_solar_A69.xml,2025-01-14T22:45:00Z,Wind Onshore,869.0
+wind_solar_A69.xml,2025-01-14T23:00:00Z,Solar,912.0
+wind_solar_A69.xml,2025-01-14T23:00:00Z,Wind Offshore,933.0
+wind_solar_A69.xml,2025-01-14T23:00:00Z,Wind Onshore,878.0
+wind_solar_A69.xml,2025-01-14T23:15:00Z,Solar,899.0
+wind_solar_A69.xml,2025-01-14T23:15:00Z,Wind Offshore,909.0
+wind_solar_A69.xml,2025-01-14T23:15:00Z,Wind Onshore,924.0
+wind_solar_A69.xml,2025-01-14T23:30:00Z,Solar,906.0
+wind_solar_A69.xml,2025-01-14T23:30:00Z,Wind Offshore,943.0
+wind_solar_A69.xml,2025-01-14T23:30:00Z,Wind Onshore,905.0
+wind_solar_A69.xml,2025-01-14T23:45:00Z,Solar,874.0
+wind_solar_A69.xml,2025-01-14T23:45:00Z,Wind Offshore,942.0
+wind_solar_A69.xml,2025-01-14T23:45:00Z,Wind Onshore,913.0
+wind_solar_A69.xml,2025-01-15T00:00:00Z,Solar,928.0
+wind_solar_A69.xml,2025-01-15T00:00:00Z,Wind Offshore,902.0
+wind_solar_A69.xml,2025-01-15T00:00:00Z,Wind Onshore,970.0
+wind_solar_A69.xml,2025-01-15T00:15:00Z,Solar,949.0
+wind_solar_A69.xml,2025-01-15T00:15:00Z,Wind Offshore,956.0
+wind_solar_A69.xml,2025-01-15T00:15:00Z,Wind Onshore,945.0
+wind_solar_A69.xml,2025-01-15T00:30:00Z,Solar,960.0
+wind_solar_A69.xml,2025-01-15T00:30:00Z,Wind Offshore,932.0
+wind_solar_A69.xml,2025-01-15T00:30:00Z,Wind Onshore,951.0
+wind_solar_A69.xml,2025-01-15T00:45:00Z,Solar,967.0
+wind_solar_A69.xml,2025-01-15T00:45:00Z,Wind Offshore,964.0
+wind_solar_A69.xml,2025-01-15T00:45:00Z,Wind Onshore,956.0
+wind_solar_A69.xml,2025-01-15T01:00:00Z,Solar,962.0
+wind_solar_A69.xml,2025-01-15T01:00:00Z,Wind Offshore,960.0
+wind_solar_A69.xml,2025-01-15T01:00:00Z,Wind Onshore,975.0
+wind_solar_A69.xml,2025-01-15T01:15:00Z,Solar,971.0
+wind_solar_A69.xml,2025-01-15T01:15:00Z,Wind Offshore,975.0
+wind_solar_A69.xml,2025-01-15T01:15:00Z,Wind Onshore,962.0
+wind_solar_A69.xml,2025-01-15T01:30:00Z,Solar,997.0
+wind_solar_A69.xml,2025-01-15T01:30:00Z,Wind Offshore,981.0
+wind_solar_A69.xml,2025-01-15T01:30:00Z,Wind Onshore,983.0
+wind_solar_A69.xml,2025-01-15T01:45:00Z,Solar,987.0
+wind_solar_A69.xml,2025-01-15T01:45:00Z,Wind Offshore,993.0
+wind_solar_A69.xml,2025-01-15T01:45:00Z,Wind Onshore,1009.0
+wind_solar_A69.xml,2025-01-15T02:00:00Z,Solar,954.0
+wind_solar_A69.xml,2025-01-15T02:00:00Z,Wind Offshore,987.0
+wind_solar_A69.xml,2025-01-15T02:00:00Z,Wind Onshore,990.0
+wind_solar_A69.xml,2025-01-15T02:15:00Z,Solar,1020.0
+wind_solar_A69.xml,2025-01-15T02:15:00Z,Wind Offshore,977.0
+wind_solar_A69.xml,2025-01-15T02:15:00Z,Wind Onshore,959.0
+wind_solar_A69.xml,2025-01-15T02:30:00Z,Solar,988.0
+wind_solar_A69.xml,2025-01-15T02:30:00Z,Wind Offshore,989.0
+wind_solar_A69.xml,2025-01-15T02:30:00Z,Wind Onshore,995.0
+wind_solar_A69.xml,2025-01-15T02:45:00Z,Solar,1037.0
+wind_solar_A69.xml,2025-01-15T02:45:00Z,Wind Offshore,1029.0
+wind_solar_A69.xml,2025-01-15T02:45:00Z,Wind Onshore,1026.0
+wind_solar_A69.xml,2025-01-15T03:00:00Z,Solar,1047.0
+wind_solar_A69.xml,2025-01-15T03:00:00Z,Wind Offshore,1048.0
+wind_solar_A69.xml,2025-01-15T03:00:00Z,Wind Onshore,1037.0
+wind_solar_A69.xml,2025-01-15T03:15:00Z,Solar,1035.0
+wind_solar_A69.xml,2025-01-15T03:15:00Z,Wind Offshore,1025.0
+wind_solar_A69.xml,2025-01-15T03:15:00Z,Wind Onshore,1028.0
+wind_solar_A69.xml,2025-01-15T03:30:00Z,Solar,1041.0
+wind_solar_A69.xml,2025-01-15T03:30:00Z,Wind Offshore,1040.0
+wind_solar_A69.xml,2025-01-15T03:30:00Z,Wind Onshore,1050.0
+wind_solar_A69.xml,2025-01-15T03:45:00Z,Solar,1061.0
+wind_solar_A69.xml,2025-01-15T03:45:00Z,Wind Offshore,1045.0
+wind_solar_A69.xml,2025-01-15T03:45:00Z,Wind Onshore,1009.0
+wind_solar_A69.xml,2025-01-15T04:00:00Z,Solar,1011.0
+wind_solar_A69.xml,2025-01-15T04:00:00Z,Wind Offshore,1006.0
+wind_solar_A69.xml,2025-01-15T04:00:00Z,Wind Onshore,1053.0
+wind_solar_A69.xml,2025-01-15T04:15:00Z,Solar,1037.0
+wind_solar_A69.xml,2025-01-15T04:15:00Z,Wind Offshore,999.0
+wind_solar_A69.xml,2025-01-15T04:15:00Z,Wind Onshore,1036.0
+wind_solar_A69.xml,2025-01-15T04:30:00Z,Solar,1038.0
+wind_solar_A69.xml,2025-01-15T04:30:00Z,Wind Offshore,1033.0
+wind_solar_A69.xml,2025-01-15T04:30:00Z,Wind Onshore,1046.0
+wind_solar_A69.xml,2025-01-15T04:45:00Z,Solar,1017.0
+wind_solar_A69.xml,2025-01-15T04:45:00Z,Wind Offshore,1001.0
+wind_solar_A69.xml,2025-01-15T04:45:00Z,Wind Onshore,983.0
+wind_solar_A69.xml,2025-01-15T05:00:00Z,Solar,1071.0
+wind_solar_A69.xml,2025-01-15T05:00:00Z,Wind Offshore,1030.0
+wind_solar_A69.xml,2025-01-15T05:00:00Z,Wind Onshore,1051.0
+wind_solar_A69.xml,2025-01-15T05:15:00Z,Solar,1024.0
+wind_solar_A69.xml,2025-01-15T05:15:00Z,Wind Offshore,1008.0
+wind_solar_A69.xml,2025-01-15T05:15:00Z,Wind Onshore,1039.0
+wind_solar_A69.xml,2025-01-15T05:30:00Z,Solar,1021.0
+wind_solar_A69.xml,2025-01-15T05:30:00Z,Wind Offshore,1023.0
+wind_solar_A69.xml,2025-01-15T05:30:00Z,Wind Onshore,1068.0
+wind_solar_A69.xml,2025-01-15T05:45:00Z,Solar,1037.0
+wind_solar_A69.xml,2025-01-15T05:45:00Z,Wind Offshore,1019.0
+wind_solar_A69.xml,2025-01-15T05:45:00Z,Wind Onshore,1036.0
+wind_solar_A69.xml,2025-01-15T06:00:00Z,Solar,1049.0
+wind_solar_A69.xml,2025-01-15T06:00:00Z,Wind Offshore,1040.0
+wind_solar_A69.xml,2025-01-15T06:00:00Z,Wind Onshore,1013.0
+wind_solar_A69.xml,2025-01-15T06:15:00Z,Solar,1017.0
+wind_solar_A69.xml,2025-01-15T06:15:00Z,Wind Offshore,1016.0
+wind_solar_A69.xml,2025-01-15T06:15:00Z,Wind Onshore,1013.0
+wind_solar_A69.xml,2025-01-15T06:30:00Z,Solar,1014.0
+wind_solar_A69.xml,2025-01-15T06:30:00Z,Wind Offshore,1004.0
+wind_solar_A69.xml,2025-01-15T06:30:00Z,Wind Onshore,1032.0
+wind_solar_A69.xml,2025-01-15T06:45:00Z,Solar,1030.0
+wind_solar_A69.xml,2025-01-15T06:45:00Z,Wind Offshore,1022.0
+wind_solar_A69.xml,2025-01-15T06:45:00Z,Wind Onshore,1027.0
+wind_solar_A69.xml,2025-01-15T07:00:00Z,Solar,991.0
+wind_solar_A69.xml,2025-01-15T07:00:00Z,Wind Offshore,1070.0
+wind_solar_A69.xml,2025-01-15T07:00:00Z,Wind Onshore,1005.0
+wind_solar_A69.xml,2025-01-15T07:15:00Z,Solar,998.0
+wind_solar_A69.xml,2025-01-15T07:15:00Z,Wind Offshore,1021.0
+wind_solar_A69.xml,2025-01-15T07:15:00Z,Wind Onshore,993.0
+wind_solar_A69.xml,2025-01-15T07:30:00Z,Solar,992.0
+wind_solar_A69.xml,2025-01-15T07:30:00Z,Wind Offshore,972.0
+wind_solar_A69.xml,2025-01-15T07:30:00Z,Wind Onshore,1034.0
+wind_solar_A69.xml,2025-01-15T07:45:00Z,Solar,994.0
+wind_solar_A69.xml,2025-01-15T07:45:00Z,Wind Offshore,1003.0
+wind_solar_A69.xml,2025-01-15T07:45:00Z,Wind Onshore,997.0
+wind_solar_A69.xml,2025-01-15T08:00:00Z,Solar,993.0
+wind_solar_A69.xml,2025-01-15T08:00:00Z,Wind Offshore,1042.0
+wind_solar_A69.xml,2025-01-15T08:00:00Z,Wind Onshore,994.0
+wind_solar_A69.xml,2025-01-15T08:15:00Z,Solar,1022.0
+wind_solar_A69.xml,2025-01-15T08:15:00Z,Wind Offshore,992.0
+wind_solar_A69.xml,2025-01-15T08:15:00Z,Wind Onshore,979.0
+wind_solar_A69.xml,2025-01-15T08:30:00Z,Solar,999.0
+wind_solar_A69.xml,2025-01-15T08:30:00Z,Wind Offshore,1005.0
+wind_solar_A69.xml,2025-01-15T08:30:00Z,Wind Onshore,1007.0
+wind_solar_A69.xml,2025-01-15T08:45:00Z,Solar,975.0
+wind_solar_A69.xml,2025-01-15T08:45:00Z,Wind Offshore,995.0
+wind_solar_A69.xml,2025-01-15T08:45:00Z,Wind Onshore,995.0
+wind_solar_A69.xml,2025-01-15T09:00:00Z,Solar,963.0
+wind_solar_A69.xml,2025-01-15T09:00:00Z,Wind Offshore,989.0
+wind_solar_A69.xml,2025-01-15T09:00:00Z,Wind Onshore,949.0
+wind_solar_A69.xml,2025-01-15T09:15:00Z,Solar,975.0
+wind_solar_A69.xml,2025-01-15T09:15:00Z,Wind Offshore,979.0
+wind_solar_A69.xml,2025-01-15T09:15:00Z,Wind Onshore,958.0
+wind_solar_A69.xml,2025-01-15T09:30:00Z,Solar,959.0
+wind_solar_A69.xml,2025-01-15T09:30:00Z,Wind Offshore,957.0
+wind_solar_A69.xml,2025-01-15T09:30:00Z,Wind Onshore,935.0
+wind_solar_A69.xml,2025-01-15T09:45:00Z,Solar,959.0
+wind_solar_A69.xml,2025-01-15T09:45:00Z,Wind Offshore,940.0
+wind_solar_A69.xml,2025-01-15T09:45:00Z,Wind Onshore,977.0
+wind_solar_A69.xml,2025-01-15T10:00:00Z,Solar,960.0
+wind_solar_A69.xml,2025-01-15T10:00:00Z,Wind Offshore,930.0
+wind_solar_A69.xml,2025-01-15T10:00:00Z,Wind Onshore,943.0
+wind_solar_A69.xml,2025-01-15T10:15:00Z,Solar,908.0
+wind_solar_A69.xml,2025-01-15T10:15:00Z,Wind Offshore,929.0
+wind_solar_A69.xml,2025-01-15T10:15:00Z,Wind Onshore,921.0
+wind_solar_A69.xml,2025-01-15T10:30:00Z,Solar,877.0
+wind_solar_A69.xml,2025-01-15T10:30:00Z,Wind Offshore,925.0
+wind_solar_A69.xml,2025-01-15T10:30:00Z,Wind Onshore,912.0
+wind_solar_A69.xml,2025-01-15T10:45:00Z,Solar,908.0
+wind_solar_A69.xml,2025-01-15T10:45:00Z,Wind Offshore,886.0
+wind_solar_A69.xml,2025-01-15T10:45:00Z,Wind Onshore,919.0
+wind_solar_A69.xml,2025-01-15T11:00:00Z,Solar,901.0
+wind_solar_A69.xml,2025-01-15T11:00:00Z,Wind Offshore,895.0
+wind_solar_A69.xml,2025-01-15T11:00:00Z,Wind Onshore,896.0
+wind_solar_A69.xml,2025-01-15T11:15:00Z,Solar,896.0
+wind_solar_A69.xml,2025-01-15T11:15:00Z,Wind Offshore,890.0
+wind_solar_A69.xml,2025-01-15T11:15:00Z,Wind Onshore,919.0
+wind_solar_A69.xml,2025-01-15T11:30:00Z,Solar,872.0
+wind_solar_A69.xml,2025-01-15T11:30:00Z,Wind Offshore,884.0
+wind_solar_A69.xml,2025-01-15T11:30:00Z,Wind Onshore,866.0
+wind_solar_A69.xml,2025-01-15T11:45:00Z,Solar,869.0
+wind_solar_A69.xml,2025-01-15T11:45:00Z,Wind Offshore,868.0
+wind_solar_A69.xml,2025-01-15T11:45:00Z,Wind Onshore,851.0
+wind_solar_A69.xml,2025-01-15T12:00:00Z,Solar,875.0
+wind_solar_A69.xml,2025-01-15T12:00:00Z,Wind Offshore,880.0
+wind_solar_A69.xml,2025-01-15T12:00:00Z,Wind Onshore,890.0
+wind_solar_A69.xml,2025-01-15T12:15:00Z,Solar,868.0
+wind_solar_A69.xml,2025-01-15T12:15:00Z,Wind Offshore,855.0
+wind_solar_A69.xml,2025-01-15T12:15:00Z,Wind Onshore,849.0
+wind_solar_A69.xml,2025-01-15T12:30:00Z,Solar,872.0
+wind_solar_A69.xml,2025-01-15T12:30:00Z,Wind Offshore,842.0
+wind_solar_A69.xml,2025-01-15T12:30:00Z,Wind Onshore,874.0
+wind_solar_A69.xml,2025-01-15T12:45:00Z,Solar,801.0
+wind_solar_A69.xml,2025-01-15T12:45:00Z,Wind Offshore,818.0
+wind_solar_A69.xml,2025-01-15T12:45:00Z,Wind Onshore,856.0
+wind_solar_A69.xml,2025-01-15T13:00:00Z,Solar,803.0
+wind_solar_A69.xml,2025-01-15T13:00:00Z,Wind Offshore,819.0
+wind_solar_A69.xml,2025-01-15T13:00:00Z,Wind Onshore,808.0
+wind_solar_A69.xml,2025-01-15T13:15:00Z,Solar,851.0
+wind_solar_A69.xml,2025-01-15T13:15:00Z,Wind Offshore,829.0
+wind_solar_A69.xml,2025-01-15T13:15:00Z,Wind Onshore,814.0
+wind_solar_A69.xml,2025-01-15T13:30:00Z,Solar,829.0
+wind_solar_A69.xml,2025-01-15T13:30:00Z,Wind Offshore,820.0
+wind_solar_A69.xml,2025-01-15T13:30:00Z,Wind Onshore,819.0
+wind_solar_A69.xml,2025-01-15T13:45:00Z,Solar,825.0
+wind_solar_A69.xml,2025-01-15T13:45:00Z,Wind Offshore,774.0
+wind_solar_A69.xml,2025-01-15T13:45:00Z,Wind Onshore,807.0
+wind_solar_A69.xml,2025-01-15T14:00:00Z,Solar,799.0
+wind_solar_A69.xml,2025-01-15T14:00:00Z,Wind Offshore,821.0
+wind_solar_A69.xml,2025-01-15T14:00:00Z,Wind Onshore,810.0
+wind_solar_A69.xml,2025-01-15T14:15:00Z,Solar,790.0
+wind_solar_A69.xml,2025-01-15T14:15:00Z,Wind Offshore,786.0
+wind_solar_A69.xml,2025-01-15T14:15:00Z,Wind Onshore,787.0
+wind_solar_A69.xml,2025-01-15T14:30:00Z,Solar,796.0
+wind_solar_A69.xml,2025-01-15T14:30:00Z,Wind Offshore,777.0
+wind_solar_A69.xml,2025-01-15T14:30:00Z,Wind Onshore,791.0
+wind_solar_A69.xml,2025-01-15T14:45:00Z,Solar,771.0
+wind_solar_A69.xml,2025-01-15T14:45:00Z,Wind Offshore,808.0
+wind_solar_A69.xml,2025-01-15T14:45:00Z,Wind Onshore,806.0
+wind_solar_A69.xml,2025-01-15T15:00:00Z,Solar,756.0
+wind_solar_A69.xml,2025-01-15T15:00:00Z,Wind Offshore,804.0
+wind_solar_A69.xml,2025-01-15T15:00:00Z,Wind Onshore,807.0
+wind_solar_A69.xml,2025-01-15T15:15:00Z,Solar,759.0
+wind_solar_A69.xml,2025-01-15T15:15:00Z,Wind Offshore,766.0
+wind_solar_A69.xml,2025-01-15T15:15:00Z,Wind Onshore,765.0
+wind_solar_A69.xml,2025-01-15T15:30:00Z,Solar,777.0
+wind_solar_A69.xml,2025-01-15T15:30:00Z,Wind Offshore,769.0
+wind_solar_A69.xml,2025-01-15T15:30:00Z,Wind Onshore,771.0
+wind_solar_A69.xml,2025-01-15T15:45:00Z,Solar,784.0
+wind_solar_A69.xml,2025-01-15T15:45:00Z,Wind Offshore,750.0
+wind_solar_A69.xml,2025-01-15T15:45:00Z,Wind Onshore,770.0
+wind_solar_A69.xml,2025-01-15T16:00:00Z,Solar,799.0
+wind_solar_A69.xml,2025-01-15T16:00:00Z,Wind Offshore,784.0
+wind_solar_A69.xml,2025-01-15T16:00:00Z,Wind Onshore,745.0
+wind_solar_A69.xml,2025-01-15T16:15:00Z,Solar,774.0
+wind_solar_A69.xml,2025-01-15T16:15:00Z,Wind Offshore,784.0
+wind_solar_A69.xml,2025-01-15T16:15:00Z,Wind Onshore,784.0
+wind_solar_A69.xml,2025-01-15T16:30:00Z,Solar,775.0
+wind_solar_A69.xml,2025-01-15T16:30:00Z,Wind Offshore,758.0
+wind_solar_A69.xml,2025-01-15T16:30:00Z,Wind Onshore,776.0
+wind_solar_A69.xml,2025-01-15T16:45:00Z,Solar,796.0
+wind_solar_A69.xml,2025-01-15T16:45:00Z,Wind Offshore,790.0
+wind_solar_A69.xml,2025-01-15T16:45:00Z,Wind Onshore,775.0
+wind_solar_A69.xml,2025-01-15T17:00:00Z,Solar,751.0
+wind_solar_A69.xml,2025-01-15T17:00:00Z,Wind Offshore,782.0
+wind_solar_A69.xml,2025-01-15T17:00:00Z,Wind Onshore,763.0
+wind_solar_A69.xml,2025-01-15T17:15:00Z,Solar,748.0
+wind_solar_A69.xml,2025-01-15T17:15:00Z,Wind Offshore,763.0
+wind_solar_A69.xml,2025-01-15T17:15:00Z,Wind Onshore,781.0
+wind_solar_A69.xml,2025-01-15T17:30:00Z,Solar,756.0
+wind_solar_A69.xml,2025-01-15T17:30:00Z,Wind Offshore,779.0
+wind_solar_A69.xml,2025-01-15T17:30:00Z,Wind Onshore,783.0
+wind_solar_A69.xml,2025-01-15T17:45:00Z,Solar,766.0
+wind_solar_A69.xml,2025-01-15T17:45:00Z,Wind Offshore,738.0
+wind_solar_A69.xml,2025-01-15T17:45:00Z,Wind Onshore,788.0
+wind_solar_A69.xml,2025-01-15T18:00:00Z,Solar,806.0
+wind_solar_A69.xml,2025-01-15T18:00:00Z,Wind Offshore,765.0
+wind_solar_A69.xml,2025-01-15T18:00:00Z,Wind Onshore,767.0
+wind_solar_A69.xml,2025-01-15T18:15:00Z,Solar,766.0
+wind_solar_A69.xml,2025-01-15T18:15:00Z,Wind Offshore,777.0
+wind_solar_A69.xml,2025-01-15T18:15:00Z,Wind Onshore,778.0
+wind_solar_A69.xml,2025-01-15T18:30:00Z,Solar,799.0
+wind_solar_A69.xml,2025-01-15T18:30:00Z,Wind Offshore,775.0
+wind_solar_A69.xml,2025-01-15T18:30:00Z,Wind Onshore,768.0
+wind_solar_A69.xml,2025-01-15T18:45:00Z,Solar,770.0
+wind_solar_A69.xml,2025-01-15T18:45:00Z,Wind Offshore,816.0
+wind_solar_A69.xml,2025-01-15T18:45:00Z,Wind Onshore,773.0
+wind_solar_A69.xml,2025-01-15T19:00:00Z,Solar,792.0
+wind_solar_A69.xml,2025-01-15T19:00:00Z,Wind Offshore,789.0
+wind_solar_A69.xml,2025-01-15T19:00:00Z,Wind Onshore,801.0
+wind_solar_A69.xml,2025-01-15T19:15:00Z,Solar,800.0
+wind_solar_A69.xml,2025-01-15T19:15:00Z,Wind Offshore,794.0
+wind_solar_A69.xml,2025-01-15T19:15:00Z,Wind Onshore,789.0
+wind_solar_A69.xml,2025-01-15T19:30:00Z,Solar,802.0
+wind_solar_A69.xml,2025-01-15T19:30:00Z,Wind Offshore,769.0
+wind_solar_A69.xml,2025-01-15T19:30:00Z,Wind Onshore,790.0
+wind_solar_A69.xml,2025-01-15T19:45:00Z,Solar,812.0
+wind_solar_A69.xml,2025-01-15T19:45:00Z,Wind Offshore,795.0
+wind_solar_A69.xml,2025-01-15T19:45:00Z,Wind Onshore,809.0
+wind_solar_A69.xml,2025-01-15T20:00:00Z,Solar,792.0
+wind_solar_A69.xml,2025-01-15T20:00:00Z,Wind Offshore,790.0
+wind_solar_A69.xml,2025-01-15T20:00:00Z,Wind Onshore,817.0
+wind_solar_A69.xml,2025-01-15T20:15:00Z,Solar,837.0
+wind_solar_A69.xml,2025-01-15T20:15:00Z,Wind Offshore,853.0
+wind_solar_A69.xml,2025-01-15T20:15:00Z,Wind Onshore,797.0
+wind_solar_A69.xml,2025-01-15T20:30:00Z,Solar,835.0
+wind_solar_A69.xml,2025-01-15T20:30:00Z,Wind Offshore,810.0
+wind_solar_A69.xml,2025-01-15T20:30:00Z,Wind Onshore,806.0
+wind_solar_A69.xml,2025-01-15T20:45:00Z,Solar,812.0
+wind_solar_A69.xml,2025-01-15T20:45:00Z,Wind Offshore,827.0
+wind_solar_A69.xml,2025-01-15T20:45:00Z,Wind Onshore,838.0
+wind_solar_A69.xml,2025-01-15T21:00:00Z,Solar,842.0
+wind_solar_A69.xml,2025-01-15T21:00:00Z,Wind Offshore,854.0
+wind_solar_A69.xml,2025-01-15T21:00:00Z,Wind Onshore,842.0
+wind_solar_A69.xml,2025-01-15T21:15:00Z,Solar,821.0
+wind_solar_A69.xml,2025-01-15T21:15:00Z,Wind Offshore,852.0
+wind_solar_A69.xml,2025-01-15T21:15:00Z,Wind Onshore,837.0
+wind_solar_A69.xml,2025-01-15T21:30:00Z,Solar,850.0
+wind_solar_A69.xml,2025-01-15T21:30:00Z,Wind Offshore,823.0
+wind_solar_A69.xml,2025-01-15T21:30:00Z,Wind Onshore,870.0
+wind_solar_A69.xml,2025-01-15T21:45:00Z,Solar,836.0
+wind_solar_A69.xml,2025-01-15T21:45:00Z,Wind Offshore,868.0
+wind_solar_A69.xml,2025-01-15T21:45:00Z,Wind Onshore,855.0
+wind_solar_A69.xml,2025-01-15T22:00:00Z,Solar,878.0
+wind_solar_A69.xml,2025-01-15T22:00:00Z,Wind Offshore,878.0
+wind_solar_A69.xml,2025-01-15T22:00:00Z,Wind Onshore,830.0
+wind_solar_A69.xml,2025-01-15T22:15:00Z,Solar,927.0
+wind_solar_A69.xml,2025-01-15T22:15:00Z,Wind Offshore,870.0
+wind_solar_A69.xml,2025-01-15T22:15:00Z,Wind Onshore,859.0
+wind_solar_A69.xml,2025-01-15T22:30:00Z,Solar,909.0
+wind_solar_A69.xml,2025-01-15T22:30:00Z,Wind Offshore,891.0
+wind_solar_A69.xml,2025-01-15T22:30:00Z,Wind Onshore,856.0
+wind_solar_A69.xml,2025-01-15T22:45:00Z,Solar,904.0
+wind_solar_A69.xml,2025-01-15T22:45:00Z,Wind Offshore,893.0
+wind_solar_A69.xml,2025-01-15T22:45:00Z,Wind Onshore,912.0

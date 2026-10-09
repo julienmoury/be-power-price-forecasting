@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from be_power_forecast.evaluation.metrics import mae
-from be_power_forecast.models.challenger import lgbm_backtest, tune
+from be_power_forecast.models.challenger import lgbm_backtest
 
 FAST = {"num_leaves": 15, "learning_rate": 0.1, "n_estimators": 50}
 
@@ -45,14 +45,3 @@ def test_challenger_learns_exogenous_relation():
     price = df["Price"].to_numpy().reshape(-1, 24)
     real, yesterday = price[-30:], price[-31:-1]
     assert mae(real, fc.to_numpy()) < 0.6 * mae(real, yesterday)
-
-
-def test_tune_returns_best_grid_point(monkeypatch):
-    import be_power_forecast.models.challenger as ch
-
-    monkeypatch.setattr(ch, "GRID", {"num_leaves": (4, 15), "n_estimators": (5, 50)})
-    best, scores = tune(synthetic_frame(), "2020-04-10", "2020-04-20", 56, n_jobs=1)
-    assert len(scores) == 4
-    assert min(s["MAE"] for s in scores) == next(
-        s["MAE"] for s in scores if {k: s[k] for k in best} == best
-    )

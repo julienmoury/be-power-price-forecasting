@@ -14,8 +14,7 @@ from pathlib import Path
 
 import pandas as pd
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-RAW_DIR = REPO_ROOT / "data" / "raw"
+from be_power_forecast.config import PHASE_A_TEST, RAW_DIR
 
 ZENODO_URL = "https://zenodo.org/records/4624805/files/{market}.csv"
 
@@ -132,5 +131,4 @@ def train_test_split(df: pd.DataFrame, begin_test: str, end_test: str):
 
 
 # Test period of Lago et al. (2021) for BE: the last 2 x 364 days of the dataset.
-BE_TEST_BEGIN = "2015-01-04"
-BE_TEST_END = "2016-12-31"
+BE_TEST_BEGIN, BE_TEST_END = PHASE_A_TEST

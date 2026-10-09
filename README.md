@@ -22,6 +22,10 @@ All numbers below are produced by `scripts/make_report.py` from the forecasts in
   no gaps). The two exogenous inputs are the **day-ahead load and generation forecasts
   for France** (mean load ≈ 54 GW, i.e. French, not Belgian, magnitudes), reflecting the
   strong BE–FR market coupling.
+  **Licence on Zenodo: "Other (Open)"** (no named licence; see Limitations).
+  CI reads this full file: it is the benchmark itself, open and small (1.9 MB), and the
+  long-window reproduction test (1,456 calibration days) needs it. All other tests use
+  small fixtures.
 - **Test period**: 2015-01-04 to 2016-12-31 (728 days), the period of the paper.
 - Data access is behind a `PriceSource` interface
   ([`data/sources.py`](src/be_power_forecast/data/sources.py)); an ENTSO-E source (phase B,
@@ -151,6 +155,8 @@ products (1 October 2025) are outside this sample.
   15-minute products. Phase B (ENTSO-E) is prepared but not run.
 - The published LEAR forecasts of the paper are not reproduced day by day by the public
   code (see above); the comparison is at aggregate level.
+- The Zenodo record of the benchmark dataset states its licence only as "Other (Open)",
+  without naming a licence; re-use terms beyond research use are therefore imprecise.
 - Point forecasts only; no probabilistic evaluation.
 - MAE-based "EUR per MW-year" is an error measure, not the value of the forecast for a
   given trading strategy.

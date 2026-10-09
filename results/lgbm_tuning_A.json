@@ -1,0 +1,79 @@
+{
+ "phase": "A",
+ "tuning_period": [
+  "2014-01-05",
+  "2015-01-03"
+ ],
+ "calibration_window": 1092,
+ "retrain_every_days": 7,
+ "grid": {
+  "num_leaves": [
+   15,
+   31
+  ],
+  "learning_rate": [
+   0.03,
+   0.1
+  ],
+  "n_estimators": [
+   300,
+   600
+  ]
+ },
+ "best": {
+  "num_leaves": 31,
+  "learning_rate": 0.03,
+  "n_estimators": 300
+ },
+ "scores": [
+  {
+   "num_leaves": 15,
+   "learning_rate": 0.03,
+   "n_estimators": 300,
+   "MAE": 5.302708119929585
+  },
+  {
+   "num_leaves": 15,
+   "learning_rate": 0.03,
+   "n_estimators": 600,
+   "MAE": 5.355215610304159
+  },
+  {
+   "num_leaves": 15,
+   "learning_rate": 0.1,
+   "n_estimators": 300,
+   "MAE": 5.422198982404948
+  },
+  {
+   "num_leaves": 15,
+   "learning_rate": 0.1,
+   "n_estimators": 600,
+   "MAE": 5.432915360302092
+  },
+  {
+   "num_leaves": 31,
+   "learning_rate": 0.03,
+   "n_estimators": 300,
+   "MAE": 5.275327213153338
+  },
+  {
+   "num_leaves": 31,
+   "learning_rate": 0.03,
+   "n_estimators": 600,
+   "MAE": 5.29803832069491
+  },
+  {
+   "num_leaves": 31,
+   "learning_rate": 0.1,
+   "n_estimators": 300,
+   "MAE": 5.374489100737003
+  },
+  {
+   "num_leaves": 31,
+   "learning_rate": 0.1,
+   "n_estimators": 600,
+   "MAE": 5.377061560044213
+  }
+ ],
+ "seconds": 15225
+}

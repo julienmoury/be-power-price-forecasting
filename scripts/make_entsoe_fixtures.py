@@ -73,23 +73,21 @@ def price_doc(days, resolution, curve, skip=()):
     )
 
 
-def gl_doc(doc_type, process, days, resolution, area, domain_tag, level, psr_types=(None,)):
+def gl_doc(doc_type, process, days, resolution, area, domain_tag, level):
     series = []
-    for psr in psr_types:
-        for day in days:
-            start, end = delivery_day(day)
-            n = n_steps(start, end, resolution)
-            values = level * (1 + 0.15 * np.sin(np.arange(n) * 2 * np.pi / n))
-            values = np.round(values + RNG.normal(0, level * 0.02, n))
-            psr_xml = f"<MktPSRType><psrType>{psr}</psrType></MktPSRType>" if psr else ""
-            series.append(
-                f"<TimeSeries><mRID>{len(series) + 1}</mRID><businessType>A01</businessType>"
-                "<objectAggregation>A01</objectAggregation>"
-                f'<{domain_tag} codingScheme="A01">{area}</{domain_tag}>'
-                "<quantity_Measure_Unit.name>MAW</quantity_Measure_Unit.name>"
-                f"<curveType>A01</curveType>{psr_xml}"
-                f"{period(start, end, resolution, values, 'quantity')}</TimeSeries>"
-            )
+    for day in days:
+        start, end = delivery_day(day)
+        n = n_steps(start, end, resolution)
+        values = level * (1 + 0.15 * np.sin(np.arange(n) * 2 * np.pi / n))
+        values = np.round(values + RNG.normal(0, level * 0.02, n))
+        series.append(
+            f"<TimeSeries><mRID>{len(series) + 1}</mRID><businessType>A01</businessType>"
+            "<objectAggregation>A01</objectAggregation>"
+            f'<{domain_tag} codingScheme="A01">{area}</{domain_tag}>'
+            "<quantity_Measure_Unit.name>MAW</quantity_Measure_Unit.name>"
+            "<curveType>A01</curveType>"
+            f"{period(start, end, resolution, values, 'quantity')}</TimeSeries>"
+        )
     return (
         f'<?xml version="1.0" encoding="utf-8"?>\n<GL_MarketDocument xmlns="{GL_NS}">'
         f"<mRID>synthetic</mRID><type>{doc_type}</type><process.processType>{process}"
@@ -113,16 +111,6 @@ def main() -> None:
         ),
         "generation_A71.xml": gl_doc(
             "A71", "A01", two_days, "PT60M", FR, "inBiddingZone_Domain.mRID", 60000
-        ),
-        "wind_solar_A69.xml": gl_doc(
-            "A69",
-            "A01",
-            two_days,
-            "PT15M",
-            BE,
-            "inBiddingZone_Domain.mRID",
-            900,
-            psr_types=("B16", "B18", "B19"),
         ),
     }
     for name, text in files.items():

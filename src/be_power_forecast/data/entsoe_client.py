@@ -1,7 +1,7 @@
 # Adapted from EnergieID/entsoe-py by EnergieID cvba-so and contributors (MIT) — changes:
-# kept only the request parameters of documents A44, A65, A71 and A69 and the area codes
+# kept only the request parameters of documents A44, A65 and A71 and the area codes
 # of BE and FR; one simple retry with back-off instead of the decorators; requests split
-# in calendar years (A44) or calendar months (A65, A71, A69, as entsoe-py's
+# in calendar years (A44) or calendar months (A65, A71, as entsoe-py's
 # ``month_limited`` at commit 0cae400); token read from ENTSOE_API_KEY only.
 """Minimal client of the ENTSO-E Transparency Platform RESTful API."""
 
@@ -43,10 +43,6 @@ DOCUMENTS = {
         lambda code: {"documentType": "A71", "processType": "A01", "in_Domain": code},
         "MS",
     ),
-    "wind_solar": (
-        lambda code: {"documentType": "A69", "processType": "A01", "in_Domain": code},
-        "MS",
-    ),
 }
 
 
@@ -62,7 +58,7 @@ def chunks(start: pd.Timestamp, end: pd.Timestamp, freq: str) -> list[tuple]:
 
 
 class EntsoeClient:
-    """Download one series (``prices``, ``load``, ``generation``, ``wind_solar``) per call."""
+    """Download one series (``prices``, ``load``, ``generation``) per call."""
 
     def __init__(self, api_key: str | None = None, session=None, retry_delay: float = 5.0):
         self.api_key = api_key or os.environ.get("ENTSOE_API_KEY")
@@ -97,7 +93,6 @@ class EntsoeClient:
         """Series ``kind`` for ``area`` on ``[start, end)``, UTC index, native resolution.
 
         Naive ``start``/``end`` are read as Europe/Brussels times.
-        ``wind_solar`` is the sum of the solar, onshore and offshore wind forecasts.
         Prices are hourly before the 15-minute go-live and 15-minute after.
         """
         build, freq = DOCUMENTS[kind]
@@ -129,9 +124,4 @@ def _parse(kind: str, text: str) -> pd.Series:
         return pd.concat([hourly, s[s.index >= QUARTER_HOUR_GO_LIVE]])
     if kind == "load":
         return parse_loads(text)
-    frame = parse_generation(text)
-    if kind == "generation":
-        return frame["Actual Aggregated"]
-    # A timestamp where one production type is missing stays missing (no partial sums).
-    cols = [c for c in frame.columns if "consumption" not in c]
-    return frame[cols].sum(axis=1, min_count=len(cols))
+    return parse_generation(text)["Actual Aggregated"]

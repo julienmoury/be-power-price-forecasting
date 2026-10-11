@@ -46,26 +46,35 @@ def test_quarter_hour_prices_are_averaged_to_hours():
     assert report["dropped_days"] == []
 
 
-def test_missing_quarter_hour_or_hour_drops_the_day():
+def test_isolated_missing_hour_is_interpolated():
     prices = parse_prices(read("prices_A44_hourly.xml"))["60min"]
-    days, report = to_local_days(prices.drop(prices.index[30]))  # an hour of 15 Jan
-    assert report["dropped_days"] == ["2025-01-15"]
+    days, report = to_local_days(prices.drop(prices.index[30]))  # 06:00 local on 15 Jan
+    assert report["dropped_days"] == [] and report["interpolated_hours"] == ["2025-01-15 06:00"]
+    assert days.loc["2025-01-15", 6] == (prices.iloc[29] + prices.iloc[31]) / 2
+
+
+def test_longer_gap_drops_the_day():
+    prices = parse_prices(read("prices_A44_hourly.xml"))["60min"]
+    days, report = to_local_days(prices.drop(prices.index[30:32]))  # two hours of 15 Jan
+    assert report["dropped_days"] == ["2025-01-15"] and report["interpolated_hours"] == []
     assert days.loc["2025-01-15"].isna().all() and not days.loc["2025-01-14"].isna().any()
     quarter = parse_prices(read("prices_A44_quarter_hour.xml"))["15min"]
     assert hourly_mean(quarter.drop(quarter.index[9])).isna().sum() == 1
 
 
 def test_standard_frame_from_mixed_resolutions():
+    quarter = pd.date_range("2025-01-13 23:00", periods=4 * 48, freq="15min", tz="UTC")
     series = {
         "Price": parse_prices(read("prices_A44_hourly.xml"))["60min"],
         "Generation forecast FR": parse_generation(read("generation_A71.xml"))["Actual Aggregated"],
-        "Wind and solar forecast BE": parse_generation(read("wind_solar_A69.xml")).sum(axis=1),
+        "Load forecast FR": pd.Series(np.arange(len(quarter), dtype=float), index=quarter),
     }
     frame, report = standard_frame(series)
     validate_standard_frame(frame)
     assert frame.index[0] == pd.Timestamp("2025-01-14 00:00") and len(frame) == 48
     assert frame.iloc[0, 0] == series["Price"].iloc[0]  # 00:00 local = 23:00 UTC the day before
     assert report["dropped_days_any_series"] == []
+    assert frame["Load forecast FR"].iloc[0] == 1.5  # mean of the first four quarter-hours
 
 
 def test_day_missing_in_one_series_is_dropped_in_all():
@@ -73,7 +82,7 @@ def test_day_missing_in_one_series_is_dropped_in_all():
         np.arange(24 * 5, dtype=float),
         index=pd.date_range("2025-01-01", periods=24 * 5, freq="h", tz="Europe/Brussels"),
     ).tz_convert("UTC")
-    exog = price.drop(price.index[24 * 2 + 5])
+    exog = price.drop(price.index[24 * 2 + 5 : 24 * 2 + 8])
     frame, report = standard_frame({"Price": price, "Load forecast FR": exog})
     assert report["dropped_days_any_series"] == ["2025-01-03"]
     assert frame.loc["2025-01-03"].isna().all().all() and len(frame) == 24 * 5

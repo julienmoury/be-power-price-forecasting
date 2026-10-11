@@ -15,7 +15,7 @@ import pandas as pd
 
 from be_power_forecast.config import (
     CACHE_DIR,
-    EXOGENOUS_SETS,
+    EXOGENOUS,
     PHASE_A_TEST,
     PHASE_B_DOWNLOAD,
     RAW_DIR,
@@ -89,31 +89,28 @@ class EpftoolboxZenodoSource(PriceSource):
 class EntsoeSource(PriceSource):
     """ENTSO-E Transparency Platform source (phase B, needs ``ENTSOE_API_KEY``).
 
-    Belgian day-ahead price plus the exogenous set ``"FR"`` (French load and generation
-    forecasts, as in the benchmark), ``"BE"`` (Belgian load and wind + solar forecasts) or
-    ``"FR+BE"``. Days are local Brussels delivery days; 15-minute values are averaged to
-    hours and DST days follow the rules of ``data/calendar.py``. Dropped days are rows of
-    NaN. Raw downloads are cached as parquet in ``cache_dir`` (git-ignored).
+    Belgian day-ahead price plus the French day-ahead generation and load forecasts, the
+    inputs of the benchmark (Lago et al., 2021). Days are local Brussels delivery days;
+    15-minute values are averaged to hours and DST days, isolated missing hours and dropped
+    days follow the rules of ``data/calendar.py``. Raw downloads are cached as parquet in
+    ``cache_dir`` (git-ignored).
     """
 
     SERIES = {
         "Price": ("prices", "BE"),
         "Generation forecast FR": ("generation", "FR"),
         "Load forecast FR": ("load", "FR"),
-        "Wind and solar forecast BE": ("wind_solar", "BE"),
-        "Load forecast BE": ("load", "BE"),
     }
 
     def __init__(
         self,
         start: str = PHASE_B_DOWNLOAD[0],
         end: str = PHASE_B_DOWNLOAD[1],
-        exogenous: str = "FR",
         cache_dir: Path | str = CACHE_DIR,
         client=None,
     ):
         self.start, self.end = start, end
-        self.columns = ["Price", *EXOGENOUS_SETS[exogenous]]
+        self.columns = ["Price", *EXOGENOUS]
         self.cache_dir = Path(cache_dir)
         self.client = client
         self.report: dict = {}

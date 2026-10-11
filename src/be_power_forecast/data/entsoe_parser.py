@@ -1,7 +1,7 @@
 # Adapted from EnergieID/entsoe-py by EnergieID cvba-so and contributors (MIT) — changes:
 # xml.etree.ElementTree instead of BeautifulSoup (namespace-agnostic tag matching); kept
-# only the parsers of day-ahead prices (A44), load forecasts (A65), generation forecasts
-# (A71) and wind and solar forecasts (A69); PT15M/PT30M/PT60M resolutions only; series
+# only the parsers of day-ahead prices (A44), load forecasts (A65) and generation
+# forecasts (A71); PT15M/PT30M/PT60M resolutions only; series
 # returned as UTC-indexed float pandas objects; no netting options or per-plant parsing.
 """Parse ENTSO-E Transparency Platform XML documents into UTC-indexed series."""
 
@@ -12,8 +12,6 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 
 RESOLUTIONS = {"PT15M": "15min", "PT30M": "30min", "PT60M": "60min"}
-# Production types of the A69 wind and solar forecast (subset of entsoe-py's mapping).
-PSR_TYPES = {"B16": "Solar", "B18": "Wind Offshore", "B19": "Wind Onshore"}
 
 
 _EMPTY = pd.Series(dtype=float, index=pd.DatetimeIndex([], tz="UTC"))
@@ -103,17 +101,16 @@ def parse_loads(xml_text: str) -> pd.Series:
 
 
 def parse_generation(xml_text: str) -> pd.DataFrame:
-    """Generation forecasts (A71) or wind and solar forecasts (A69), MW.
+    """Day-ahead generation forecasts (A71), MW.
 
-    One column per production type (A69) or ``Actual Aggregated`` (A71, no production
-    type); series measured as consumption (``outBiddingZone_Domain``) get the suffix
+    One column per production type code when the document has one, else ``Actual
+    Aggregated``; series measured as consumption (``outBiddingZone_Domain``) get the suffix
     `` (consumption)``. Duplicated timestamps keep the first value, as in entsoe-py.
     """
     columns: dict[str, list[pd.Series]] = {}
     for ts in _extract_timeseries(xml_text):
         psr = _find(ts, "psrType")
-        name = PSR_TYPES.get(psr.text.strip(), psr.text.strip()) if psr is not None else None
-        name = name or "Actual Aggregated"
+        name = psr.text.strip() if psr is not None else "Actual Aggregated"
         if _find(ts, "outBiddingZone_Domain.mRID") is not None:
             name += " (consumption)"
         columns.setdefault(name, []).append(_merge(_parse_timeseries_generic(ts)))

@@ -181,37 +181,16 @@ def main() -> None:
         "",
     ]
 
-    # ---- 2b. Challengers: LightGBM (ours) and the published DNN ensemble -------------------
-    challengers = {"DNN ens. (published)": pub_daily["DNN Ensemble"]}
-    lgbm = load("lgbm_cw1456")
-    if lgbm is None:
-        missing.append("lgbm_cw1456")
-    else:
-        challengers["LightGBM 1456"] = lgbm
-    chal = pd.DataFrame({k: scores(real, v) for k, v in {**models, **challengers}.items()}).T
-    out["challengers"] = {
-        "accuracy": chal.to_dict(orient="index"),
-        "dm_p_challenger_better_than_lear_ens": {
-            k: float(dm_test(real, ens, v)[1]) for k, v in challengers.items()
-        },
-        "dm_p_lear_ens_better_than_challenger": {
-            k: float(dm_test(real, v, ens)[1]) for k, v in challengers.items()
-        },
-        # Phase A only: the published DNN forecasts cover 2015-2016; the DNN is not retrained.
-        "dm_p_dnn_published_better_than_lear_ens": float(
-            dm_test(real, ens, pub_daily["DNN Ensemble"])[1]
-        ),
+    # Published results of the paper, quoted for reference only (not models of this project:
+    # the DNN is neither retrained nor tested here).
+    out["published_reference"] = {
+        "source": "Lago et al. (2021), forecasts published in jeslago/epftoolbox",
+        "MAE": {k: mae(real, pub_daily[k]) for k in ("LEAR Ensemble", "DNN Ensemble")},
     }
-    tuning_path = ROOT / "results" / "lgbm_tuning_A.json"
-    if tuning_path.exists():
-        out["challengers"]["lgbm_tuning"] = json.loads(tuning_path.read_text())
-    md += ["## Challengers (same 728 test days)", fmt_table(chal, 3), ""]
-    md += ["One-sided multivariate DM p-values", "```",
-           json.dumps({k: v for k, v in out["challengers"].items() if k.startswith("dm_")},
-                      indent=1),
-           "```", ""]  # fmt: skip
+    md += ["## Published results quoted for reference (MAE, not recomputed models)", "```",
+           json.dumps(out["published_reference"], indent=1), "```", ""]  # fmt: skip
 
-    # ---- 2c. MAE-gap attribution by hour, season and price regime ---------------------------
+    # ---- 2b. MAE-gap attribution by hour, season and price regime ---------------------------
     history = df["Price"].loc[: pd.Timestamp(BE_TEST_END) + pd.Timedelta(hours=23)]
     partitions = {
         "hour": hour_segments(real.index),
@@ -219,9 +198,6 @@ def main() -> None:
         "regime": regime_segments(real, history),
     }
     pairs = {"LEAR ens. vs naive": (ens, naive)}
-    if lgbm is not None:
-        pairs["LightGBM vs LEAR ens."] = (lgbm, ens)
-    pairs["DNN ens. (published) vs LEAR ens."] = (pub_daily["DNN Ensemble"], ens)
     out["attribution"] = {}
     for pair, (cand, ref) in pairs.items():
         out["attribution"][pair] = {}

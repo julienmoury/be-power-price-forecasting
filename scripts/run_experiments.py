@@ -1,4 +1,4 @@
-"""Run every backtest of the README (LEAR, LightGBM) and save forecasts to results/forecasts/.
+"""Run every LEAR backtest used in the README and save forecasts to results/forecasts/.
 
 Each experiment is skipped if its CSV already exists, so the script can be resumed.
 Usage: python scripts/run_experiments.py [--only NAME ...] [--n-jobs N]
@@ -7,13 +7,11 @@ Usage: python scripts/run_experiments.py [--only NAME ...] [--n-jobs N]
 from __future__ import annotations
 
 import argparse
-import json
 import time
 from pathlib import Path
 
 from be_power_forecast.backtest import lear_backtest
 from be_power_forecast.data.sources import BE_TEST_BEGIN, BE_TEST_END, EpftoolboxZenodoSource
-from be_power_forecast.models.challenger import lgbm_backtest
 from be_power_forecast.models.lear import DEFAULT_SPEC, FeatureSpec
 
 OUT = Path(__file__).resolve().parents[1] / "results" / "forecasts"
@@ -44,8 +42,6 @@ def experiments():
         yield f"lear_cw{cw}", cw, [], DEFAULT_SPEC
     for cw in (56, 84):
         yield f"lear_exoglags12_cw{cw}", cw, [], LAGS_D2
-    # LightGBM challenger: longest LEAR window, retrained weekly, tuned hyperparameters.
-    yield "lgbm_cw1456", 1456, [], DEFAULT_SPEC
 
 
 def main() -> None:
@@ -61,22 +57,9 @@ def main() -> None:
         if path.exists() or (args.only and name not in args.only):
             continue
         start = time.time()
-        if name.startswith("lgbm"):
-            # Hyperparameters frozen beforehand by scripts/tune_lgbm.py --phase A.
-            tuning = json.loads((OUT.parent / "lgbm_tuning_A.json").read_text())
-            fc = lgbm_backtest(
-                df.drop(columns=drop),
-                BE_TEST_BEGIN,
-                BE_TEST_END,
-                tuning["best"],
-                calibration_window=cw,
-                spec=spec,
-                n_jobs=args.n_jobs,
-            )
-        else:
-            fc = lear_backtest(
-                df.drop(columns=drop), BE_TEST_BEGIN, BE_TEST_END, cw, spec, n_jobs=args.n_jobs
-            )
+        fc = lear_backtest(
+            df.drop(columns=drop), BE_TEST_BEGIN, BE_TEST_END, cw, spec, n_jobs=args.n_jobs
+        )
         fc.to_csv(path, float_format="%.6f")
         print(f"{name}: {len(fc)} days in {time.time() - start:.0f}s", flush=True)
 

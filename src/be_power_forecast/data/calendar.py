@@ -7,8 +7,13 @@ A market day is a local delivery day (00:00-24:00 Europe/Brussels). Rules:
 * 23-hour day (last Sunday of March): the missing 02:00 is linearly interpolated from
   01:00 and 03:00;
 * 25-hour day (last Sunday of October): the two occurrences of 02:00 are averaged;
-* a day with any other gap is dropped (kept as a row of NaN so that day lags stay aligned)
-  and reported.
+* an isolated missing hour (both neighbouring hours present) is linearly interpolated, the
+  same rule as for the DST hour;
+* a day with any longer gap is dropped, never filled (kept as a row of NaN so that day lags
+  stay aligned), and reported.
+
+The DST rule is the usual convention of the electricity price forecasting literature
+(Weron, 2014); prices and forecasts are never invented beyond a single hour.
 """
 
 from __future__ import annotations
@@ -45,9 +50,13 @@ def to_local_days(series: pd.Series) -> tuple[pd.DataFrame, dict]:
     """``(n_days, 24)`` frame of local delivery days from a UTC-indexed series.
 
     Every calendar day between the first and the last day is present; dropped days are rows
-    of NaN. The report counts the DST days handled and lists the dropped days.
+    of NaN. The report counts the DST days handled and lists the interpolated hours and the
+    dropped days.
     """
-    hourly = hourly_mean(series.sort_index()).tz_convert(TZ)
+    hourly = hourly_mean(series.sort_index())
+    before, after = hourly.shift(1), hourly.shift(-1)
+    isolated = hourly.isna() & before.notna() & after.notna()
+    hourly = hourly.where(~isolated, (before + after) / 2).tz_convert(TZ)
     day = hourly.index.tz_localize(None).normalize()
     present = hourly.notna().groupby(day).sum()
     days = pd.date_range(day.min(), day.max(), freq="D")
@@ -63,6 +72,7 @@ def to_local_days(series: pd.Series) -> tuple[pd.DataFrame, dict]:
         "days": len(days),
         "dst_23h_days": int(len(spring)),
         "dst_25h_days": int(((expected == 25) & complete).sum()),
+        "interpolated_hours": [t.strftime("%Y-%m-%d %H:%M") for t in hourly.index[isolated]],
         "dropped_days": [d.strftime("%Y-%m-%d") for d in days[~complete.to_numpy()]],
     }
     return frame, report

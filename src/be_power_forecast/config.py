@@ -34,21 +34,7 @@ SUB_PERIODS = {
 }
 QUARTER_HOUR_START = "2025-10-01"
 
-# Phase B exogenous sets; "FR" is the reference set, identical in nature to BE.csv.
-EXOGENOUS_SETS = {
-    "FR": ["Generation forecast FR", "Load forecast FR"],
-    "BE": ["Wind and solar forecast BE", "Load forecast BE"],
-    "FR+BE": [
-        "Generation forecast FR",
-        "Load forecast FR",
-        "Wind and solar forecast BE",
-        "Load forecast BE",
-    ],
-}
+# Exogenous inputs, as in Lago et al. (2021) for Belgium: French day-ahead forecasts.
+EXOGENOUS = ["Generation forecast FR", "Load forecast FR"]
 
 PAPER_WINDOWS = (56, 84, 1092, 1456)
-
-# LightGBM grid search: the 364 days before each test period. Only 1092 days of history
-# exist before either period, so the search uses a 1092-day window (the test uses 1456).
-TUNING_PERIODS = {"A": ("2014-01-05", "2015-01-03"), "B": ("2018-01-01", "2018-12-30")}
-TUNING_WINDOW = 1092

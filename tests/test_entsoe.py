@@ -88,26 +88,16 @@ def test_client_builds_entsoe_requests_without_network():
                         "outBiddingZone_Domain": "10YFR-RTE------C"}),
         ("generation", "FR", {"documentType": "A71", "processType": "A01",
                               "in_Domain": "10YFR-RTE------C"}),
-        ("wind_solar", "BE", {"documentType": "A69", "processType": "A01",
-                              "in_Domain": "10YBE----------2"}),
     ],
 )  # fmt: skip
 def test_client_forecast_parameters_and_monthly_chunks(kind, area, expected):
     fixture = {"load": "load_A65_dst_spring.xml", "generation": "generation_A71.xml"}
-    text = (FIXTURES / fixture.get(kind, "wind_solar_A69.xml")).read_text()
+    text = (FIXTURES / fixture[kind]).read_text()
     session = FakeSession(text)
     EntsoeClient(api_key="dummy", session=session).query(kind, area, "2025-01-01", "2025-04-01")
     assert len(session.calls) == 3
     params = session.calls[0][1]
     assert {k: params[k] for k in expected} == expected
-
-
-def test_wind_solar_is_the_sum_of_production_types():
-    text = (FIXTURES / "wind_solar_A69.xml").read_text()
-    client = EntsoeClient(api_key="dummy", session=FakeSession(text))
-    s = client.query("wind_solar", "BE", "2025-01-14", "2025-01-16")
-    expected = parse_generation(text).sum(axis=1)
-    pd.testing.assert_series_equal(s, expected, check_names=False)
 
 
 def test_client_requires_api_key(monkeypatch):

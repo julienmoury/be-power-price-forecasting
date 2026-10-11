@@ -7,6 +7,7 @@
    "raw_missing_values": 0,
    "dst_23h_days": 12,
    "dst_25h_days": 11,
+   "interpolated_hours": [],
    "dropped_days": [],
    "per_year": {
     "2015": {
@@ -90,6 +91,10 @@
    "raw_missing_values": 0,
    "dst_23h_days": 12,
    "dst_25h_days": 11,
+   "interpolated_hours": [
+    "2025-09-23 00:00",
+    "2025-10-25 00:00"
+   ],
    "dropped_days": [
     "2016-07-29",
     "2019-02-18",
@@ -100,9 +105,7 @@
     "2021-05-20",
     "2021-05-25",
     "2021-05-28",
-    "2025-03-06",
-    "2025-09-23",
-    "2025-10-25"
+    "2025-03-06"
    ],
    "per_year": {
     "2015": {
@@ -167,8 +170,8 @@
     },
     "2025": {
      "days": 365,
-     "complete_days": 362,
-     "dropped_days": 3,
+     "complete_days": 364,
+     "dropped_days": 1,
      "quarter_hour_days": 120
     },
     "2026": {
@@ -186,6 +189,7 @@
    "raw_missing_values": 0,
    "dst_23h_days": 12,
    "dst_25h_days": 11,
+   "interpolated_hours": [],
    "dropped_days": [],
    "per_year": {
     "2015": {
@@ -261,263 +265,24 @@
      "quarter_hour_days": 273
     }
    }
-  },
-  "Wind and solar forecast BE": {
-   "first": "2014-12-31 23:00:00+00:00",
-   "last": "2026-09-30 21:00:00+00:00",
-   "raw_values": 102983,
-   "raw_missing_values": 336,
-   "dst_23h_days": 12,
-   "dst_25h_days": 11,
-   "dropped_days": [
-    "2015-05-06",
-    "2015-05-27",
-    "2015-07-02",
-    "2015-07-15",
-    "2015-07-17",
-    "2015-07-18",
-    "2015-07-20",
-    "2015-07-21",
-    "2015-07-22",
-    "2015-07-23",
-    "2015-07-27",
-    "2015-07-28",
-    "2015-08-05",
-    "2015-08-06"
-   ],
-   "per_year": {
-    "2015": {
-     "days": 365,
-     "complete_days": 351,
-     "dropped_days": 14,
-     "quarter_hour_days": 0
-    },
-    "2016": {
-     "days": 366,
-     "complete_days": 366,
-     "dropped_days": 0,
-     "quarter_hour_days": 0
-    },
-    "2017": {
-     "days": 365,
-     "complete_days": 365,
-     "dropped_days": 0,
-     "quarter_hour_days": 0
-    },
-    "2018": {
-     "days": 365,
-     "complete_days": 365,
-     "dropped_days": 0,
-     "quarter_hour_days": 0
-    },
-    "2019": {
-     "days": 365,
-     "complete_days": 365,
-     "dropped_days": 0,
-     "quarter_hour_days": 0
-    },
-    "2020": {
-     "days": 366,
-     "complete_days": 366,
-     "dropped_days": 0,
-     "quarter_hour_days": 0
-    },
-    "2021": {
-     "days": 365,
-     "complete_days": 365,
-     "dropped_days": 0,
-     "quarter_hour_days": 0
-    },
-    "2022": {
-     "days": 365,
-     "complete_days": 365,
-     "dropped_days": 0,
-     "quarter_hour_days": 0
-    },
-    "2023": {
-     "days": 365,
-     "complete_days": 365,
-     "dropped_days": 0,
-     "quarter_hour_days": 0
-    },
-    "2024": {
-     "days": 366,
-     "complete_days": 366,
-     "dropped_days": 0,
-     "quarter_hour_days": 0
-    },
-    "2025": {
-     "days": 365,
-     "complete_days": 365,
-     "dropped_days": 0,
-     "quarter_hour_days": 0
-    },
-    "2026": {
-     "days": 273,
-     "complete_days": 273,
-     "dropped_days": 0,
-     "quarter_hour_days": 0
-    }
-   }
-  },
-  "Load forecast BE": {
-   "first": "2014-12-31 23:00:00+00:00",
-   "last": "2026-09-30 21:45:00+00:00",
-   "raw_values": 411932,
-   "raw_missing_values": 0,
-   "dst_23h_days": 12,
-   "dst_25h_days": 11,
-   "dropped_days": [],
-   "per_year": {
-    "2015": {
-     "days": 365,
-     "complete_days": 365,
-     "dropped_days": 0,
-     "quarter_hour_days": 365
-    },
-    "2016": {
-     "days": 366,
-     "complete_days": 366,
-     "dropped_days": 0,
-     "quarter_hour_days": 366
-    },
-    "2017": {
-     "days": 365,
-     "complete_days": 365,
-     "dropped_days": 0,
-     "quarter_hour_days": 365
-    },
-    "2018": {
-     "days": 365,
-     "complete_days": 365,
-     "dropped_days": 0,
-     "quarter_hour_days": 365
-    },
-    "2019": {
-     "days": 365,
-     "complete_days": 365,
-     "dropped_days": 0,
-     "quarter_hour_days": 365
-    },
-    "2020": {
-     "days": 366,
-     "complete_days": 366,
-     "dropped_days": 0,
-     "quarter_hour_days": 366
-    },
-    "2021": {
-     "days": 365,
-     "complete_days": 365,
-     "dropped_days": 0,
-     "quarter_hour_days": 365
-    },
-    "2022": {
-     "days": 365,
-     "complete_days": 365,
-     "dropped_days": 0,
-     "quarter_hour_days": 365
-    },
-    "2023": {
-     "days": 365,
-     "complete_days": 365,
-     "dropped_days": 0,
-     "quarter_hour_days": 365
-    },
-    "2024": {
-     "days": 366,
-     "complete_days": 366,
-     "dropped_days": 0,
-     "quarter_hour_days": 366
-    },
-    "2025": {
-     "days": 365,
-     "complete_days": 365,
-     "dropped_days": 0,
-     "quarter_hour_days": 365
-    },
-    "2026": {
-     "days": 273,
-     "complete_days": 273,
-     "dropped_days": 0,
-     "quarter_hour_days": 273
-    }
-   }
   }
  },
- "frames": {
-  "FR": {
-   "first_day": "2015-01-05",
-   "last_day": "2026-09-30",
-   "days": 4287,
-   "dropped_days": [
-    "2016-07-29",
-    "2019-02-18",
-    "2021-02-20",
-    "2021-04-10",
-    "2021-04-11",
-    "2021-04-12",
-    "2021-05-20",
-    "2021-05-25",
-    "2021-05-28",
-    "2025-03-06",
-    "2025-09-23",
-    "2025-10-25"
-   ]
-  },
-  "BE": {
-   "first_day": "2015-01-05",
-   "last_day": "2026-09-30",
-   "days": 4287,
-   "dropped_days": [
-    "2015-05-06",
-    "2015-05-27",
-    "2015-07-02",
-    "2015-07-15",
-    "2015-07-17",
-    "2015-07-18",
-    "2015-07-20",
-    "2015-07-21",
-    "2015-07-22",
-    "2015-07-23",
-    "2015-07-27",
-    "2015-07-28",
-    "2015-08-05",
-    "2015-08-06"
-   ]
-  },
-  "FR+BE": {
-   "first_day": "2015-01-05",
-   "last_day": "2026-09-30",
-   "days": 4287,
-   "dropped_days": [
-    "2015-05-06",
-    "2015-05-27",
-    "2015-07-02",
-    "2015-07-15",
-    "2015-07-17",
-    "2015-07-18",
-    "2015-07-20",
-    "2015-07-21",
-    "2015-07-22",
-    "2015-07-23",
-    "2015-07-27",
-    "2015-07-28",
-    "2015-08-05",
-    "2015-08-06",
-    "2016-07-29",
-    "2019-02-18",
-    "2021-02-20",
-    "2021-04-10",
-    "2021-04-11",
-    "2021-04-12",
-    "2021-05-20",
-    "2021-05-25",
-    "2021-05-28",
-    "2025-03-06",
-    "2025-09-23",
-    "2025-10-25"
-   ]
-  }
+ "frame": {
+  "first_day": "2015-01-05",
+  "last_day": "2026-09-30",
+  "days": 4287,
+  "dropped_days": [
+   "2016-07-29",
+   "2019-02-18",
+   "2021-02-20",
+   "2021-04-10",
+   "2021-04-11",
+   "2021-04-12",
+   "2021-05-20",
+   "2021-05-25",
+   "2021-05-28",
+   "2025-03-06"
+  ]
  },
  "price": {
   "2015": {
@@ -591,11 +356,11 @@
    "share_negative_pct": 4.599271402550091
   },
   "2025": {
-   "hours": 8688,
-   "mean": 82.72135546155617,
+   "hours": 8736,
+   "mean": 82.56608530792124,
    "min": -462.33,
    "max": 517.57,
-   "share_negative_pct": 5.9507366482504604
+   "share_negative_pct": 5.918040293040293
   },
   "2026": {
    "hours": 6552,

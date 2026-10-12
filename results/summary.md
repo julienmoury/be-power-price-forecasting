@@ -52,7 +52,7 @@
  "source": "Lago et al. (2021), forecasts published in jeslago/epftoolbox",
  "MAE": {
   "LEAR Ensemble": 6.140060611263736,
-  "DNN Ensemble": 5.869865859211077
+  "DNN Ensemble": 5.869865859211076
  }
 }
 ```
@@ -152,4 +152,38 @@ Hour contributions, LEAR ens. vs naive: 0: -0.092, 1: -0.075, 2: -0.081, 3: -0.0
 | normal | 26762.000 | 15.305 | 24.516 | 0.943 | -9.211 | -8.682 | 0.936 |
 | spike | 262.000 | 61.497 | 63.450 | 0.009 | -1.953 | -0.018 | 0.002 |
 | total | 28392.000 | 16.279 | 25.557 | 1.000 | -9.278 | -9.278 | 1.000 |
+
+## Drift rule (rolling 30-day error, threshold = 95th percentile over phase A)
+```
+{
+ "MAE": 13.783617545937503,
+ "rMAE": 0.9140143226236584
+}
+```
+```
+{
+ "monthly_exceedance": {
+  "month": "2021-05",
+  "known_on": "2021-05-31",
+  "monthly_MAE": 12.436981476562499,
+  "base_monthly_MAE": 5.03417051873615
+ },
+ "MAE": {
+  "alert_days": 1397,
+  "evaluated_days": 2764,
+  "n_episodes": 25,
+  "first_2021_alert": "2021-08-08",
+  "lead_days_before_monthly_exceedance": -69,
+  "alert_before_monthly_exceedance": false
+ },
+ "rMAE": {
+  "alert_days": 76,
+  "evaluated_days": 2764,
+  "n_episodes": 12,
+  "first_2021_alert": "2021-09-22",
+  "lead_days_before_monthly_exceedance": -114,
+  "alert_before_monthly_exceedance": false
+ }
+}
+```
 

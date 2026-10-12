@@ -5,11 +5,11 @@ takes ~30 s of CPU per day. The service reads
 
 * the LEAR forecasts already computed: the phase B backtest (one CSV per calibration
   window, each day calibrated only on the days before it) and, later, the daily live runs;
-* the standard frame of prices, for the naive fallback.
+* the Belgian prices (price-only standard frame), for the naive fallback.
 
 ``POST /forecast`` returns the LEAR ensemble when the day has one, otherwise the naive
 forecast (the forecasts are missing or could not be read); it never calls ENTSO-E and holds
-no API key. Paths come from ``BE_FORECAST_DIR`` and ``BE_FRAME_PATH``.
+no API key. Paths come from ``BE_FORECAST_DIR`` and ``BE_PRICE_PATH``.
 """
 
 from __future__ import annotations
@@ -48,7 +48,7 @@ def load_backtest_ensemble(directory: Path) -> pd.DataFrame:
 
 
 def load_prices(path: Path) -> pd.DataFrame:
-    """Daily ``(n_days, 24)`` prices of a standard frame (dropped days are NaN rows)."""
+    """Daily ``(n_days, 24)`` prices of a standard frame (missing days are NaN rows)."""
     return daily_prices(pd.read_parquet(path))
 
 
@@ -143,5 +143,5 @@ app = create_app(
     lambda: load_backtest_ensemble(
         Path(os.environ.get("BE_FORECAST_DIR", RESULTS_DIR / "forecasts" / "phase_b"))
     ),
-    lambda: load_prices(Path(os.environ.get("BE_FRAME_PATH", CACHE_DIR / "phase_b_FR.parquet"))),
+    lambda: load_prices(Path(os.environ.get("BE_PRICE_PATH", CACHE_DIR / "prices_BE.parquet"))),
 )

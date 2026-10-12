@@ -512,6 +512,13 @@ def main() -> None:
     md += md_b
     out["drift"], md_d = drift_block((real, ens, naive), frames_b)
     md += md_d
+    load_test = ROOT / "results" / "load_test.json"  # written by scripts/load_test.py
+    if load_test.exists():
+        out["load_test"] = json.loads(load_test.read_text())
+        md += ["## Load test of the containerised service", "```",
+               json.dumps(out["load_test"], indent=1), "```", ""]  # fmt: skip
+    else:
+        missing.append("load_test (run scripts/load_test.py)")
     if missing:
         md.append(f"Missing experiments: {sorted(set(missing))}")
     out["missing"] = sorted(set(missing))

@@ -2,7 +2,8 @@
 
 Needs ENTSOE_API_KEY. Raw series are cached as parquet in data/cache/ (git-ignored, never
 committed); the standard frame (Belgian price, French generation and load forecasts) is
-written there too.
+written there too, with a price-only frame for the naive fallback of the forecast service
+(a day dropped because a French forecast is missing keeps its price there).
 Outputs: results/data_report.md and results/data_report.json (merged into
 results/metrics.json under "data_report").
 
@@ -16,7 +17,7 @@ import json
 import pandas as pd
 
 from be_power_forecast.config import CACHE_DIR, RESULTS_DIR
-from be_power_forecast.data.calendar import to_local_days
+from be_power_forecast.data.calendar import standard_frame, to_local_days
 from be_power_forecast.data.sources import EntsoeSource
 
 
@@ -113,6 +114,7 @@ def main() -> None:
     raw = {name: source.raw(name) for name in source.columns}
     frame = source.load()
     frame.to_parquet(CACHE_DIR / "phase_b_FR.parquet")
+    standard_frame({"Price": raw["Price"]})[0].to_parquet(CACHE_DIR / "prices_BE.parquet")
     report = {
         "series": {n: series_report(n, s) for n, s in raw.items()},
         "frame": {

@@ -1,0 +1,14 @@
+.git
+.github
+.venv
+venv
+**/__pycache__
+.pytest_cache
+.ruff_cache
+data
+mlruns
+models
+results
+!results/forecasts/phase_b
+tests
+docs

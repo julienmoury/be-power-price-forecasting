@@ -25,6 +25,7 @@ from be_power_forecast.data.sources import (
 from be_power_forecast.evaluation.dm import dm_matrix, dm_test
 from be_power_forecast.evaluation.metrics import mae, naive_forecast, rmae, rmse, smape
 from be_power_forecast.models.lear import ensemble
+from be_power_forecast.readme import render
 
 ROOT = Path(__file__).resolve().parents[1]
 FC = ROOT / "results" / "forecasts"
@@ -72,14 +73,17 @@ def style(ax):
     ax.set_axisbelow(True)
 
 
-def phase_b(missing: list[str]) -> tuple[dict | None, list[str]]:
-    """Phase B: the paper's protocol on the joined BE.csv + ENTSO-E frame, 2017-2026."""
+def phase_b(missing: list[str]) -> tuple[dict | None, list[str], tuple | None]:
+    """Phase B: the paper's protocol on the joined BE.csv + ENTSO-E frame, 2017-2026.
+
+    Also returns the evaluated (real, LEAR ensemble, naive) daily frames for the figure.
+    """
     frame_path = CACHE_DIR / "phase_b_FR.parquet"
     fcs = {cw: load(f"phase_b/lear_cw{cw}") for cw in PAPER_WINDOWS}
     absent = [f"phase_b/lear_cw{cw}" for cw, f in fcs.items() if f is None]
     if absent or not frame_path.exists():
         missing += absent or ["data/cache/phase_b_FR.parquet (run build_phase_b.py)"]
-        return None, []
+        return None, [], None
     df = pd.read_parquet(frame_path)
     begin, end = PHASE_B_TEST
     hist = daily_prices(df, pd.Timestamp(begin) - pd.Timedelta(days=7), end)
@@ -105,6 +109,7 @@ def phase_b(missing: list[str]) -> tuple[dict | None, list[str]]:
         "RMSE LEAR ens.": rmse(real, ens),
         "sMAPE % LEAR ens.": 100 * smape(real, ens),
         "MAE ens. / MAE naive": mae(real, ens) / mae(real, naive),
+        "gain vs naive (EUR per MWh)": mae(real, naive) - mae(real, ens),
         "gain vs naive %": 100 * (1 - mae(real, ens) / mae(real, naive)),
         "DM p (ens. better than naive)": float(dm_test(real, naive, ens)[1]),
     }
@@ -123,20 +128,31 @@ def phase_b(missing: list[str]) -> tuple[dict | None, list[str]]:
         "```",
         "",
     ]
-    # Figure: monthly MAE, naive vs LEAR ensemble.
+    return out, md, (real, ens, naive)
+
+
+def monthly_figure(phase_a: tuple, phase_b_frames: tuple | None) -> None:
+    """Monthly MAE of the LEAR ensemble and the naive forecast, phase A then phase B."""
+    frames = [phase_a] if phase_b_frames is None else [phase_a, phase_b_frames]
+    real, ens, naive = (pd.concat(parts) for parts in zip(*frames, strict=True))
     abs_n = (real - naive).abs().mean(axis=1).resample("MS").mean()
     abs_e = (real - ens).abs().mean(axis=1).resample("MS").mean()
-    fig, ax = plt.subplots(figsize=(7, 3.6), dpi=150)
+    fig, ax = plt.subplots(figsize=(7.5, 3.6), dpi=150)
     style(ax)
-    ax.plot(abs_n.index, abs_n, color=ORANGE, lw=2, label="Naive benchmark")
-    ax.plot(abs_e.index, abs_e, color=BLUE, lw=2, label="LEAR ensemble")
+    ax.plot(abs_n.index, abs_n, color=ORANGE, lw=1.8, label="Naive benchmark")
+    ax.plot(abs_e.index, abs_e, color=BLUE, lw=1.8, label="LEAR ensemble")
+    if phase_b_frames is not None:
+        start = phase_b_frames[0].index[0]
+        ax.axvline(start, color=GREY, lw=1, ls=":")
+        ax.text(start, ax.get_ylim()[1], " extension →", color=INK, fontsize=8, va="top")
+        ax.text(start, ax.get_ylim()[1], "← paper test period ", color=INK, fontsize=8,
+                va="top", ha="right")  # fmt: skip
     ax.set_ylabel("Monthly MAE (EUR/MWh)", color=INK)
-    ax.set_title(f"Belgian day-ahead, {begin[:4]}-{end[:4]}: monthly error", color=INK, fontsize=10)
-    ax.legend(frameon=False, fontsize=8)
+    ax.set_title("Belgian day-ahead price: monthly forecast error", color=INK, fontsize=10)
+    ax.legend(frameon=False, fontsize=8, loc="center left")
     fig.tight_layout()
-    fig.savefig(FIG / "phase_b_monthly_mae.png")
+    fig.savefig(FIG / "monthly_mae.png")
     plt.close(fig)
-    return out, md
 
 
 def main() -> None:
@@ -171,7 +187,7 @@ def main() -> None:
             "MAE (published)": mae(real, pub_daily[f"LEAR {cw}"]),
             "sMAPE % (ours)": 100 * smape(real, ours[cw]),
             "sMAPE % (published)": 100 * smape(real, pub_daily[f"LEAR {cw}"]),
-            "mean |ours - published|": mae(pub_daily[f"LEAR {cw}"], ours[cw]),
+            "mean abs gap to published": mae(pub_daily[f"LEAR {cw}"], ours[cw]),
         }
     if have_paper:
         ens = pd.DataFrame(
@@ -184,19 +200,19 @@ def main() -> None:
             "MAE (published)": mae(real, pub_daily["LEAR Ensemble"]),
             "sMAPE % (ours)": 100 * smape(real, ens),
             "sMAPE % (published)": 100 * smape(real, pub_daily["LEAR Ensemble"]),
-            "mean |ours - published|": mae(pub_daily["LEAR Ensemble"], ens),
+            "mean abs gap to published": mae(pub_daily["LEAR Ensemble"], ens),
         }
     for cw in (56, 84):
         f = load(f"lear_exoglags12_cw{cw}")
         if f is None:
             missing.append(f"lear_exoglags12_cw{cw}")
             continue
-        rows[f"LEAR {cw}, exog. lags D-1/D-2 (pre-2024 library)"] = {
+        rows[f"LEAR {cw}, pre-2024 exogenous lags (d-1, d-2)"] = {
             "MAE (ours)": mae(real, f),
             "MAE (published)": mae(real, pub_daily[f"LEAR {cw}"]),
             "sMAPE % (ours)": 100 * smape(real, f),
             "sMAPE % (published)": 100 * smape(real, pub_daily[f"LEAR {cw}"]),
-            "mean |ours - published|": mae(pub_daily[f"LEAR {cw}"], f),
+            "mean abs gap to published": mae(pub_daily[f"LEAR {cw}"], f),
         }
     repro = pd.DataFrame(rows).T
     out["reproduction"] = repro.to_dict(orient="index")
@@ -248,22 +264,9 @@ def main() -> None:
     md += ["## Published results quoted for reference (MAE, not recomputed models)", "```",
            json.dumps(out["published_reference"], indent=1), "```", ""]  # fmt: skip
 
-    # ---- Figure: monthly MAE, naive vs LEAR ensemble ----------------------------------------
-    abs_n = (real - naive).abs().mean(axis=1).resample("MS").mean()
-    abs_e = (real - ens).abs().mean(axis=1).resample("MS").mean()
-    fig, ax = plt.subplots(figsize=(7, 3.6), dpi=150)
-    style(ax)
-    ax.plot(abs_n.index, abs_n, color=ORANGE, lw=2, label="Naive benchmark")
-    ax.plot(abs_e.index, abs_e, color=BLUE, lw=2, label="LEAR ensemble")
-    ax.set_ylabel("Monthly MAE (EUR/MWh)", color=INK)
-    ax.set_title("Belgian day-ahead, 2015-2016: monthly error", color=INK, fontsize=10)
-    ax.legend(frameon=False, fontsize=8)
-    fig.tight_layout()
-    fig.savefig(FIG / "monthly_mae.png")
-    plt.close(fig)
-
-    out["phase_b"], md_b = phase_b(missing)
+    out["phase_b"], md_b, frames_b = phase_b(missing)
     md += md_b
+    monthly_figure((real, ens, naive), frames_b)
     # Decision rule: deploy the LEAR ensemble if it
     # beats the naive forecast on the whole phase B test (one-sided multivariate DM, 5 %).
     if out["phase_b"] is not None:
@@ -310,6 +313,10 @@ def main() -> None:
             out[key] = json.loads(path.read_text())
     (ROOT / "results" / "summary.md").write_text("\n".join(md) + "\n")
     (ROOT / "results" / "metrics.json").write_text(json.dumps(out, indent=1, default=float))
+    # README: the template with every number read back from metrics.json.
+    metrics = json.loads((ROOT / "results" / "metrics.json").read_text())
+    template = (ROOT / "docs" / "README.template.md").read_text()
+    (ROOT / "README.md").write_text(render(template, metrics))
     print("\n".join(md))
 
 

@@ -10,49 +10,49 @@
    "MAE (published)": 6.924321577380953,
    "sMAPE % (ours)": 16.891932949963792,
    "sMAPE % (published)": 16.197430755977432,
-   "mean |ours - published|": 1.9032959787087913
+   "mean abs gap to published": 1.9032959787087913
   },
   "LEAR 84": {
    "MAE (ours)": 7.1965752518315025,
    "MAE (published)": 6.798319253663004,
    "sMAPE % (ours)": 17.00817316626614,
    "sMAPE % (published)": 15.954408946426584,
-   "mean |ours - published|": 1.9723238818681317
+   "mean abs gap to published": 1.9723238818681317
   },
   "LEAR 1092": {
    "MAE (ours)": 6.606400448031136,
    "MAE (published)": 6.594335302197803,
    "sMAPE % (ours)": 16.91872304257906,
    "sMAPE % (published)": 16.866541597883284,
-   "mean |ours - published|": 0.14076185004578753
+   "mean abs gap to published": 0.14076185004578753
   },
   "LEAR 1456": {
    "MAE (ours)": 6.645144233001374,
    "MAE (published)": 6.633913186813187,
    "sMAPE % (ours)": 17.36062395011111,
    "sMAPE % (published)": 17.292712672664443,
-   "mean |ours - published|": 0.19693762024954212
+   "mean abs gap to published": 0.19693762024954212
   },
   "LEAR Ensemble": {
    "MAE (ours)": 6.278287053156479,
    "MAE (published)": 6.140060611263736,
    "sMAPE % (ours)": 14.965968235115263,
    "sMAPE % (published)": 14.546306080539312,
-   "mean |ours - published|": 0.8806833745278159
+   "mean abs gap to published": 0.8806833745278159
   },
-  "LEAR 56, exog. lags D-1/D-2 (pre-2024 library)": {
+  "LEAR 56, pre-2024 exogenous lags (d-1, d-2)": {
    "MAE (ours)": 7.245382990613553,
    "MAE (published)": 6.924321577380953,
    "sMAPE % (ours)": 16.955015234421275,
    "sMAPE % (published)": 16.197430755977432,
-   "mean |ours - published|": 2.2907129500915753
+   "mean abs gap to published": 2.2907129500915753
   },
-  "LEAR 84, exog. lags D-1/D-2 (pre-2024 library)": {
+  "LEAR 84, pre-2024 exogenous lags (d-1, d-2)": {
    "MAE (ours)": 7.284554873626374,
    "MAE (published)": 6.798319253663004,
    "sMAPE % (ours)": 17.254706156656265,
    "sMAPE % (published)": 15.954408946426584,
-   "mean |ours - published|": 2.4694691183608057
+   "mean abs gap to published": 2.4694691183608057
   }
  },
  "accuracy": {
@@ -182,6 +182,7 @@
    "RMSE LEAR ens.": 26.748271347395782,
    "sMAPE % LEAR ens.": 23.140402191882366,
    "MAE ens. / MAE naive": 0.6642720315131168,
+   "gain vs naive (EUR per MWh)": 7.340794325314601,
    "gain vs naive %": 33.57279684868833,
    "DM p (ens. better than naive)": 0.0
   }

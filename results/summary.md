@@ -1,13 +1,13 @@
 ## Reproduction of Lago et al. (2021), BE test period
-|  | MAE (ours) | MAE (published) | sMAPE % (ours) | sMAPE % (published) | mean |ours - published| |
+|  | MAE (ours) | MAE (published) | sMAPE % (ours) | sMAPE % (published) | mean abs gap to published |
 |---|---|---|---|---|---|
 | LEAR 56 | 7.226 | 6.924 | 16.892 | 16.197 | 1.903 |
 | LEAR 84 | 7.197 | 6.798 | 17.008 | 15.954 | 1.972 |
 | LEAR 1092 | 6.606 | 6.594 | 16.919 | 16.867 | 0.141 |
 | LEAR 1456 | 6.645 | 6.634 | 17.361 | 17.293 | 0.197 |
 | LEAR Ensemble | 6.278 | 6.140 | 14.966 | 14.546 | 0.881 |
-| LEAR 56, exog. lags D-1/D-2 (pre-2024 library) | 7.245 | 6.924 | 16.955 | 16.197 | 2.291 |
-| LEAR 84, exog. lags D-1/D-2 (pre-2024 library) | 7.285 | 6.798 | 17.255 | 15.954 | 2.469 |
+| LEAR 56, pre-2024 exogenous lags (d-1, d-2) | 7.245 | 6.924 | 16.955 | 16.197 | 2.291 |
+| LEAR 84, pre-2024 exogenous lags (d-1, d-2) | 7.285 | 6.798 | 17.255 | 15.954 | 2.469 |
 
 ## Accuracy on the test period (728 days)
 |  | MAE | RMSE | sMAPE_pct | rMAE |
@@ -72,6 +72,7 @@
  "RMSE LEAR ens.": 26.748271347395782,
  "sMAPE % LEAR ens.": 23.140402191882366,
  "MAE ens. / MAE naive": 0.6642720315131168,
+ "gain vs naive (EUR per MWh)": 7.340794325314601,
  "gain vs naive %": 33.57279684868833,
  "DM p (ens. better than naive)": 0.0
 }

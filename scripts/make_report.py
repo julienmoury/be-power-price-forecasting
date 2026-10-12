@@ -14,21 +14,16 @@ import numpy as np
 import pandas as pd
 
 from be_power_forecast.backtest import daily_prices
-from be_power_forecast.config import CACHE_DIR, PHASE_B_TEST, SUB_PERIODS
+from be_power_forecast.config import CACHE_DIR, PHASE_B_TEST, QUARTER_HOUR_START, TZ
+from be_power_forecast.data.calendar import intra_hour_deviation
 from be_power_forecast.data.sources import (
     BE_TEST_BEGIN,
     BE_TEST_END,
+    EntsoeSource,
     EpftoolboxZenodoSource,
-)
-from be_power_forecast.evaluation.attribution import (
-    hour_segments,
-    mae_gap_attribution,
-    regime_segments,
-    season_segments,
 )
 from be_power_forecast.evaluation.dm import dm_matrix, dm_test
 from be_power_forecast.evaluation.metrics import mae, naive_forecast, rmae, rmse, smape
-from be_power_forecast.mlops import drift
 from be_power_forecast.models.lear import ensemble
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,15 +32,9 @@ FIG = ROOT / "results" / "figures"
 PUBLISHED = ROOT / "tests" / "reference" / "Forecasts_BE_DNN_LEAR_ensembles.csv"
 
 PAPER_WINDOWS = [56, 84, 1092, 1456]
-ALL_WINDOWS = [28, 56, 84, 182, 364, 728, 1092, 1456]
-ABLATIONS = {
-    "no_load_fr": "without FR load forecast",
-    "no_gen_fr": "without FR generation forecast",
-    "no_exog": "without any exogenous input",
-}
 
 # Reference palette (dataviz skill, light mode): categorical slots 1-3 + neutral ink.
-BLUE, ORANGE, AQUA, GREY, INK = "#2a78d6", "#eb6834", "#1baf7a", "#8a8984", "#52514e"
+BLUE, ORANGE, GREY, INK = "#2a78d6", "#eb6834", "#8a8984", "#52514e"
 
 
 def load(name: str) -> pd.DataFrame | None:
@@ -83,22 +72,19 @@ def style(ax):
     ax.set_axisbelow(True)
 
 
-def phase_b(missing: list[str]) -> tuple[dict | None, list[str], tuple | None]:
-    """Phase B: the paper's protocol on ENTSO-E data, 2019-2026, by fixed sub-period.
-
-    Also returns the evaluated (real, LEAR ensemble, naive) daily frames for the drift rule.
-    """
+def phase_b(missing: list[str]) -> tuple[dict | None, list[str]]:
+    """Phase B: the paper's protocol on the joined BE.csv + ENTSO-E frame, 2017-2026."""
     frame_path = CACHE_DIR / "phase_b_FR.parquet"
     fcs = {cw: load(f"phase_b/lear_cw{cw}") for cw in PAPER_WINDOWS}
     absent = [f"phase_b/lear_cw{cw}" for cw, f in fcs.items() if f is None]
     if absent or not frame_path.exists():
         missing += absent or ["data/cache/phase_b_FR.parquet (run build_phase_b.py)"]
-        return None, [], None
+        return None, []
     df = pd.read_parquet(frame_path)
     begin, end = PHASE_B_TEST
     hist = daily_prices(df, pd.Timestamp(begin) - pd.Timedelta(days=7), end)
     naive = naive_forecast(hist)
-    days = fcs[PAPER_WINDOWS[0]].index
+    days = fcs[PAPER_WINDOWS[0]].loc[begin:end].index
     ens = pd.DataFrame(
         ensemble([fcs[cw].loc[days].to_numpy() for cw in PAPER_WINDOWS]),
         index=days,
@@ -110,128 +96,46 @@ def phase_b(missing: list[str]) -> tuple[dict | None, list[str], tuple | None]:
     ok = real.notna().all(axis=1) & naive.notna().all(axis=1)
     real, naive, ens = real[ok], naive[ok], ens[ok]
     fcs = {cw: f.loc[real.index] for cw, f in fcs.items()}
+    accuracy = {
+        "mean price": float(real.to_numpy().mean()),
+        "negative hours %": float(100 * (real.to_numpy() < 0).mean()),
+        "MAE naive": mae(real, naive),
+        **{f"MAE LEAR {cw}": mae(real, fcs[cw]) for cw in PAPER_WINDOWS},
+        "MAE LEAR ens.": mae(real, ens),
+        "RMSE LEAR ens.": rmse(real, ens),
+        "sMAPE % LEAR ens.": 100 * smape(real, ens),
+        "MAE ens. / MAE naive": mae(real, ens) / mae(real, naive),
+        "gain vs naive %": 100 * (1 - mae(real, ens) / mae(real, naive)),
+        "DM p (ens. better than naive)": float(dm_test(real, naive, ens)[1]),
+    }
     out: dict = {
         "test_period": [begin, end],
         "test_days": len(pd.date_range(begin, end)),
         "evaluated_days": len(real),
-        "subperiods": {},
+        "accuracy": accuracy,
     }
-    rows = {}
-    for name, (a, b) in {"full": (begin, end), **SUB_PERIODS}.items():
-        m = (real.index >= a) & (real.index <= b)
-        r, n_, e = real[m], naive[m], ens[m]
-        row = {
-            "days": int(m.sum()),
-            "mean price": float(r.to_numpy().mean()),
-            "negative hours %": float(100 * (r.to_numpy() < 0).mean()),
-            "MAE naive": mae(r, n_),
-            **{f"MAE LEAR {cw}": mae(r, fcs[cw][m]) for cw in PAPER_WINDOWS},
-            "MAE LEAR ens.": mae(r, e),
-            "RMSE LEAR ens.": rmse(r, e),
-            "sMAPE % LEAR ens.": 100 * smape(r, e),
-            "MAE ens. / MAE naive": mae(r, e) / mae(r, n_),
-            "gain vs naive %": 100 * (1 - mae(r, e) / mae(r, n_)),
-            "DM p (ens. better than naive)": float(dm_test(r, n_, e)[1]),
-        }
-        rows[name] = row
-        out["subperiods"][name] = {"period": [a, b], **row}
-    table = pd.DataFrame(rows).T
     md = [
-        f"## Phase B: 4-window LEAR on ENTSO-E data, {begin} to {end}",
+        f"## Phase B: 4-window LEAR on BE.csv + ENTSO-E data, {begin} to {end}",
         f"{len(real)} of {out['test_days']} test days evaluated (days depending on a "
         "dropped day are not forecast).",
-        fmt_table(table, 3),
+        "```",
+        json.dumps(accuracy, indent=1),
+        "```",
         "",
     ]
-    history = df["Price"]
-    partitions = {
-        "hour": lambda r: hour_segments(r.index),
-        "season": lambda r: season_segments(r.index),
-        "regime": lambda r: regime_segments(r, history),
-    }
-    out["attribution"] = {}
-    for period in ("full", "after"):
-        a, b = out["subperiods"][period]["period"]
-        m = (real.index >= a) & (real.index <= b)
-        out["attribution"][period] = {}
-        for part, seg in partitions.items():
-            att = mae_gap_attribution(real[m], ens[m], naive[m], seg(real[m]))
-            att.index = att.index.astype(str)
-            out["attribution"][period][part] = att.to_dict(orient="index")
-            if part != "hour":
-                md += [f"## Phase B attribution, LEAR ens. vs naive, {period}, by {part}",
-                       fmt_table(att, 3), ""]  # fmt: skip
-
-    # Figure: monthly MAE, naive vs LEAR ensemble, with the sub-period boundaries.
+    # Figure: monthly MAE, naive vs LEAR ensemble.
     abs_n = (real - naive).abs().mean(axis=1).resample("MS").mean()
     abs_e = (real - ens).abs().mean(axis=1).resample("MS").mean()
     fig, ax = plt.subplots(figsize=(7, 3.6), dpi=150)
     style(ax)
     ax.plot(abs_n.index, abs_n, color=ORANGE, lw=2, label="Naive benchmark")
     ax.plot(abs_e.index, abs_e, color=BLUE, lw=2, label="LEAR ensemble")
-    for key in ("crisis", "after", "after_quarter_hour"):
-        ax.axvline(pd.Timestamp(SUB_PERIODS[key][0]), color=GREY, lw=1, ls=":")
     ax.set_ylabel("Monthly MAE (EUR/MWh)", color=INK)
-    ax.set_title("Belgian day-ahead, 2019-2026: monthly error", color=INK, fontsize=10)
+    ax.set_title(f"Belgian day-ahead, {begin[:4]}-{end[:4]}: monthly error", color=INK, fontsize=10)
     ax.legend(frameon=False, fontsize=8)
     fig.tight_layout()
     fig.savefig(FIG / "phase_b_monthly_mae.png")
     plt.close(fig)
-    return out, md, (real, ens, naive)
-
-
-def drift_block(phase_a: tuple, phase_b_frames: tuple | None) -> tuple[dict, list[str]]:
-    """Drift rule: threshold from phase A (2015-2016), applied out of sample to phase B.
-
-    Reports the alerts on 2019-2026 and whether the first 2021 alert came before the
-    monthly MAE first exceeded twice its 2019-2020 average.
-    """
-    real_a, ens_a, naive_a = phase_a
-    err_a, ref_a = drift.daily_abs_error(real_a, ens_a), drift.daily_abs_error(real_a, naive_a)
-    series_a = {"MAE": drift.rolling_mae(err_a), "rMAE": drift.rolling_rmae(err_a, ref_a)}
-    out: dict = {
-        "window_days": drift.WINDOW,
-        "quantile": drift.QUANTILE,
-        "threshold_period": [str(real_a.index[0].date()), str(real_a.index[-1].date())],
-        "threshold": {k: drift.threshold(v) for k, v in series_a.items()},
-    }
-    md = [
-        f"## Drift rule (rolling {drift.WINDOW}-day error, threshold = "
-        f"{100 * drift.QUANTILE:.0f}th percentile over phase A)",
-        "```",
-        json.dumps(out["threshold"], indent=1),
-        "```",
-    ]
-    if phase_b_frames is None:
-        md += ["Phase B forecasts or frame missing: no out-of-sample alerts.", ""]
-        return out, md
-    real_b, ens_b, naive_b = phase_b_frames
-    err_b, ref_b = drift.daily_abs_error(real_b, ens_b), drift.daily_abs_error(real_b, naive_b)
-    series_b = {"MAE": drift.rolling_mae(err_b), "rMAE": drift.rolling_rmae(err_b, ref_b)}
-    event = drift.first_monthly_exceedance(err_b, ("2019-01-01", "2020-12-31"), "2021-01-01")
-    out["monthly_exceedance"] = event
-    for key, rolled in series_b.items():
-        episodes = drift.alert_episodes(rolled, out["threshold"][key])
-        first_2021 = next((e["start"] for e in episodes if e["start"] >= "2021-01-01"), None)
-        lead = None
-        if first_2021 and event:
-            lead = (pd.Timestamp(event["known_on"]) - pd.Timestamp(first_2021)).days
-        out[key] = {
-            "alert_days": int(sum(e["days"] for e in episodes)),
-            "evaluated_days": len(rolled),
-            "n_episodes": len(episodes),
-            "episodes": episodes,
-            "first_2021_alert": first_2021,
-            "lead_days_before_monthly_exceedance": lead,
-            "alert_before_monthly_exceedance": None if lead is None else lead > 0,
-        }
-    summary = {k: {f: v for f, v in out[k].items() if f != "episodes"} for k in series_b}
-    md += [
-        "```",
-        json.dumps({"monthly_exceedance": event, **summary}, indent=1),
-        "```",
-        "",
-    ]
     return out, md
 
 
@@ -255,7 +159,7 @@ def main() -> None:
     }
     assert np.allclose(pub_daily["Real price"].to_numpy(), real.to_numpy())
 
-    ours = {cw: load(f"lear_cw{cw}") for cw in ALL_WINDOWS}
+    ours = {cw: load(f"lear_cw{cw}") for cw in PAPER_WINDOWS}
     missing += [f"lear_cw{cw}" for cw, f in ours.items() if f is None]
     have_paper = all(ours[cw] is not None for cw in PAPER_WINDOWS)
     rows = {}
@@ -344,128 +248,7 @@ def main() -> None:
     md += ["## Published results quoted for reference (MAE, not recomputed models)", "```",
            json.dumps(out["published_reference"], indent=1), "```", ""]  # fmt: skip
 
-    # ---- 2b. MAE-gap attribution by hour, season and price regime ---------------------------
-    history = df["Price"].loc[: pd.Timestamp(BE_TEST_END) + pd.Timedelta(hours=23)]
-    partitions = {
-        "hour": hour_segments(real.index),
-        "season": season_segments(real.index),
-        "regime": regime_segments(real, history),
-    }
-    pairs = {"LEAR ens. vs naive": (ens, naive)}
-    out["attribution"] = {}
-    for pair, (cand, ref) in pairs.items():
-        out["attribution"][pair] = {}
-        for part, seg in partitions.items():
-            att = mae_gap_attribution(real, cand, ref, seg)
-            att.index = att.index.astype(str)
-            out["attribution"][pair][part] = att.to_dict(orient="index")
-            if part != "hour":
-                md += [f"## Attribution of the MAE gap, {pair}, by {part}", fmt_table(att, 3), ""]
-        hours = pd.DataFrame(out["attribution"][pair]["hour"]).T["contribution"]
-        md += [
-            f"Hour contributions, {pair}: " + ", ".join(f"{h}: {v:+.3f}" for h, v in hours.items()),
-            "",
-        ]
-
-    # ---- 3. Robustness: calibration window -------------------------------------------------
-    win = pd.DataFrame(
-        {
-            cw: {"MAE": mae(real, ours[cw]), "rMAE": rmae(real, ours[cw])}
-            for cw in ALL_WINDOWS
-            if ours[cw] is not None
-        }
-    ).T
-    win.index.name = "window (days)"
-    out["calibration_windows"] = win.to_dict(orient="index")
-    md += ["## Calibration window", fmt_table(win, 3), ""]
-
-    # ---- 4. Robustness: inputs removed --------------------------------------------------------
-    abl_rows = {"all inputs (baseline)": {"MAE ensemble": mae(real, ens)}}
-    for name, label in ABLATIONS.items():
-        fcs = [load(f"lear_{name}_cw{cw}") for cw in PAPER_WINDOWS]
-        if any(f is None for f in fcs):
-            missing.append(f"lear_{name}_*")
-            continue
-        e = pd.DataFrame(
-            ensemble([f.to_numpy() for f in fcs]), index=real.index, columns=real.columns
-        )
-        row = {"MAE ensemble": mae(real, e)}
-        for cw, f in zip(PAPER_WINDOWS, fcs, strict=True):
-            row[f"MAE {cw}"] = mae(real, f)
-        row["delta vs baseline"] = mae(real, e) - mae(real, ens)
-        row["DM p (baseline better)"] = float(dm_test(real, e, ens)[1])
-        abl_rows[label] = row
-    for cw in PAPER_WINDOWS:
-        abl_rows["all inputs (baseline)"][f"MAE {cw}"] = mae(real, ours[cw])
-    abl = pd.DataFrame(abl_rows).T
-    out["ablations"] = abl.to_dict(orient="index")
-    md += ["## Inputs removed (ensemble of the 4 windows)", fmt_table(abl, 3), ""]
-
-    # ---- 5. Robustness: sub-periods ------------------------------------------------------------
-    daily_max = real.max(axis=1)
-    spike_threshold = float(daily_max.quantile(0.95))
-    peak_hours = [f"h{h}" for h in range(8, 20)]
-    weekday = real.index.dayofweek < 5
-    masks = {
-        "2015": real.index.year == 2015,
-        "2016": real.index.year == 2016,
-        "Q4 2016 (FR nuclear inspections)": real.index >= "2016-10-01",
-        "Jan-Sep 2016": (real.index.year == 2016) & (real.index < "2016-10-01"),
-        f"spike days (daily max > {spike_threshold:.0f})": (daily_max > spike_threshold).to_numpy(),
-        "other days": (daily_max <= spike_threshold).to_numpy(),
-    }
-    sub_rows = {}
-    for label, m in masks.items():
-        r, n_, e = real[m], naive[m], ens[m]
-        sub_rows[label] = {
-            "days": int(m.sum()),
-            "mean price": float(r.to_numpy().mean()),
-            "MAE naive": mae(r, n_),
-            "MAE LEAR ens.": mae(r, e),
-            "gain %": 100 * (1 - mae(r, e) / mae(r, n_)),
-            **{f"MAE {cw}": mae(r, ours[cw][m]) for cw in PAPER_WINDOWS},
-            "DM p (ens. better than naive)": float(dm_test(r, n_, e)[1]),
-        }
-    # Peak / off-peak on weekdays (hour columns, not days)
-    for label, cols in {
-        "weekday peak 08-20h": peak_hours,
-        "weekday off-peak": [c for c in real.columns if c not in peak_hours],
-    }.items():
-        r, n_, e = real.loc[weekday, cols], naive.loc[weekday, cols], ens.loc[weekday, cols]
-        sub_rows[label] = {
-            "days": int(weekday.sum()),
-            "mean price": float(r.to_numpy().mean()),
-            "MAE naive": mae(r, n_),
-            "MAE LEAR ens.": mae(r, e),
-            "gain %": 100 * (1 - mae(r, e) / mae(r, n_)),
-            **{f"MAE {cw}": mae(r, ours[cw].loc[weekday, cols]) for cw in PAPER_WINDOWS},
-            "DM p (ens. better than naive)": float(dm_test(r, n_, e)[1]),
-        }
-    sub = pd.DataFrame(sub_rows).T
-    out["subperiods"] = sub.to_dict(orient="index")
-    md += ["## Sub-periods", fmt_table(sub, 3), ""]
-
-    # ---- Figures ---------------------------------------------------------------------------
-    # Fig 1: MAE vs calibration window, with ensemble and naive as reference lines.
-    fig, ax = plt.subplots(figsize=(7, 3.6), dpi=150)
-    style(ax)
-    ax.plot(win.index, win["MAE"], color=BLUE, lw=2, marker="o", ms=6, label="LEAR, single window")
-    ax.axhline(mae(real, ens), color=AQUA, lw=2, ls="--", label="LEAR ensemble (56/84/1092/1456)")
-    ax.axhline(mae(real, naive), color=ORANGE, lw=2, ls=":", label="Naive benchmark")
-    ax.set_xscale("log")
-    ax.set_xticks(win.index)
-    ax.set_xticklabels(win.index)
-    ax.set_xlabel("Calibration window (days, log scale)", color=INK)
-    ax.set_ylabel("MAE (EUR/MWh)", color=INK)
-    ax.set_title(
-        "Belgian day-ahead, 2015-2016: error vs calibration window", color=INK, fontsize=10
-    )
-    ax.legend(frameon=False, fontsize=8)
-    fig.tight_layout()
-    fig.savefig(FIG / "mae_vs_window.png")
-    plt.close(fig)
-
-    # Fig 2: monthly MAE, naive vs LEAR ensemble.
+    # ---- Figure: monthly MAE, naive vs LEAR ensemble ----------------------------------------
     abs_n = (real - naive).abs().mean(axis=1).resample("MS").mean()
     abs_e = (real - ens).abs().mean(axis=1).resample("MS").mean()
     fig, ax = plt.subplots(figsize=(7, 3.6), dpi=150)
@@ -473,45 +256,43 @@ def main() -> None:
     ax.plot(abs_n.index, abs_n, color=ORANGE, lw=2, label="Naive benchmark")
     ax.plot(abs_e.index, abs_e, color=BLUE, lw=2, label="LEAR ensemble")
     ax.set_ylabel("Monthly MAE (EUR/MWh)", color=INK)
-    ax.set_title("Where the models break: monthly error, test period", color=INK, fontsize=10)
+    ax.set_title("Belgian day-ahead, 2015-2016: monthly error", color=INK, fontsize=10)
     ax.legend(frameon=False, fontsize=8)
     fig.tight_layout()
     fig.savefig(FIG / "monthly_mae.png")
     plt.close(fig)
 
-    # Fig 3: ablations (ensemble MAE), horizontal bars.
-    labels = list(abl.index)[::-1]
-    values = abl["MAE ensemble"].to_numpy()[::-1]
-    fig, ax = plt.subplots(figsize=(7, 2.8), dpi=150)
-    style(ax)
-    ax.grid(axis="y", visible=False)
-    ax.grid(axis="x", color="#e4e3df", linewidth=0.8)
-    colors = [BLUE if lab.startswith("all inputs") else GREY for lab in labels]
-    ax.barh(labels, values, color=colors, height=0.6, edgecolor="white", linewidth=2)
-    for y, v in enumerate(values):
-        ax.text(v + 0.05, y, f"{v:.2f}", va="center", fontsize=8, color=INK)
-    naive_mae = mae(real, naive)
-    ax.axvline(naive_mae, color=ORANGE, lw=2, ls=":")
-    ax.text(
-        naive_mae - 0.1,
-        len(labels) - 0.45,
-        f"naive {naive_mae:.2f}",
-        ha="right",
-        va="bottom",
-        fontsize=8,
-        color=INK,
-    )
-    ax.set_ylim(-0.5, len(labels) - 0.1)
-    ax.set_xlabel("MAE of the LEAR ensemble (EUR/MWh)", color=INK)
-    ax.set_title("Value of the French fundamentals", color=INK, fontsize=10, pad=14)
-    fig.tight_layout()
-    fig.savefig(FIG / "ablations.png")
-    plt.close(fig)
-
-    out["phase_b"], md_b, frames_b = phase_b(missing)
+    out["phase_b"], md_b = phase_b(missing)
     md += md_b
-    out["drift"], md_d = drift_block((real, ens, naive), frames_b)
-    md += md_d
+    # Decision rule: deploy the LEAR ensemble if it
+    # beats the naive forecast on the whole phase B test (one-sided multivariate DM, 5 %).
+    if out["phase_b"] is not None:
+        p_value = out["phase_b"]["accuracy"]["DM p (ens. better than naive)"]
+        out["decision"] = {
+            "rule": "LEAR ensemble if one-sided DM p < 0.05 vs naive on the phase B test",
+            "dm_p": p_value,
+            "deployed_model": "lear_ensemble" if p_value < 0.05 else "naive",
+            "recalibration": "daily, four windows (56, 84, 1092, 1456 days)",
+            "fallback": "naive forecast when a day has no LEAR forecast",
+        }
+        md += ["## Decision", "```", json.dumps(out["decision"], indent=1), "```", ""]
+    # Cost of forecasting hours on 15-minute products: the error a perfect hourly forecast
+    # would still make against the quarter-hour prices (raw ENTSO-E prices, from the cache).
+    try:
+        raw = EntsoeSource().raw("Price")
+    except RuntimeError:  # cache missing and no API key
+        missing.append("ENTSO-E price cache (run build_phase_b.py)")
+    else:
+        lo = pd.Timestamp(QUARTER_HOUR_START, tz=TZ)
+        hi = pd.Timestamp(PHASE_B_TEST[1], tz=TZ) + pd.Timedelta(days=1)
+        gap, hours = intra_hour_deviation(raw[(raw.index >= lo) & (raw.index < hi)])
+        out["quarter_hour"] = {
+            "period": [QUARTER_HOUR_START, PHASE_B_TEST[1]],
+            "hours": hours,
+            "perfect_hourly_forecast_MAE": gap,
+        }
+        md += ["## Quarter-hour products: error of a perfect hourly forecast", "```",
+               json.dumps(out["quarter_hour"], indent=1), "```", ""]  # fmt: skip
     load_test = ROOT / "results" / "load_test.json"  # written by scripts/load_test.py
     if load_test.exists():
         out["load_test"] = json.loads(load_test.read_text())
@@ -522,9 +303,11 @@ def main() -> None:
     if missing:
         md.append(f"Missing experiments: {sorted(set(missing))}")
     out["missing"] = sorted(set(missing))
-    data_report = ROOT / "results" / "data_report.json"  # written by build_phase_b.py
-    if data_report.exists():
-        out["data_report"] = json.loads(data_report.read_text())
+    # Written by scripts/build_phase_b.py and scripts/compare_sources.py.
+    for key in ("data_report", "source_comparison"):
+        path = ROOT / "results" / f"{key}.json"
+        if path.exists():
+            out[key] = json.loads(path.read_text())
     (ROOT / "results" / "summary.md").write_text("\n".join(md) + "\n")
     (ROOT / "results" / "metrics.json").write_text(json.dumps(out, indent=1, default=float))
     print("\n".join(md))

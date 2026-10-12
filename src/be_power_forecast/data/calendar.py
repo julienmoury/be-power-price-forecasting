@@ -39,6 +39,20 @@ def hourly_mean(series: pd.Series) -> pd.Series:
     return series.resample("1h").mean().where(complete)
 
 
+def intra_hour_deviation(series: pd.Series) -> tuple[float, int]:
+    """Mean absolute gap between quarter-hour values and the mean of their hour.
+
+    The error that a perfect hourly forecast would still make on 15-minute products. Only
+    hours with four quarter-hour values are used; returns the mean and the number of hours.
+    """
+    series = series.dropna()
+    hour = series.index.floor("1h")  # UTC: local hours are whole UTC hours
+    full = series.groupby(hour).transform("size") == 4
+    quarters = series[full]
+    gap = (quarters - quarters.groupby(quarters.index.floor("1h")).transform("mean")).abs()
+    return float(gap.mean()), int(full.sum() // 4)
+
+
 def hours_in_day(days: pd.DatetimeIndex) -> pd.Series:
     """Number of hours of each local delivery day (23, 24 or 25)."""
     start = days.tz_localize(TZ)

@@ -91,63 +91,12 @@ which makes the ensemble 0.14 EUR/MWh worse than published.
 - Short windows (56, 84) are not significantly different from each other (DM p = 0.36);
   long windows (1092, 1456) neither (p = 0.09).
 
-![MAE vs calibration window](results/figures/mae_vs_window.png)
-
-## Robustness — where the model breaks
-
-**Calibration window.** The single-window error falls from 7.42 (28 days) to a minimum of
-6.53 at 728 days, then rises slightly (6.61 at 1092, 6.65 at 1456). No single window,
-including 728 days which is not in the paper's set, beats the 4-window ensemble (6.28).
-
-**Sub-periods** (ensemble vs naive):
-
-| Period | Days | Mean price | MAE naive | MAE ensemble | Gain | DM p |
-|---|---|---|---|---|---|---|
-| 2015 | 362 | 44.70 | 9.44 | 7.42 | 21.4 % | < 0.001 |
-| Jan–Sep 2016 (low prices) | 274 | 29.40 | 4.79 | 3.51 | 26.7 % | < 0.001 |
-| Q4 2016 (French nuclear inspections) | 92 | 58.10 | 13.48 | 10.01 | 25.8 % | 0.001 |
-| Spike days (daily max > 95 EUR/MWh, top 5 %) | 37 | 84.74 | 31.05 | 27.30 | 12.1 % | **0.18** |
-| Other days | 691 | 38.27 | 6.98 | 5.15 | 26.2 % | < 0.001 |
-| Weekday peak 08–20h | 520 | 50.37 | 10.41 | 8.12 | 22.1 % | < 0.001 |
-| Weekday off-peak | 520 | 37.63 | 6.64 | 5.07 | 23.6 % | < 0.001 |
-
-- **Spike days are where LEAR breaks**: the gain shrinks to 12 % and is not significant
-  (p = 0.18); errors are ~5× larger than on normal days.
-- **The best window depends on the regime**: in 2015 long windows win (1456 days: 7.24 vs
-  56 days: 8.75); in the low-price Jan–Sep 2016 regime short windows win (84 days: 3.78 vs
-  1456 days: 4.62). The ensemble is the best specification in 6 of the 8 sub-periods and
-  within 0.18 EUR/MWh of the best single window in the other two (2015, spike days).
-
 ![Monthly MAE](results/figures/monthly_mae.png)
-
-**Inputs removed** (ensemble of the 4 windows, DM p-value that the baseline is better):
-
-| Inputs | MAE ensemble | Δ vs baseline | DM p |
-|---|---|---|---|
-| All inputs (baseline) | 6.28 | — | — |
-| Without FR load forecast | 6.40 | +0.12 | < 0.001 |
-| Without FR generation forecast | 6.34 | +0.07 | 0.004 |
-| Without any exogenous input | 6.79 | +0.52 | < 0.001 |
-
-The French fundamentals are worth 0.52 EUR/MWh, and almost all of it comes through the
-short windows (56 days: 7.23 → 8.19 without exogenous inputs; 1092 days: 6.61 → 6.68).
-Long windows can do without the French generation forecast (1092 days: 6.52 without it
-vs 6.61 with it).
-
-![Ablations](results/figures/ablations.png)
 
 ## Decision
 
-**Use the 4-window LEAR ensemble, fed with the French load and generation forecasts, as
-the Belgian day-ahead baseline**: it cuts the naive error by 23 %, and since the best
-single window changes with the price regime, averaging four windows is the cheapest
-insurance against picking the wrong one (best in 6 of 8 sub-periods, never more than
-0.18 EUR/MWh behind the best window). Do **not** rely on it on spike
-days, where it is statistically no better than the naive forecast: anything exposed to
-the price tails (peak hedging, battery dispatch) needs a dedicated spike/scarcity model or
-a risk overlay on top. Before using it on today's market, re-run the comparison on
-2019–2026 data (phase B), since the 2022 crisis and the move to 15-minute day-ahead
-products (1 October 2025) are outside this sample.
+The decision rule and the results on 2017–2026 (phase B) are being rewritten: this README
+is regenerated from `results/metrics.json` once phase B is final.
 
 ## Limitations
 

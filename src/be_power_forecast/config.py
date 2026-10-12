@@ -20,18 +20,14 @@ TZ = "Europe/Brussels"
 # Phase A: test period of Lago et al. (2021) for BE, the last 2 x 364 days of BE.csv.
 PHASE_A_TEST = ("2015-01-04", "2016-12-31")
 
-# Phase B: ENTSO-E data start in 2015; the 1456-day window needs 4 years of history.
+# Phase B: continue the paper from the day after its test period. ENTSO-E data start in
+# January 2015, so the 1456-day window is filled with BE.csv up to the day before JOIN_DAY,
+# the first full delivery day of the Belgian price on ENTSO-E, where both sources agree.
 PHASE_B_DOWNLOAD = ("2015-01-01", "2026-09-30")
-PHASE_B_TEST = ("2019-01-01", "2026-09-30")
-SUB_PERIODS = {
-    "before": ("2019-01-01", "2021-06-30"),
-    "crisis": ("2021-07-01", "2023-06-30"),
-    "after": ("2023-07-01", "2026-09-30"),
-    # Robustness split of "after": SDAC clears 15-minute products from delivery day
-    # 1 October 2025.
-    "after_hourly": ("2023-07-01", "2025-09-30"),
-    "after_quarter_hour": ("2025-10-01", "2026-09-30"),
-}
+JOIN_DAY = "2015-01-05"
+PHASE_B_TEST = ("2017-01-01", "2026-09-30")
+# SDAC clears 15-minute products from delivery day 1 October 2025; they are averaged to
+# hours (data/calendar.py).
 QUARTER_HOUR_START = "2025-10-01"
 
 # Exogenous inputs, as in Lago et al. (2021) for Belgium: French day-ahead forecasts.

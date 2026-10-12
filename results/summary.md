@@ -57,133 +57,46 @@
 }
 ```
 
-## Attribution of the MAE gap, LEAR ens. vs naive, by season
-|  | hours | MAE_A | MAE_B | weight | gap | contribution | share |
-|---|---|---|---|---|---|---|---|
-| DJF | 4272.000 | 5.041 | 6.375 | 0.245 | -1.334 | -0.326 | 0.170 |
-| JJA | 4416.000 | 5.300 | 7.213 | 0.253 | -1.913 | -0.483 | 0.251 |
-| MAM | 4416.000 | 5.017 | 6.985 | 0.253 | -1.969 | -0.498 | 0.259 |
-| SON | 4368.000 | 9.753 | 12.223 | 0.250 | -2.469 | -0.617 | 0.321 |
-| total | 17472.000 | 6.278 | 8.203 | 1.000 | -1.925 | -1.925 | 1.000 |
-
-## Attribution of the MAE gap, LEAR ens. vs naive, by regime
-|  | hours | MAE_A | MAE_B | weight | gap | contribution | share |
-|---|---|---|---|---|---|---|---|
-| negative | 2.000 | 11.724 | 22.985 | 0.000 | -11.261 | -0.001 | 0.001 |
-| normal | 16601.000 | 4.926 | 6.839 | 0.950 | -1.913 | -1.817 | 0.944 |
-| spike | 869.000 | 32.098 | 34.227 | 0.050 | -2.130 | -0.106 | 0.055 |
-| total | 17472.000 | 6.278 | 8.203 | 1.000 | -1.925 | -1.925 | 1.000 |
-
-Hour contributions, LEAR ens. vs naive: 0: -0.092, 1: -0.075, 2: -0.081, 3: -0.081, 4: -0.075, 5: -0.067, 6: -0.071, 7: -0.106, 8: -0.089, 9: -0.095, 10: -0.095, 11: -0.096, 12: -0.083, 13: -0.070, 14: -0.084, 15: -0.073, 16: -0.082, 17: -0.077, 18: -0.104, 19: -0.095, 20: -0.071, 21: -0.047, 22: -0.054, 23: -0.063, total: -1.925
-
-## Calibration window
-|  | MAE | rMAE |
-|---|---|---|
-| 28 | 7.419 | 0.901 |
-| 56 | 7.226 | 0.878 |
-| 84 | 7.197 | 0.874 |
-| 182 | 7.100 | 0.863 |
-| 364 | 6.788 | 0.825 |
-| 728 | 6.527 | 0.793 |
-| 1092 | 6.606 | 0.803 |
-| 1456 | 6.645 | 0.807 |
-
-## Inputs removed (ensemble of the 4 windows)
-|  | MAE ensemble | MAE 56 | MAE 84 | MAE 1092 | MAE 1456 | delta vs baseline | DM p (baseline better) |
-|---|---|---|---|---|---|---|---|
-| all inputs (baseline) | 6.278 | 7.226 | 7.197 | 6.606 | 6.645 | nan | nan |
-| without FR load forecast | 6.400 | 7.343 | 7.407 | 6.664 | 6.727 | 0.121 | 0.000 |
-| without FR generation forecast | 6.345 | 7.436 | 7.356 | 6.520 | 6.588 | 0.067 | 0.004 |
-| without any exogenous input | 6.793 | 8.187 | 8.003 | 6.679 | 6.722 | 0.515 | 0.000 |
-
-## Sub-periods
-|  | days | mean price | MAE naive | MAE LEAR ens. | gain % | MAE 56 | MAE 84 | MAE 1092 | MAE 1456 | DM p (ens. better than naive) |
-|---|---|---|---|---|---|---|---|---|---|---|
-| 2015 | 362.000 | 44.704 | 9.441 | 7.423 | 21.380 | 8.750 | 8.730 | 7.303 | 7.241 | 0.000 |
-| 2016 | 366.000 | 36.613 | 6.978 | 5.146 | 26.250 | 5.720 | 5.680 | 5.918 | 6.056 | 0.000 |
-| Q4 2016 (FR nuclear inspections) | 92.000 | 58.097 | 13.482 | 10.008 | 25.767 | 11.490 | 11.338 | 10.427 | 10.345 | 0.001 |
-| Jan-Sep 2016 | 274.000 | 29.399 | 4.794 | 3.514 | 26.707 | 3.782 | 3.780 | 4.403 | 4.616 | 0.000 |
-| spike days (daily max > 95) | 37.000 | 84.743 | 31.049 | 27.297 | 12.083 | 28.659 | 27.210 | 29.134 | 28.681 | 0.177 |
-| other days | 691.000 | 38.274 | 6.980 | 5.153 | 26.174 | 6.079 | 6.125 | 5.400 | 5.465 | 0.000 |
-| weekday peak 08-20h | 520.000 | 50.369 | 10.413 | 8.116 | 22.053 | 9.165 | 9.077 | 8.473 | 8.532 | 0.000 |
-| weekday off-peak | 520.000 | 37.626 | 6.635 | 5.068 | 23.616 | 5.860 | 5.779 | 5.290 | 5.286 | 0.000 |
-
-## Phase B: 4-window LEAR on ENTSO-E data, 2019-01-01 to 2026-09-30
-2793 of 2830 test days evaluated (days depending on a dropped day are not forecast).
-|  | days | mean price | negative hours % | MAE naive | MAE LEAR 56 | MAE LEAR 84 | MAE LEAR 1092 | MAE LEAR 1456 | MAE LEAR ens. | RMSE LEAR ens. | sMAPE % LEAR ens. | MAE ens. / MAE naive | gain vs naive % | DM p (ens. better than naive) |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| full | 2793.000 | 97.300 | 2.830 | 25.167 | 18.726 | 18.542 | 17.961 | 17.849 | 16.543 | 29.371 | 25.565 | 0.657 | 34.266 | 0.000 |
-| before | 880.000 | 39.235 | 1.345 | 8.506 | 6.405 | 6.337 | 6.020 | 5.925 | 5.650 | 11.267 | 18.353 | 0.664 | 33.577 | 0.000 |
-| crisis | 730.000 | 187.561 | 1.398 | 44.618 | 33.774 | 33.361 | 33.423 | 33.606 | 30.103 | 45.401 | 21.526 | 0.675 | 32.533 | 0.000 |
-| after | 1183.000 | 84.795 | 4.818 | 25.557 | 18.606 | 18.475 | 17.302 | 16.997 | 16.279 | 25.890 | 33.424 | 0.637 | 36.305 | 0.000 |
-| after_hourly | 818.000 | 77.589 | 5.292 | 24.253 | 17.009 | 17.110 | 15.868 | 15.485 | 14.870 | 22.370 | 34.377 | 0.613 | 38.688 | 0.000 |
-| after_quarter_hour | 365.000 | 100.945 | 3.756 | 28.480 | 22.184 | 21.536 | 20.516 | 20.384 | 19.435 | 32.418 | 31.286 | 0.682 | 31.757 | 0.000 |
-
-## Phase B attribution, LEAR ens. vs naive, full, by season
-|  | hours | MAE_A | MAE_B | weight | gap | contribution | share |
-|---|---|---|---|---|---|---|---|
-| DJF | 16344.000 | 14.664 | 25.661 | 0.244 | -10.997 | -2.681 | 0.311 |
-| JJA | 17616.000 | 17.200 | 22.939 | 0.263 | -5.739 | -1.508 | 0.175 |
-| MAM | 17064.000 | 15.815 | 23.546 | 0.255 | -7.731 | -1.968 | 0.228 |
-| SON | 16008.000 | 18.514 | 28.841 | 0.239 | -10.327 | -2.466 | 0.286 |
-| total | 67032.000 | 16.543 | 25.167 | 1.000 | -8.624 | -8.624 | 1.000 |
-
-## Phase B attribution, LEAR ens. vs naive, full, by regime
-|  | hours | MAE_A | MAE_B | weight | gap | contribution | share |
-|---|---|---|---|---|---|---|---|
-| negative | 1897.000 | 35.398 | 48.669 | 0.028 | -13.271 | -0.376 | 0.044 |
-| normal | 56997.000 | 13.215 | 21.719 | 0.850 | -8.504 | -7.231 | 0.838 |
-| spike | 8138.000 | 35.454 | 43.836 | 0.121 | -8.382 | -1.018 | 0.118 |
-| total | 67032.000 | 16.543 | 25.167 | 1.000 | -8.624 | -8.624 | 1.000 |
-
-## Phase B attribution, LEAR ens. vs naive, after, by season
-|  | hours | MAE_A | MAE_B | weight | gap | contribution | share |
-|---|---|---|---|---|---|---|---|
-| DJF | 6504.000 | 12.790 | 24.473 | 0.229 | -11.683 | -2.676 | 0.288 |
-| JJA | 8112.000 | 17.230 | 24.075 | 0.286 | -6.845 | -1.956 | 0.211 |
-| MAM | 6504.000 | 16.765 | 26.131 | 0.229 | -9.366 | -2.146 | 0.231 |
-| SON | 7272.000 | 17.903 | 27.667 | 0.256 | -9.764 | -2.501 | 0.270 |
-| total | 28392.000 | 16.279 | 25.557 | 1.000 | -9.278 | -9.278 | 1.000 |
-
-## Phase B attribution, LEAR ens. vs naive, after, by regime
-|  | hours | MAE_A | MAE_B | weight | gap | contribution | share |
-|---|---|---|---|---|---|---|---|
-| negative | 1368.000 | 26.670 | 38.677 | 0.048 | -12.007 | -0.579 | 0.062 |
-| normal | 26762.000 | 15.305 | 24.516 | 0.943 | -9.211 | -8.682 | 0.936 |
-| spike | 262.000 | 61.497 | 63.450 | 0.009 | -1.953 | -0.018 | 0.002 |
-| total | 28392.000 | 16.279 | 25.557 | 1.000 | -9.278 | -9.278 | 1.000 |
-
-## Drift rule (rolling 30-day error, threshold = 95th percentile over phase A)
+## Phase B: 4-window LEAR on BE.csv + ENTSO-E data, 2017-01-01 to 2026-09-30
+3523 of 3560 test days evaluated (days depending on a dropped day are not forecast).
 ```
 {
- "MAE": 13.783617545937503,
- "rMAE": 0.9140143226236584
+ "mean price": 87.48431225754565,
+ "negative hours %": 2.2613303056107483,
+ "MAE naive": 21.865304694152712,
+ "MAE LEAR 56": 16.496622976818998,
+ "MAE LEAR 84": 16.35807855015848,
+ "MAE LEAR 1092": 15.654617937186584,
+ "MAE LEAR 1456": 15.545881458179581,
+ "MAE LEAR ens.": 14.524510368838111,
+ "RMSE LEAR ens.": 26.748271347395782,
+ "sMAPE % LEAR ens.": 23.140402191882366,
+ "MAE ens. / MAE naive": 0.6642720315131168,
+ "gain vs naive %": 33.57279684868833,
+ "DM p (ens. better than naive)": 0.0
 }
 ```
+
+## Decision
 ```
 {
- "monthly_exceedance": {
-  "month": "2021-05",
-  "known_on": "2021-05-31",
-  "monthly_MAE": 12.436981476562499,
-  "base_monthly_MAE": 5.03417051873615
- },
- "MAE": {
-  "alert_days": 1397,
-  "evaluated_days": 2764,
-  "n_episodes": 25,
-  "first_2021_alert": "2021-08-08",
-  "lead_days_before_monthly_exceedance": -69,
-  "alert_before_monthly_exceedance": false
- },
- "rMAE": {
-  "alert_days": 76,
-  "evaluated_days": 2764,
-  "n_episodes": 12,
-  "first_2021_alert": "2021-09-22",
-  "lead_days_before_monthly_exceedance": -114,
-  "alert_before_monthly_exceedance": false
- }
+ "rule": "LEAR ensemble if one-sided DM p < 0.05 vs naive on the phase B test",
+ "dm_p": 0.0,
+ "deployed_model": "lear_ensemble",
+ "recalibration": "daily, four windows (56, 84, 1092, 1456 days)",
+ "fallback": "naive forecast when a day has no LEAR forecast"
+}
+```
+
+## Quarter-hour products: error of a perfect hourly forecast
+```
+{
+ "period": [
+  "2025-10-01",
+  "2026-09-30"
+ ],
+ "hours": 8760,
+ "perfect_hourly_forecast_MAE": 7.910800228310502
 }
 ```
 

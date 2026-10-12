@@ -1,11 +1,14 @@
 """Run every LEAR backtest used in the README and save forecasts to results/forecasts/.
 
-Phase A: the paper's dataset (BE.csv), test 2015-01-04 to 2016-12-31, with robustness runs.
+Phase A: the paper's dataset (BE.csv), test 2015-01-04 to 2016-12-31, plus a diagnostic of
+the gap to the published forecasts (exogenous lags of the pre-2024 library).
 Phase B: the same 4-window protocol on the ENTSO-E standard frame built by
 scripts/build_phase_b.py (data/cache/phase_b_FR.parquet), test 2019-01-01 to 2026-09-30;
 forecasts go to results/forecasts/phase_b/.
 
-Each experiment is skipped if its CSV already exists, so the script can be resumed.
+Each experiment is skipped if its CSV already exists, so the script can be resumed; a CSV
+that starts after the test period (phase B moved from 2019 to 2017 with the join of
+BE.csv and ENTSO-E) is extended with the missing first days only.
 With the ``mlops`` extra installed, every new backtest is logged as an MLflow run
 (be_power_forecast.mlops.tracking); ``--track`` logs the backtests whose CSV already exists.
 Usage: python scripts/run_experiments.py [--phase A|B] [--only NAME ...] [--n-jobs N] [--track]
@@ -37,14 +40,6 @@ TRACKING = importlib.util.find_spec("mlflow") is not None  # mlops extra install
 OUT = Path(__file__).resolve().parents[1] / "results" / "forecasts"
 
 PAPER_WINDOWS = (56, 84, 1092, 1456)
-EXTRA_WINDOWS = (28, 182, 364, 728)
-
-# name -> columns dropped from the standard frame
-ABLATIONS = {
-    "no_exog": ["Generation forecast FR", "Load forecast FR"],
-    "no_load_fr": ["Load forecast FR"],
-    "no_gen_fr": ["Generation forecast FR"],
-}
 
 
 # Exogenous lags D-1, D-2, D (epftoolbox before commit f234b08, June 2024) instead of
@@ -54,11 +49,6 @@ LAGS_D2 = FeatureSpec(exogenous_lags=(1, 2, 0))
 
 def experiments():
     for cw in PAPER_WINDOWS:
-        yield f"lear_cw{cw}", cw, [], DEFAULT_SPEC
-    for name, drop in ABLATIONS.items():
-        for cw in PAPER_WINDOWS:
-            yield f"lear_{name}_cw{cw}", cw, drop, DEFAULT_SPEC
-    for cw in EXTRA_WINDOWS:
         yield f"lear_cw{cw}", cw, [], DEFAULT_SPEC
     for cw in (56, 84):
         yield f"lear_exoglags12_cw{cw}", cw, [], LAGS_D2
@@ -105,13 +95,16 @@ def main() -> None:
         path = out / f"{name}.csv"
         if args.only and name not in args.only:
             continue
-        if path.exists():
+        old = pd.read_csv(path, index_col=0, parse_dates=True) if path.exists() else None
+        if old is not None and old.index[0] <= pd.Timestamp(begin):
             if args.track:
-                fc = pd.read_csv(path, index_col=0, parse_dates=True)
-                track(args.phase, name, cw, drop, spec, fc, real, path)
+                track(args.phase, name, cw, drop, spec, old, real, path)
             continue
+        stop = end if old is None else str((old.index[0] - pd.Timedelta(days=1)).date())
         start = time.time()
-        fc = lear_backtest(df.drop(columns=drop), begin, end, cw, spec, n_jobs=args.n_jobs)
+        fc = lear_backtest(df.drop(columns=drop), begin, stop, cw, spec, n_jobs=args.n_jobs)
+        if old is not None:
+            fc = pd.concat([fc, old])
         fc.to_csv(path, float_format="%.6f")
         runtime = time.time() - start
         print(f"{name}: {len(fc)} days in {runtime:.0f}s", flush=True)

@@ -5,9 +5,14 @@ import pandas as pd
 import pytest
 
 from be_power_forecast.backtest import lear_backtest
-from be_power_forecast.data.calendar import hourly_mean, standard_frame, to_local_days
+from be_power_forecast.data.calendar import (
+    hourly_mean,
+    intra_hour_deviation,
+    standard_frame,
+    to_local_days,
+)
 from be_power_forecast.data.entsoe_parser import parse_generation, parse_loads, parse_prices
-from be_power_forecast.data.sources import EntsoeSource, validate_standard_frame
+from be_power_forecast.data.sources import EntsoeSource, JoinedSource, validate_standard_frame
 
 FIXTURES = Path(__file__).parent / "fixtures" / "entsoe"
 
@@ -140,3 +145,43 @@ def test_resolution_change_is_handled_hour_by_hour():
     days, report = to_local_days(pd.concat([hourly, quarter]))
     assert report["dropped_days"] == [] and len(days) == 2
     assert days.iloc[0].eq(1.0).all() and days.iloc[1, 0] == 1.5
+
+
+class FrameSource:
+    def __init__(self, frame):
+        self.frame = frame
+
+    def load(self):
+        return self.frame
+
+
+def frame(start, days, value):
+    index = pd.date_range(start, periods=24 * days, freq="h", name="Date")
+    return pd.DataFrame({"Price": value, "X": value}, index=index)
+
+
+def test_joined_source_switches_at_join_day():
+    paper = FrameSource(frame("2015-01-01", 5, 1.0))  # up to 2015-01-05 23:00
+    recent = FrameSource(frame("2015-01-05", 3, 2.0))  # overlaps on 2015-01-05
+    joined = JoinedSource(paper, recent, join_day="2015-01-05").load()
+    assert joined.index[0] == pd.Timestamp("2015-01-01") and len(joined) == 24 * 7
+    assert (joined.loc[:"2015-01-04 23:00", "Price"] == 1.0).all()
+    assert (joined.loc["2015-01-05":, "Price"] == 2.0).all()
+
+
+def test_joined_source_refuses_a_gap():
+    paper = FrameSource(frame("2015-01-01", 3, 1.0))  # ends 2015-01-03
+    recent = FrameSource(frame("2015-01-05", 3, 2.0))
+    with pytest.raises(ValueError, match="do not meet"):
+        JoinedSource(paper, recent, join_day="2015-01-05").load()
+    late = FrameSource(frame("2015-01-06", 3, 2.0))  # ENTSO-E starts after the join day
+    with pytest.raises(ValueError, match="do not meet"):
+        JoinedSource(FrameSource(frame("2015-01-01", 5, 1.0)), late, "2015-01-05").load()
+
+
+def test_intra_hour_deviation():
+    idx = pd.date_range("2025-10-01 12:00", periods=9, freq="15min", tz="UTC")
+    # One full hour (80, 90, 100, 110: mean 95, gaps 15, 5, 5, 15) and one incomplete hour.
+    series = pd.Series([80, 90, 100, 110, 1, 2, 3, 4, 5], index=idx, dtype=float)
+    series.iloc[5] = np.nan
+    assert intra_hour_deviation(series) == (10.0, 1)

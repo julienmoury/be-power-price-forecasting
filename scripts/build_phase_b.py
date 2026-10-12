@@ -1,9 +1,10 @@
 """Download the phase B ENTSO-E data, build the standard frames and write the data report.
 
 Needs ENTSOE_API_KEY. Raw series are cached as parquet in data/cache/ (git-ignored, never
-committed); the standard frame (Belgian price, French generation and load forecasts) is
-written there too, with a price-only frame for the naive fallback of the forecast service
-(a day dropped because a French forecast is missing keeps its price there).
+committed). The phase B frame (Belgian price, French generation and load forecasts) joins
+BE.csv before JOIN_DAY and ENTSO-E from JOIN_DAY; it is written to data/cache/ too, with
+a price-only frame for the naive fallback of the forecast service (a day dropped because
+a French forecast is missing keeps its price there).
 Outputs: results/data_report.md and results/data_report.json (merged into
 results/metrics.json under "data_report").
 
@@ -16,9 +17,9 @@ import json
 
 import pandas as pd
 
-from be_power_forecast.config import CACHE_DIR, RESULTS_DIR
+from be_power_forecast.config import CACHE_DIR, JOIN_DAY, RESULTS_DIR
 from be_power_forecast.data.calendar import standard_frame, to_local_days
-from be_power_forecast.data.sources import EntsoeSource
+from be_power_forecast.data.sources import EntsoeSource, JoinedSource
 
 
 def series_report(name: str, raw: pd.Series) -> dict:
@@ -94,12 +95,13 @@ def to_markdown(report: dict) -> str:
     for name, r in report["series"].items():
         md.append(f"- {name}: {', '.join(r['dropped_days']) or 'none'}")
     f = report["frame"]
-    md += ["", "## Standard frame", ""]
+    md += ["", "## Phase B frame (BE.csv joined to ENTSO-E)", ""]
     md.append(
-        f"{f['first_day']} to {f['last_day']}: {f['days']} days, "
+        f"{f['first_day']} to {f['last_day']}: {f['days']} days; BE.csv up to the day before "
+        f"{f['join_day']}, ENTSO-E from {f['join_day']}; "
         f"{len(f['dropped_days'])} dropped (any series): {', '.join(f['dropped_days']) or 'none'}."
     )
-    md += ["", "## Belgian day-ahead price per year (EUR/MWh, hourly values)", ""]
+    md += ["", "## Belgian day-ahead price per year (EUR/MWh, hourly values, joined frame)", ""]
     md += ["| Year | Hours | Mean | Min | Max | Negative % |", "|---|---|---|---|---|---|"]
     for y, s in report["price"].items():
         md.append(
@@ -112,7 +114,7 @@ def to_markdown(report: dict) -> str:
 def main() -> None:
     source = EntsoeSource()
     raw = {name: source.raw(name) for name in source.columns}
-    frame = source.load()
+    frame = JoinedSource(recent=source).load()
     frame.to_parquet(CACHE_DIR / "phase_b_FR.parquet")
     standard_frame({"Price": raw["Price"]})[0].to_parquet(CACHE_DIR / "prices_BE.parquet")
     report = {
@@ -121,6 +123,7 @@ def main() -> None:
             "first_day": str(frame.index[0].date()),
             "last_day": str(frame.index[-1].date()),
             "days": len(frame) // 24,
+            "join_day": JOIN_DAY,
             "dropped_days": source.report["dropped_days_any_series"],
         },
         "price": price_stats(frame),

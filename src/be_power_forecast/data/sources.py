@@ -16,6 +16,7 @@ import pandas as pd
 from be_power_forecast.config import (
     CACHE_DIR,
     EXOGENOUS,
+    JOIN_DAY,
     PHASE_A_TEST,
     PHASE_B_DOWNLOAD,
     RAW_DIR,
@@ -132,6 +133,33 @@ class EntsoeSource(PriceSource):
     def load(self) -> pd.DataFrame:
         frame, self.report = standard_frame({c: self.raw(c) for c in self.columns})
         return validate_standard_frame(frame, allow_missing_days=True)
+
+
+class JoinedSource(PriceSource):
+    """BE.csv before ``join_day``, ENTSO-E from ``join_day`` (phase B).
+
+    The two sources hold the same Belgian price and agree on the French forecasts around
+    the join (``results/source_comparison.md``). The join must leave no gap and no overlap.
+    """
+
+    def __init__(
+        self,
+        paper: PriceSource | None = None,
+        recent: PriceSource | None = None,
+        join_day: str = JOIN_DAY,
+    ):
+        self.paper = paper or EpftoolboxZenodoSource()
+        self.recent = recent or EntsoeSource()
+        self.join_day = pd.Timestamp(join_day)
+
+    def load(self) -> pd.DataFrame:
+        old = self.paper.load().loc[: self.join_day - pd.Timedelta(hours=1)]
+        new = self.recent.load().loc[self.join_day :]
+        if list(old.columns) != list(new.columns):
+            raise ValueError("both sources must have the same columns")
+        if old.index[-1] + pd.Timedelta(hours=1) != self.join_day or new.index[0] != self.join_day:
+            raise ValueError(f"sources do not meet at {self.join_day.date()}")
+        return validate_standard_frame(pd.concat([old, new]), allow_missing_days=True)
 
 
 def train_test_split(df: pd.DataFrame, begin_test: str, end_test: str):

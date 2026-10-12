@@ -13,8 +13,8 @@
    when it is continued day after day from the end of the paper's test period to today
    (2017-01-01 to 2026-09-30: 2022 crisis, negative prices,
    15-minute products)?
-3. **Tool.** Can it be served reliably: latency and throughput of the containerised
-   service, and behaviour when the forecasts are missing?
+3. **Tool.** Can it run every day on its own and be served reliably? → **[Live forecast
+   of tomorrow's prices](live/README.md)**, updated every morning before the auction.
 
 The project only does what the paper does, plus its extension and the tool around it. All
 numbers below are rendered by `scripts/make_report.py` from
@@ -128,6 +128,12 @@ of hours with a negative price.
 ![Monthly MAE](results/figures/monthly_mae.png)
 
 ### 3. The forecasting tool
+
+- **Live forecast** ([`live/README.md`](live/README.md)): every morning before the 12:00
+  gate closure, a GitHub Actions workflow downloads the new ENTSO-E data, recalibrates the
+  four windows, publishes the forecast of the next day and scores the previous ones against
+  the naive forecast. Forecasts made before the auction are labelled `live`; days computed
+  afterwards are labelled `backtest`.
 
 - **Service** (`src/be_power_forecast/api/app.py`, FastAPI): `POST /forecast` returns the
   24 hourly prices of any delivery day from 2017-01-01. Forecasts are

@@ -48,7 +48,7 @@ def test_score_only_days_with_known_prices():
     days = pd.date_range("2026-10-05", "2026-10-14")  # Monday to Wednesday of next week
     prices = pd.DataFrame(np.arange(len(days) * 24.0).reshape(-1, 24), days, HOURS)
     forecasts = pd.DataFrame(
-        {"model": "lear_ensemble", **{h: 0.0 for h in HOURS}},
+        {"origin": "live", "model": "lear_ensemble", **{h: 0.0 for h in HOURS}},
         index=pd.DatetimeIndex(["2026-10-13", "2026-10-15"], name="Date"),
     )
     out = score(forecasts, prices)
@@ -56,3 +56,4 @@ def test_score_only_days_with_known_prices():
     real = prices.loc["2026-10-13"]
     assert out.loc["2026-10-13", "MAE"] == real.mean()
     assert out.loc["2026-10-13", "MAE naive"] == 24.0  # Tuesday copies Monday: gap of 24
+    assert out.loc["2026-10-13", "origin"] == "live"

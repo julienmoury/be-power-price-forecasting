@@ -84,7 +84,11 @@ def forecast_day(frame: pd.DataFrame, day: pd.Timestamp) -> tuple[str, np.ndarra
 
 
 def score(forecasts: pd.DataFrame, prices: pd.DataFrame) -> pd.DataFrame:
-    """Daily MAE of each live forecast and of the naive forecast, once prices are known."""
+    """Daily MAE of each forecast and of the naive forecast, once prices are known.
+
+    ``origin`` says how the forecast was made: ``live`` (the morning before the auction) or
+    ``backtest`` (afterwards, with the days before it only).
+    """
     rows = {}
     for day, row in forecasts.iterrows():
         source = naive_source_day(day)
@@ -94,10 +98,12 @@ def score(forecasts: pd.DataFrame, prices: pd.DataFrame) -> pd.DataFrame:
         if real.notna().all() and naive.notna().all():
             pred = row[HOURS].to_numpy(dtype=float)
             rows[day] = {
+                "origin": row.get("origin", "live"),
                 "model": row["model"],
                 "MAE": mae(real, pred),
                 "MAE naive": mae(real, naive),
             }
-    out = pd.DataFrame.from_dict(rows, orient="index", columns=["model", "MAE", "MAE naive"])
+    columns = ["origin", "model", "MAE", "MAE naive"]
+    out = pd.DataFrame.from_dict(rows, orient="index", columns=columns)
     out.index.name = "Date"
     return out

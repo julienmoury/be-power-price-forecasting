@@ -7,6 +7,11 @@ on:
   schedule:
     - cron: "15 8 * * *" # 08:15 UTC = 09:15 CET / 10:15 CEST
   workflow_dispatch:
+    inputs:
+      backfill:
+        description: "Optional: forecast FIRST LAST after the fact, labelled backtest (YYYY-MM-DD YYYY-MM-DD)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -36,12 +41,23 @@ jobs:
       - name: Forecast
         env:
           ENTSOE_API_KEY: ${{ secrets.ENTSOE_API_KEY }}
-        run: python scripts/live_forecast.py
+          BACKFILL: ${{ inputs.backfill }}
+        run: |
+          if [ -n "$BACKFILL" ]; then
+            read -r first last <<< "$BACKFILL"
+            python scripts/live_forecast.py --backfill "$first" "$last"
+          else
+            python scripts/live_forecast.py
+          fi
       - name: Commit the forecast
+        env:
+          BACKFILL: ${{ inputs.backfill }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add results/forecasts/live live
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m "chore(live): forecast of $(date -u -d tomorrow +%Y-%m-%d)"
+          if [ -n "$BACKFILL" ]; then msg="chore(live): backfill $BACKFILL";
+          else msg="chore(live): forecast of $(date -u -d tomorrow +%Y-%m-%d)"; fi
+          git commit -m "$msg"
           git push

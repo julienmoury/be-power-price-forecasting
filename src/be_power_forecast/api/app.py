@@ -52,7 +52,9 @@ def load_lear_forecasts(directory: Path, live_path: Path | None = None) -> pd.Da
     out["origin"] = "backtest"
     if live_path is not None and Path(live_path).exists():
         live = pd.read_csv(live_path, index_col=0, parse_dates=True)
-        live = live.loc[live["model"] == "lear_ensemble", HOURS].assign(origin="live")
+        if "origin" not in live:
+            live["origin"] = "live"
+        live = live.loc[live["model"] == "lear_ensemble", [*HOURS, "origin"]]
         out = pd.concat([out.drop(index=live.index, errors="ignore"), live]).sort_index()
     return out
 
@@ -69,9 +71,9 @@ class ForecastRequest(BaseModel):
 class ForecastResponse(BaseModel):
     delivery_day: dt.date
     model: str  # "lear_ensemble" | "naive_fallback"
-    origin: (
-        str  # "backtest" (reconstructed, no look-ahead) | "live" (made the day before) | "naive"
-    )
+    # "backtest": made afterwards with the days before it only; "live": made the morning
+    # before the auction; "naive": naive fallback.
+    origin: str
     prices: list[float]  # EUR/MWh, hours 00:00..23:00 Brussels time (calendar.py rules)
     inputs_until: dt.date  # last day of prices the forecast depends on
 

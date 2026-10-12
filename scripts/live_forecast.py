@@ -6,7 +6,9 @@ forecast the delivery day (naive forecast if an input is not published yet), sco
 live forecasts whose prices are now known, and write
 results/forecasts/live/{forecasts,scores}.csv and the page live/README.md (with
 live/forecast.png). Realised prices are never written (ENTSO-E re-use terms).
-Usage: python scripts/live_forecast.py [--day YYYY-MM-DD]
+With --backfill FIRST LAST, forecasts the days FIRST..LAST after the fact, each with the
+days before it only, and labels them "backtest" (not "live").
+Usage: python scripts/live_forecast.py [--day YYYY-MM-DD | --backfill FIRST LAST]
 """
 
 from __future__ import annotations
@@ -33,6 +35,7 @@ def write_page(forecasts: pd.DataFrame, scores: pd.DataFrame, now: pd.Timestamp)
     PAGE.mkdir(exist_ok=True)
     day = forecasts.index[-1]
     last = forecasts.loc[day]
+    live = scores[scores["origin"] == "live"]
     values = last[HOURS].to_numpy(dtype=float)
     fig, ax = plt.subplots(figsize=(7, 3), dpi=150)
     ax.step(range(25), [*values, values[-1]], where="post", color=BLUE, lw=2)
@@ -50,12 +53,14 @@ def write_page(forecasts: pd.DataFrame, scores: pd.DataFrame, now: pd.Timestamp)
     md = [
         "# Live forecast of the Belgian day-ahead price",
         "",
-        f"Generated automatically on {now:%Y-%m-%d %H:%M} (Brussels time) by "
-        "`scripts/live_forecast.py`, before the 12:00 gate closure of the day-ahead auction.",
-        "The model is the 4-window LEAR ensemble of the backtests, recalibrated every morning; "
-        "when an input is not published yet, the naive forecast is used and labelled.",
+        f"Updated automatically on {now:%Y-%m-%d %H:%M} (Brussels time) by "
+        "`scripts/live_forecast.py`, every morning before the 12:00 gate closure of the "
+        "day-ahead auction. The model is the 4-window LEAR ensemble of the backtests, "
+        "recalibrated every morning; when an input is not published yet, the naive forecast "
+        "is used and labelled.",
         "",
-        f"## Delivery day {day.date()}: `{last['model']}`",
+        f"## Delivery day {day.date()}: `{last['model']}` ({last.get('origin', 'live')}, made "
+        f"{last['generated_at']})",
         "",
         "![Forecast](forecast.png)",
         "",
@@ -70,20 +75,29 @@ def write_page(forecasts: pd.DataFrame, scores: pd.DataFrame, now: pd.Timestamp)
         "## Track record",
         "",
     ]
-    if scores.empty:
+    if live.empty:
         md.append("No live forecast has been scored yet (prices are published the day before "
                   "delivery, so a forecast is scored one day after its delivery day).")  # fmt: skip
     else:
+        md.append(
+            f"{len(live)} delivery days forecast live and scored since {live.index[0].date()}: "
+            f"mean absolute error {live['MAE'].mean():.2f} EUR/MWh, against "
+            f"{live['MAE naive'].mean():.2f} for the naive forecast."
+        )
+    if not scores.empty:
         md += [
-            f"{len(scores)} delivery days scored since {scores.index[0].date()}: mean absolute "
-            f"error {scores['MAE'].mean():.2f} EUR/MWh for the live forecast, "
-            f"{scores['MAE naive'].mean():.2f} for the naive forecast.",
             "",
-            "| Delivery day | Model | MAE live | MAE naive |",
-            "|---|---|---|---|",
+            "Origin: `live` = made the morning before the auction; `backtest` = computed "
+            "afterwards with the days before it only (days before the live service started).",
+            "",
+            "| Delivery day | Origin | Model | MAE forecast | MAE naive |",
+            "|---|---|---|---|---|",
         ]
         for d, r in scores.iloc[::-1].head(30).iterrows():
-            md.append(f"| {d.date()} | {r['model']} | {r['MAE']:.2f} | {r['MAE naive']:.2f} |")
+            md.append(
+                f"| {d.date()} | {r['origin']} | {r['model']} | {r['MAE']:.2f} "
+                f"| {r['MAE naive']:.2f} |"
+            )
     md += [
         "",
         "Realised prices are not shown (ENTSO-E re-use terms); they are on the "
@@ -95,45 +109,56 @@ def write_page(forecasts: pd.DataFrame, scores: pd.DataFrame, now: pd.Timestamp)
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--day", help="delivery day (default: tomorrow, Brussels time)")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--day", help="delivery day (default: tomorrow, Brussels time)")
+    group.add_argument("--backfill", nargs=2, metavar=("FIRST", "LAST"))
     args = parser.parse_args()
     now = pd.Timestamp.now(tz=TZ)
-    day = (
-        pd.Timestamp(args.day)
-        if args.day
-        else now.tz_localize(None).normalize() + pd.Timedelta(days=1)
-    )
+    if args.backfill:
+        days, origin = pd.date_range(*args.backfill), "backtest"
+    else:
+        tomorrow = now.tz_localize(None).normalize() + pd.Timedelta(days=1)
+        day = pd.Timestamp(args.day) if args.day else tomorrow
+        # "live" only if made before the 12:00 gate closure of the auction for that day.
+        gate = (day - pd.Timedelta(hours=12)).tz_localize(TZ)
+        days, origin = [day], "live" if now < gate else "backtest"
 
     source = EntsoeSource()
-    raw = {name: update_raw(source, name, day) for name in source.columns}
-    result = forecast_day(live_frame(raw, day), day)
-    if result is None:
-        raise SystemExit(f"no forecast for {day.date()}: inputs and naive reference missing")
-    model, values = result
-
+    raw = {name: update_raw(source, name, max(days)) for name in source.columns}
     LIVE.mkdir(parents=True, exist_ok=True)
     path = LIVE / "forecasts.csv"
     forecasts = (
         pd.read_csv(path, index_col=0, parse_dates=True) if path.exists() else pd.DataFrame()
     )
-    row = pd.DataFrame(
-        [
-            {
-                "model": model,
-                "generated_at": now.strftime("%Y-%m-%d %H:%M"),
-                **dict(zip(HOURS, values, strict=True)),
-            }
-        ],  # fmt: skip
-        index=pd.DatetimeIndex([day], name="Date"),
-    )
-    forecasts = pd.concat([forecasts.drop(index=day, errors="ignore"), row]).sort_index()
+    if len(forecasts) and "origin" not in forecasts:  # files written before the backfill mode
+        forecasts.insert(0, "origin", "live")
+    for day in days:
+        result = forecast_day(live_frame(raw, day), day)
+        if result is None:
+            print(f"{day.date()}: no forecast (inputs and naive reference missing)")
+            continue
+        model, values = result
+        row = pd.DataFrame(
+            [
+                {
+                    "origin": origin,
+                    "model": model,
+                    "generated_at": now.strftime("%Y-%m-%d %H:%M"),
+                    **dict(zip(HOURS, values, strict=True)),
+                }
+            ],  # fmt: skip
+            index=pd.DatetimeIndex([day], name="Date"),
+        )
+        forecasts = pd.concat([forecasts.drop(index=day, errors="ignore"), row]).sort_index()
+        published = [n for n in EXOGENOUS if raw[n].index[-1] >= day.tz_localize(TZ)]
+        print(f"{day.date()}: {origin}, {model}; French forecasts published: {published}")
+    if forecasts.empty:
+        raise SystemExit("no forecast written")
     forecasts.to_csv(path, float_format="%.6f")
     prices = daily_prices(standard_frame({"Price": raw["Price"]})[0])
     scores = score(forecasts, prices)
     scores.to_csv(LIVE / "scores.csv", float_format="%.6f")
     write_page(forecasts, scores, now)
-    published = [name for name in EXOGENOUS if raw[name].index[-1] >= day.tz_localize(TZ)]
-    print(f"{day.date()}: {model}; French forecasts published for the day: {published}")
 
 
 if __name__ == "__main__":

@@ -109,11 +109,11 @@ def test_naive_source_day_matches_naive_forecast():
 def test_live_forecasts_are_served_with_their_origin(data_dir):
     live = pd.DataFrame(
         [
-            ["lear_ensemble", "2019-01-31 10:30", *range(24)],
-            ["naive_fallback", "2019-01-14 10:30", *range(24)],
+            ["live", "lear_ensemble", "2019-01-31 10:30", *range(24)],
+            ["live", "naive_fallback", "2019-01-14 10:30", *range(24)],
         ],  # fmt: skip
         index=pd.DatetimeIndex(["2019-02-01", "2019-01-15"], name="Date"),
-        columns=["model", "generated_at", *HOURS],
+        columns=["origin", "model", "generated_at", *HOURS],
     )
     live.to_csv(data_dir / "live.csv")
     with client(

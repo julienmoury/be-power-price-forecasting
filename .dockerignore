@@ -10,5 +10,6 @@ mlruns
 models
 results
 !results/forecasts/phase_b
+!results/forecasts/live
 tests
 docs

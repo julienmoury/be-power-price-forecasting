@@ -4,12 +4,13 @@ Forecasts are computed in batch, never at request time: recalibrating the four L
 takes ~30 s of CPU per day. The service reads
 
 * the LEAR forecasts already computed: the phase B backtest (one CSV per calibration
-  window, each day calibrated only on the days before it) and, later, the daily live runs;
+  window, each day calibrated only on the days before it) and the daily live forecasts
+  (``scripts/live_forecast.py``);
 * the Belgian prices (price-only standard frame), for the naive fallback.
 
 ``POST /forecast`` returns the LEAR ensemble when the day has one, otherwise the naive
 forecast (the forecasts are missing or could not be read); it never calls ENTSO-E and holds
-no API key. Paths come from ``BE_FORECAST_DIR`` and ``BE_PRICE_PATH``.
+no API key. Paths come from ``BE_FORECAST_DIR``, ``BE_LIVE_PATH`` and ``BE_PRICE_PATH``.
 """
 
 from __future__ import annotations
@@ -34,8 +35,12 @@ from be_power_forecast.models.lear import ensemble
 log = logging.getLogger(__name__)
 
 
-def load_backtest_ensemble(directory: Path) -> pd.DataFrame:
-    """LEAR ensemble of the four calibration windows, ``(n_days, 24)``, from their CSVs."""
+def load_lear_forecasts(directory: Path, live_path: Path | None = None) -> pd.DataFrame:
+    """LEAR ensemble forecasts by day: 24 hours and their ``origin``.
+
+    ``backtest``: mean of the four calibration windows of the phase B backtest CSVs;
+    ``live``: the days forecast by the daily live run with the LEAR ensemble.
+    """
     fcs = [
         pd.read_csv(Path(directory) / f"lear_cw{cw}.csv", index_col=0, parse_dates=True)
         for cw in PAPER_WINDOWS
@@ -43,8 +48,13 @@ def load_backtest_ensemble(directory: Path) -> pd.DataFrame:
     days = fcs[0].index
     for f in fcs[1:]:
         days = days.intersection(f.index)
-    values = ensemble([f.loc[days, HOURS].to_numpy() for f in fcs])
-    return pd.DataFrame(values, index=days, columns=HOURS)
+    out = pd.DataFrame(ensemble([f.loc[days, HOURS].to_numpy() for f in fcs]), days, HOURS)
+    out["origin"] = "backtest"
+    if live_path is not None and Path(live_path).exists():
+        live = pd.read_csv(live_path, index_col=0, parse_dates=True)
+        live = live.loc[live["model"] == "lear_ensemble", HOURS].assign(origin="live")
+        out = pd.concat([out.drop(index=live.index, errors="ignore"), live]).sort_index()
+    return out
 
 
 def load_prices(path: Path) -> pd.DataFrame:
@@ -59,7 +69,9 @@ class ForecastRequest(BaseModel):
 class ForecastResponse(BaseModel):
     delivery_day: dt.date
     model: str  # "lear_ensemble" | "naive_fallback"
-    origin: str  # "backtest" (reconstructed, no look-ahead) | "naive"
+    origin: (
+        str  # "backtest" (reconstructed, no look-ahead) | "live" (made the day before) | "naive"
+    )
     prices: list[float]  # EUR/MWh, hours 00:00..23:00 Brussels time (calendar.py rules)
     inputs_until: dt.date  # last day of prices the forecast depends on
 
@@ -115,11 +127,11 @@ def create_app(
             raise HTTPException(404, f"forecasts are served from {first_day} to {end.date()}")
         lear, prices = data["lear"], data["prices"]
         if lear is not None and day in lear.index:
-            values = lear.loc[day].to_numpy()
+            values = lear.loc[day, HOURS].to_numpy(dtype=float)
             return ForecastResponse(
                 delivery_day=req.delivery_day,
                 model="lear_ensemble",
-                origin="backtest",
+                origin=lear.loc[day, "origin"],
                 prices=values.tolist(),
                 inputs_until=(day - pd.Timedelta(days=1)).date(),
             )
@@ -140,8 +152,9 @@ def create_app(
 
 
 app = create_app(
-    lambda: load_backtest_ensemble(
-        Path(os.environ.get("BE_FORECAST_DIR", RESULTS_DIR / "forecasts" / "phase_b"))
+    lambda: load_lear_forecasts(
+        Path(os.environ.get("BE_FORECAST_DIR", RESULTS_DIR / "forecasts" / "phase_b")),
+        Path(os.environ.get("BE_LIVE_PATH", RESULTS_DIR / "forecasts" / "live" / "forecasts.csv")),
     ),
     lambda: load_prices(Path(os.environ.get("BE_PRICE_PATH", CACHE_DIR / "prices_BE.parquet"))),
 )

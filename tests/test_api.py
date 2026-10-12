@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
-from be_power_forecast.api.app import create_app, load_backtest_ensemble, load_prices
+from be_power_forecast.api.app import create_app, load_lear_forecasts, load_prices
 from be_power_forecast.backtest import HOURS
 from be_power_forecast.config import PAPER_WINDOWS
 from be_power_forecast.evaluation.metrics import naive_forecast, naive_source_day
@@ -34,7 +34,7 @@ def client(lear_loader, price_loader):
 @pytest.fixture
 def api(data_dir):
     with client(
-        lambda: load_backtest_ensemble(data_dir), lambda: load_prices(data_dir / "frame.parquet")
+        lambda: load_lear_forecasts(data_dir), lambda: load_prices(data_dir / "frame.parquet")
     ) as c:
         yield c
 
@@ -104,3 +104,24 @@ def test_naive_source_day_matches_naive_forecast():
     naive = naive_forecast(prices)
     for day in naive.index:
         assert (naive.loc[day] == prices.loc[naive_source_day(day)]).all()
+
+
+def test_live_forecasts_are_served_with_their_origin(data_dir):
+    live = pd.DataFrame(
+        [
+            ["lear_ensemble", "2019-01-31 10:30", *range(24)],
+            ["naive_fallback", "2019-01-14 10:30", *range(24)],
+        ],  # fmt: skip
+        index=pd.DatetimeIndex(["2019-02-01", "2019-01-15"], name="Date"),
+        columns=["model", "generated_at", *HOURS],
+    )
+    live.to_csv(data_dir / "live.csv")
+    with client(
+        lambda: load_lear_forecasts(data_dir, data_dir / "live.csv"),
+        lambda: load_prices(data_dir / "frame.parquet"),
+    ) as c:
+        body = post(c, "2019-02-01").json()
+        assert body["model"] == "lear_ensemble" and body["origin"] == "live"
+        assert body["prices"] == [float(h) for h in range(24)]
+        # A live naive forecast is not a LEAR forecast: the service answers with its own.
+        assert post(c, "2019-01-15").json()["model"] == "naive_fallback"

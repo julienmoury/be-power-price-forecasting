@@ -28,6 +28,7 @@ from be_power_forecast.evaluation.attribution import (
 )
 from be_power_forecast.evaluation.dm import dm_matrix, dm_test
 from be_power_forecast.evaluation.metrics import mae, naive_forecast, rmae, rmse, smape
+from be_power_forecast.mlops import drift
 from be_power_forecast.models.lear import ensemble
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -82,14 +83,17 @@ def style(ax):
     ax.set_axisbelow(True)
 
 
-def phase_b(missing: list[str]) -> tuple[dict | None, list[str]]:
-    """Phase B: the paper's protocol on ENTSO-E data, 2019-2026, by fixed sub-period."""
+def phase_b(missing: list[str]) -> tuple[dict | None, list[str], tuple | None]:
+    """Phase B: the paper's protocol on ENTSO-E data, 2019-2026, by fixed sub-period.
+
+    Also returns the evaluated (real, LEAR ensemble, naive) daily frames for the drift rule.
+    """
     frame_path = CACHE_DIR / "phase_b_FR.parquet"
     fcs = {cw: load(f"phase_b/lear_cw{cw}") for cw in PAPER_WINDOWS}
     absent = [f"phase_b/lear_cw{cw}" for cw, f in fcs.items() if f is None]
     if absent or not frame_path.exists():
         missing += absent or ["data/cache/phase_b_FR.parquet (run build_phase_b.py)"]
-        return None, []
+        return None, [], None
     df = pd.read_parquet(frame_path)
     begin, end = PHASE_B_TEST
     hist = daily_prices(df, pd.Timestamp(begin) - pd.Timedelta(days=7), end)
@@ -173,6 +177,61 @@ def phase_b(missing: list[str]) -> tuple[dict | None, list[str]]:
     fig.tight_layout()
     fig.savefig(FIG / "phase_b_monthly_mae.png")
     plt.close(fig)
+    return out, md, (real, ens, naive)
+
+
+def drift_block(phase_a: tuple, phase_b_frames: tuple | None) -> tuple[dict, list[str]]:
+    """Drift rule: threshold from phase A (2015-2016), applied out of sample to phase B.
+
+    Reports the alerts on 2019-2026 and whether the first 2021 alert came before the
+    monthly MAE first exceeded twice its 2019-2020 average.
+    """
+    real_a, ens_a, naive_a = phase_a
+    err_a, ref_a = drift.daily_abs_error(real_a, ens_a), drift.daily_abs_error(real_a, naive_a)
+    series_a = {"MAE": drift.rolling_mae(err_a), "rMAE": drift.rolling_rmae(err_a, ref_a)}
+    out: dict = {
+        "window_days": drift.WINDOW,
+        "quantile": drift.QUANTILE,
+        "threshold_period": [str(real_a.index[0].date()), str(real_a.index[-1].date())],
+        "threshold": {k: drift.threshold(v) for k, v in series_a.items()},
+    }
+    md = [
+        f"## Drift rule (rolling {drift.WINDOW}-day error, threshold = "
+        f"{100 * drift.QUANTILE:.0f}th percentile over phase A)",
+        "```",
+        json.dumps(out["threshold"], indent=1),
+        "```",
+    ]
+    if phase_b_frames is None:
+        md += ["Phase B forecasts or frame missing: no out-of-sample alerts.", ""]
+        return out, md
+    real_b, ens_b, naive_b = phase_b_frames
+    err_b, ref_b = drift.daily_abs_error(real_b, ens_b), drift.daily_abs_error(real_b, naive_b)
+    series_b = {"MAE": drift.rolling_mae(err_b), "rMAE": drift.rolling_rmae(err_b, ref_b)}
+    event = drift.first_monthly_exceedance(err_b, ("2019-01-01", "2020-12-31"), "2021-01-01")
+    out["monthly_exceedance"] = event
+    for key, rolled in series_b.items():
+        episodes = drift.alert_episodes(rolled, out["threshold"][key])
+        first_2021 = next((e["start"] for e in episodes if e["start"] >= "2021-01-01"), None)
+        lead = None
+        if first_2021 and event:
+            lead = (pd.Timestamp(event["known_on"]) - pd.Timestamp(first_2021)).days
+        out[key] = {
+            "alert_days": int(sum(e["days"] for e in episodes)),
+            "evaluated_days": len(rolled),
+            "n_episodes": len(episodes),
+            "episodes": episodes,
+            "first_2021_alert": first_2021,
+            "lead_days_before_monthly_exceedance": lead,
+            "alert_before_monthly_exceedance": None if lead is None else lead > 0,
+        }
+    summary = {k: {f: v for f, v in out[k].items() if f != "episodes"} for k in series_b}
+    md += [
+        "```",
+        json.dumps({"monthly_exceedance": event, **summary}, indent=1),
+        "```",
+        "",
+    ]
     return out, md
 
 
@@ -449,8 +508,10 @@ def main() -> None:
     fig.savefig(FIG / "ablations.png")
     plt.close(fig)
 
-    out["phase_b"], md_b = phase_b(missing)
+    out["phase_b"], md_b, frames_b = phase_b(missing)
     md += md_b
+    out["drift"], md_d = drift_block((real, ens, naive), frames_b)
+    md += md_d
     if missing:
         md.append(f"Missing experiments: {sorted(set(missing))}")
     out["missing"] = sorted(set(missing))

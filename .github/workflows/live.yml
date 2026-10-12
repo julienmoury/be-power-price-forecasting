@@ -1,17 +1,13 @@
 name: Live forecast
 
-# Every morning, before the 12:00 (Brussels) gate closure of the day-ahead auction:
-# forecast tomorrow's Belgian prices and commit the forecast, the daily errors and the page
+# Every morning, before the 12:00 (Brussels) gate closure of the day-ahead auction: build
+# the Docker image, forecast tomorrow's Belgian prices in it, check that the forecast
+# service of the same image serves them, and commit the forecast and the page
 # live/README.md. Raw ENTSO-E data stay in the Actions cache, never in the repository.
 on:
   schedule:
     - cron: "15 8 * * *" # 08:15 UTC = 09:15 CET / 10:15 CEST
   workflow_dispatch:
-    inputs:
-      backfill:
-        description: "Optional: forecast FIRST LAST after the fact, labelled backtest (YYYY-MM-DD YYYY-MM-DD)"
-        required: false
-        default: ""
 
 permissions:
   contents: write
@@ -26,38 +22,44 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
       - name: Restore the ENTSO-E cache
         uses: actions/cache@v4
         with:
           path: data/cache
           key: entsoe-${{ github.run_id }}
           restore-keys: entsoe-
-      - name: Install
-        run: pip install -e .
+      - name: Build the image
+        run: docker build -t be-power-forecast .
       - name: Forecast
         env:
           ENTSOE_API_KEY: ${{ secrets.ENTSOE_API_KEY }}
-          BACKFILL: ${{ inputs.backfill }}
         run: |
-          if [ -n "$BACKFILL" ]; then
-            read -r first last <<< "$BACKFILL"
-            python scripts/live_forecast.py --backfill "$first" "$last"
-          else
-            python scripts/live_forecast.py
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/repo" \
+            -e BE_REPO_ROOT=/repo -e ENTSOE_API_KEY \
+            be-power-forecast python scripts/live_forecast.py
+      - name: Check the forecast service
+        # Serves the forecasts just written; when there is a forecast for tomorrow, the
+        # service must return it (24 LEAR prices). No forecast (an input not published
+        # yet) is not a failure: the page says so.
+        run: |
+          docker run -d --name service -p 8000:8000 \
+            -v "$PWD/results/forecasts:/forecasts:ro" -v "$PWD/data/cache:/data:ro" \
+            -e BE_FORECAST_DIR=/forecasts/phase_b \
+            -e BE_LIVE_PATH=/forecasts/live/forecasts.csv be-power-forecast
+          for i in $(seq 30); do curl -sf localhost:8000/health && break; sleep 1; done
+          day=$(TZ=Europe/Brussels date -d tomorrow +%Y-%m-%d)
+          if grep -q "^$day," results/forecasts/live/forecasts.csv; then
+            curl -sf -X POST localhost:8000/forecast -H "Content-Type: application/json" \
+              -d "{\"delivery_day\": \"$day\"}" | tee answer.json
+            python3 -c "import json; a = json.load(open('answer.json')); \
+              assert a['model'] == 'lear_ensemble' and len(a['prices']) == 24, a"
           fi
+          docker rm -f service
       - name: Commit the forecast
-        env:
-          BACKFILL: ${{ inputs.backfill }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add results/forecasts/live live
           if git diff --cached --quiet; then exit 0; fi
-          if [ -n "$BACKFILL" ]; then msg="chore(live): backfill $BACKFILL";
-          else msg="chore(live): forecast of $(date -u -d tomorrow +%Y-%m-%d)"; fi
-          git commit -m "$msg"
+          git commit -m "chore(live): forecast of $(TZ=Europe/Brussels date -d tomorrow +%Y-%m-%d)"
           git push

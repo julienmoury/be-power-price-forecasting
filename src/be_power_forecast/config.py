@@ -6,9 +6,11 @@ chosen after seeing the errors.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# BE_REPO_ROOT: the repository mounted in the Docker image, where the package is installed.
+REPO_ROOT = Path(os.environ.get("BE_REPO_ROOT", Path(__file__).resolve().parents[2]))
 RAW_DIR = REPO_ROOT / "data" / "raw"
 CACHE_DIR = REPO_ROOT / "data" / "cache"  # raw ENTSO-E downloads, git-ignored
 RESULTS_DIR = REPO_ROOT / "results"

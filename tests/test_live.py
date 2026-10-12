@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from be_power_forecast.backtest import HOURS
-from be_power_forecast.live import forecast_day, live_frame, score
+from be_power_forecast.live import forecast_day, live_frame
 from be_power_forecast.models.lear import build_features
 
 DAY = pd.Timestamp("2015-03-10")  # Tuesday: the naive forecast copies the day before
@@ -36,24 +35,7 @@ def test_live_frame_holds_the_inputs_of_the_delivery_day():
     assert np.isfinite(X[dates == DAY]).all()  # the LEAR ensemble can forecast the day
 
 
-def test_naive_forecast_when_a_french_forecast_is_not_published():
+def test_no_forecast_when_a_french_forecast_is_not_published():
+    # Never the naive forecast: it is a copy of past prices, which are not published.
     frame = live_frame(raw(DAY - pd.Timedelta(days=1)), DAY)
-    model, values = forecast_day(frame, DAY)
-    assert model == "naive_fallback"
-    expected = frame.loc[DAY - pd.Timedelta(days=1) : DAY - pd.Timedelta(hours=1), "Price"]
-    assert np.allclose(values, expected.to_numpy())
-
-
-def test_score_only_days_with_known_prices():
-    days = pd.date_range("2026-10-05", "2026-10-14")  # Monday to Wednesday of next week
-    prices = pd.DataFrame(np.arange(len(days) * 24.0).reshape(-1, 24), days, HOURS)
-    forecasts = pd.DataFrame(
-        {"origin": "live", "model": "lear_ensemble", **{h: 0.0 for h in HOURS}},
-        index=pd.DatetimeIndex(["2026-10-13", "2026-10-15"], name="Date"),
-    )
-    out = score(forecasts, prices)
-    assert list(out.index) == [pd.Timestamp("2026-10-13")]  # 2026-10-15 not delivered yet
-    real = prices.loc["2026-10-13"]
-    assert out.loc["2026-10-13", "MAE"] == real.mean()
-    assert out.loc["2026-10-13", "MAE naive"] == 24.0  # Tuesday copies Monday: gap of 24
-    assert out.loc["2026-10-13", "origin"] == "live"
+    assert forecast_day(frame, DAY) is None

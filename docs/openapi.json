@@ -1,0 +1,226 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Belgian day-ahead price forecast",
+    "version": "1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/forecast": {
+      "post": {
+        "summary": "Forecast",
+        "operationId": "forecast_forecast_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForecastRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/forecasts": {
+      "get": {
+        "summary": "Forecasts",
+        "description": "Forecasts of the days ``start`` to ``end`` (included); days with neither a LEAR\nforecast nor a naive reference are left out.",
+        "operationId": "forecasts_forecasts_get",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ForecastResponse"
+                  },
+                  "title": "Response Forecasts Forecasts Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ForecastRequest": {
+        "properties": {
+          "delivery_day": {
+            "type": "string",
+            "format": "date",
+            "title": "Delivery Day"
+          }
+        },
+        "type": "object",
+        "required": [
+          "delivery_day"
+        ],
+        "title": "ForecastRequest"
+      },
+      "ForecastResponse": {
+        "properties": {
+          "delivery_day": {
+            "type": "string",
+            "format": "date",
+            "title": "Delivery Day"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "prices": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Prices"
+          },
+          "inputs_until": {
+            "type": "string",
+            "format": "date",
+            "title": "Inputs Until"
+          }
+        },
+        "type": "object",
+        "required": [
+          "delivery_day",
+          "model",
+          "prices",
+          "inputs_until"
+        ],
+        "title": "ForecastResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

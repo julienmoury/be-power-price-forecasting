@@ -130,16 +130,19 @@ of hours with a negative price.
 ### 3. The forecasting tool
 
 - **Live forecast** ([`live/README.md`](live/README.md)): every morning before the 12:00
-  gate closure, a GitHub Actions workflow downloads the new ENTSO-E data, recalibrates the
-  four windows, publishes the forecast of the next day and scores the previous ones against
-  the naive forecast. Forecasts made before the auction are labelled `live`; days computed
-  afterwards are labelled `backtest`.
-
-- **Service** (`src/be_power_forecast/api/app.py`, FastAPI): `POST /forecast` returns the
-  24 hourly prices of any delivery day from {{phase_b/test_period/0}}. Forecasts are
-  computed in batch, not at request time (the daily recalibration of four windows is too
-  slow for that), each day calibrated only on the days before it; the answer says whether it is the LEAR ensemble or
-  the naive fallback. The service never calls ENTSO-E and holds no key.
+  gate closure, a GitHub Actions workflow builds the Docker image, downloads the new
+  ENTSO-E data, recalibrates the four windows and publishes the LEAR forecast of the next
+  day, then checks that the forecast service of the same image serves it. When a French
+  forecast is not published yet, the page says so and shows no price.
+- **Service** (`src/be_power_forecast/api/app.py`, FastAPI, same Docker image): `POST
+  /forecast` returns the 24 hourly prices of a delivery day from {{phase_b/test_period/0}},
+  `GET /forecasts?start=&end=` those of a range of days. Forecasts are computed in batch,
+  not at request time (the daily recalibration of four windows is too slow for that), each
+  day calibrated only on the days before it; the answer says whether it is the LEAR
+  ensemble or the naive fallback. The service runs locally, with your own ENTSO-E data for
+  the naive fallback; it never calls ENTSO-E and holds no key. Its schema,
+  [`docs/openapi.json`](docs/openapi.json), is the contract with the projects that use the
+  forecasts, and a test keeps it up to date.
 - **Load test** (Docker image, one uvicorn worker, client and server on the same
   {{load_test/setup/host}} machine, {{load_test/setup/duration_s|.0f}} s per level):
 

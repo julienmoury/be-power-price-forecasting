@@ -1,9 +1,10 @@
-"""Daily live forecast: update the ENTSO-E series, forecast the next delivery day, score.
+"""Daily live forecast: update the ENTSO-E series and forecast the next delivery day.
 
 Run every morning by ``scripts/live_forecast.py`` (GitHub Actions, needs ENTSOE_API_KEY),
 before the 12:00 gate closure of the day-ahead auction. The model and its inputs are those
-of the backtests; only our forecasts and daily errors are written to the repository, the
-raw ENTSO-E data stay in the cache.
+of the backtests; only our LEAR forecasts are written to the repository, never a price or
+the naive forecast (a copy of past prices, ENTSO-E re-use terms). The raw ENTSO-E data stay
+in the cache.
 """
 
 from __future__ import annotations
@@ -11,12 +12,10 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from be_power_forecast.backtest import HOURS, daily_prices
 from be_power_forecast.config import EXOGENOUS, PAPER_WINDOWS, TZ
 from be_power_forecast.data.calendar import standard_frame, to_local_days
 from be_power_forecast.data.entsoe_client import EntsoeClient
 from be_power_forecast.data.sources import EntsoeSource, JoinedSource, PriceSource
-from be_power_forecast.evaluation.metrics import mae, naive_source_day
 from be_power_forecast.models.lear import DEFAULT_SPEC, LEAR, build_features, ensemble
 
 OVERLAP_DAYS = 7  # re-downloaded every day: late publications and corrections
@@ -69,41 +68,10 @@ def live_frame(raw: dict[str, pd.Series], day: pd.Timestamp) -> pd.DataFrame:
     return frame
 
 
-def forecast_day(frame: pd.DataFrame, day: pd.Timestamp) -> tuple[str, np.ndarray] | None:
-    """LEAR ensemble forecast of ``day``, or the naive forecast when an input is missing."""
+def forecast_day(frame: pd.DataFrame, day: pd.Timestamp) -> np.ndarray | None:
+    """LEAR ensemble forecast of ``day``, or ``None`` when an input is missing."""
     X, Y, dates = build_features(frame)
     t = int(np.flatnonzero(dates == day)[0])
-    if np.isfinite(X[t]).all():
-        fcs = [LEAR(cw).forecast_day(X, Y, t, DEFAULT_SPEC) for cw in PAPER_WINDOWS]
-        return "lear_ensemble", ensemble(fcs)
-    prices = daily_prices(frame)
-    source = naive_source_day(day)
-    if source in prices.index and prices.loc[source].notna().all():
-        return "naive_fallback", prices.loc[source].to_numpy()
-    return None
-
-
-def score(forecasts: pd.DataFrame, prices: pd.DataFrame) -> pd.DataFrame:
-    """Daily MAE of each forecast and of the naive forecast, once prices are known.
-
-    ``origin`` says how the forecast was made: ``live`` (the morning before the auction) or
-    ``backtest`` (afterwards, with the days before it only).
-    """
-    rows = {}
-    for day, row in forecasts.iterrows():
-        source = naive_source_day(day)
-        if day not in prices.index or source not in prices.index:
-            continue
-        real, naive = prices.loc[day], prices.loc[source]
-        if real.notna().all() and naive.notna().all():
-            pred = row[HOURS].to_numpy(dtype=float)
-            rows[day] = {
-                "origin": row.get("origin", "live"),
-                "model": row["model"],
-                "MAE": mae(real, pred),
-                "MAE naive": mae(real, naive),
-            }
-    columns = ["origin", "model", "MAE", "MAE naive"]
-    out = pd.DataFrame.from_dict(rows, orient="index", columns=columns)
-    out.index.name = "Date"
-    return out
+    if not np.isfinite(X[t]).all():
+        return None
+    return ensemble([LEAR(cw).forecast_day(X, Y, t, DEFAULT_SPEC) for cw in PAPER_WINDOWS])

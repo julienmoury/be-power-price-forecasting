@@ -1,11 +1,13 @@
+import json
+
 import numpy as np
 import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
-from be_power_forecast.api.app import create_app, load_lear_forecasts, load_prices
+from be_power_forecast.api.app import app, create_app, load_lear_forecasts, load_prices
 from be_power_forecast.backtest import HOURS
-from be_power_forecast.config import PAPER_WINDOWS
+from be_power_forecast.config import PAPER_WINDOWS, REPO_ROOT
 from be_power_forecast.evaluation.metrics import naive_forecast, naive_source_day
 
 # Synthetic data: prices 2018-12-20 .. 2019-01-31, LEAR forecasts 2019-01-01 .. 2019-01-31
@@ -59,7 +61,7 @@ def test_lear_ensemble_is_mean_of_the_four_windows(api, data_dir):
     body = r.json()
     fcs = [pd.read_csv(data_dir / f"lear_cw{cw}.csv", index_col=0) for cw in PAPER_WINDOWS]
     expected = np.mean([f.loc["2019-01-10"].to_numpy() for f in fcs], axis=0)
-    assert body["model"] == "lear_ensemble" and body["origin"] == "backtest"
+    assert body["model"] == "lear_ensemble"
     assert np.allclose(body["prices"], expected) and len(body["prices"]) == 24
     assert body["inputs_until"] == "2019-01-09"
 
@@ -106,14 +108,9 @@ def test_naive_source_day_matches_naive_forecast():
         assert (naive.loc[day] == prices.loc[naive_source_day(day)]).all()
 
 
-def test_live_forecasts_are_served_with_their_origin(data_dir):
+def test_live_forecasts_are_served(data_dir):
     live = pd.DataFrame(
-        [
-            ["live", "lear_ensemble", "2019-01-31 10:30", *range(24)],
-            ["live", "naive_fallback", "2019-01-14 10:30", *range(24)],
-        ],  # fmt: skip
-        index=pd.DatetimeIndex(["2019-02-01", "2019-01-15"], name="Date"),
-        columns=["origin", "model", "generated_at", *HOURS],
+        [range(24)], pd.DatetimeIndex(["2019-02-01"], name="Date"), HOURS, dtype=float
     )
     live.to_csv(data_dir / "live.csv")
     with client(
@@ -121,7 +118,22 @@ def test_live_forecasts_are_served_with_their_origin(data_dir):
         lambda: load_prices(data_dir / "frame.parquet"),
     ) as c:
         body = post(c, "2019-02-01").json()
-        assert body["model"] == "lear_ensemble" and body["origin"] == "live"
-        assert body["prices"] == [float(h) for h in range(24)]
-        # A live naive forecast is not a LEAR forecast: the service answers with its own.
-        assert post(c, "2019-01-15").json()["model"] == "naive_fallback"
+    assert body["model"] == "lear_ensemble"
+    assert body["prices"] == [float(h) for h in range(24)]
+
+
+def test_range_of_days(api):
+    r = api.get("/forecasts", params={"start": "2019-01-14", "end": "2019-01-16"})
+    assert r.status_code == 200
+    body = r.json()
+    assert [b["delivery_day"] for b in body] == ["2019-01-14", "2019-01-15", "2019-01-16"]
+    assert [b["model"] for b in body] == ["lear_ensemble", "naive_fallback", "lear_ensemble"]
+    for b in body:
+        assert b == post(api, b["delivery_day"]).json()
+    for start, end in [("2018-12-31", "2019-01-02"), ("2019-01-03", "2019-01-02")]:
+        assert api.get("/forecasts", params={"start": start, "end": end}).status_code == 404
+
+
+def test_openapi_contract_is_up_to_date():
+    # docs/openapi.json is the contract with the consumers: python scripts/export_openapi.py
+    assert json.loads((REPO_ROOT / "docs" / "openapi.json").read_text()) == app.openapi()

@@ -26,6 +26,11 @@ def smape(p_real, p_pred) -> float:
     return float(np.mean(np.abs(p_real - p_pred) / ((np.abs(p_real) + np.abs(p_pred)) / 2)))
 
 
+def naive_source_day(day: pd.Timestamp) -> pd.Timestamp:
+    """Day copied by the standard naive forecast of ``day`` (rule of ``naive_forecast``)."""
+    return day - pd.Timedelta(days=7 if day.dayofweek in (0, 5, 6) else 1)
+
+
 def naive_forecast(prices: pd.DataFrame, m: str | None = None) -> pd.DataFrame:
     """Seasonal naive forecast of a daily ``(n_days, 24)`` price frame.
 

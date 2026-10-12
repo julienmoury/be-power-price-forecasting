@@ -95,3 +95,12 @@ def test_log_backtest_keeps_one_run_per_backtest(tmp_path):
     assert run.data.metrics == {"MAE": 1.5}
     assert run.data.params == {"phase": "B", "calibration_window": "56"}
     assert run.data.tags["forecast_csv"] == str(csv.resolve())
+
+
+def test_tracking_uri_from_environment(tmp_path, monkeypatch):
+    from be_power_forecast.mlops.tracking import tracking_uri
+
+    monkeypatch.delenv("MLFLOW_TRACKING_URI", raising=False)
+    assert tracking_uri(tmp_path) == f"sqlite:///{tmp_path.resolve() / 'mlflow.db'}"
+    monkeypatch.setenv("MLFLOW_TRACKING_URI", "databricks")
+    assert tracking_uri(tmp_path) == "databricks"

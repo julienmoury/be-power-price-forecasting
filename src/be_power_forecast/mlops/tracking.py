@@ -3,11 +3,15 @@
 ``results/metrics.json`` stays the only source of quoted numbers; MLflow is a browsable
 log of the backtests (``mlflow ui --backend-store-uri sqlite:///mlruns/mlflow.db``).
 MLflow 3 refuses the plain file store by default, so the store is a local SQLite file
-(no server; git-ignored with the artifacts).
+(no server; git-ignored with the artifacts). Setting ``MLFLOW_TRACKING_URI`` (e.g.
+``databricks``) sends the runs to another store instead, with ``MLFLOW_EXPERIMENT_PREFIX``
+prepended to the experiment names (Databricks needs workspace paths such as
+``/Users/<user>/be-power/``).
 """
 
 from __future__ import annotations
 
+import os
 import time
 from pathlib import Path
 
@@ -17,7 +21,10 @@ TRACKING_DIR = REPO_ROOT / "mlruns"
 
 
 def tracking_uri(root: Path = TRACKING_DIR) -> str:
-    return f"sqlite:///{Path(root).resolve() / 'mlflow.db'}"
+    """``MLFLOW_TRACKING_URI`` if set, else the local SQLite store under ``root``."""
+    return (
+        os.environ.get("MLFLOW_TRACKING_URI") or f"sqlite:///{Path(root).resolve() / 'mlflow.db'}"
+    )
 
 
 def log_backtest(
@@ -36,16 +43,18 @@ def log_backtest(
     from mlflow.entities import Metric, Param
     from mlflow.tracking import MlflowClient
 
-    root = Path(root)
-    root.mkdir(parents=True, exist_ok=True)
-    client = MlflowClient(tracking_uri(root))
-    experiment = f"phase_{phase}"
+    uri = tracking_uri(root)
+    local = uri.startswith("sqlite:")
+    if local:
+        Path(root).mkdir(parents=True, exist_ok=True)
+    client = MlflowClient(uri)
+    experiment = os.environ.get("MLFLOW_EXPERIMENT_PREFIX", "") + f"phase_{phase}"
     exp = client.get_experiment_by_name(experiment)
-    exp_id = (
-        exp.experiment_id
-        if exp
-        else client.create_experiment(experiment, (root / "artifacts").resolve().as_uri())
-    )
+    if exp:
+        exp_id = exp.experiment_id
+    else:
+        artifacts = (Path(root) / "artifacts").resolve().as_uri() if local else None
+        exp_id = client.create_experiment(experiment, artifacts)
     for old in client.search_runs([exp_id], f"attributes.run_name = '{name}'"):
         client.delete_run(old.info.run_id)
     path = Path(forecast_path).resolve()

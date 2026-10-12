@@ -1,6 +1,6 @@
 # Live forecast of the Belgian day-ahead price
 
-Updated automatically on 2026-10-12 18:02 (Brussels time) by `scripts/live_forecast.py`, every morning before the 12:00 gate closure of the day-ahead auction. The model is the 4-window LEAR ensemble of the backtests, recalibrated every morning.
+Updated automatically on 2026-10-12 19:49 (Brussels time) by `scripts/live_forecast.py`, every morning before the 12:00 gate closure of the day-ahead auction. The model is the 4-window LEAR ensemble of the backtests, recalibrated every morning.
 
 ## Delivery day 2026-10-13
 

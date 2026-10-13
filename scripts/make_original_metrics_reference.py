@@ -11,6 +11,8 @@ pandas==1.1.5, scipy==1.5.4, statsmodels==0.12.1, matplotlib==3.3.4 (e.g. with u
 
 The original modules are executed as-is (only their `from epftoolbox ...` imports are
 resolved by hand, to avoid importing the package's TensorFlow dependencies).
+The GW values (`_gw.py`, numpy and scipy only) were added on 2026-10-13 by running the
+same lines under the project's environment; the other values are unchanged.
 """
 import os
 from pathlib import Path
@@ -21,7 +23,7 @@ import json, numpy as np, pandas as pd
 S=str(EPF / 'epftoolbox' / 'evaluation') + '/'
 ns={}
 exec(open(S+'_ancillary_functions.py').read(), ns)
-for f in ['_mae.py','_smape.py','_rmae.py','_dm.py']:
+for f in ['_mae.py','_smape.py','_rmae.py','_dm.py','_gw.py']:
     src=open(S+f).read()
     src='\n'.join(l for l in src.splitlines() if not l.startswith('from epftoolbox'))
     exec(src, ns)
@@ -39,5 +41,9 @@ multi2=ns['DM'](R,f['LEAR 56'].values.reshape(-1,24),f['LEAR Ensemble'].values.r
 out['DM_LEARens_vs_DNNens_univariate_norm1']=list(map(float,uni))
 out['DM_LEARens_vs_DNNens_multivariate_norm1']=float(multi)
 out['DM_LEAR56_vs_LEARens_multivariate_norm2']=float(multi2)
+L,N,L56=(f[c].values.reshape(-1,24) for c in ['LEAR Ensemble','DNN Ensemble','LEAR 56'])
+out['GW_LEARens_vs_DNNens_univariate_norm1']=list(map(float,ns['GW'](R,L,N,norm=1,version='univariate')))
+out['GW_LEARens_vs_DNNens_multivariate_norm1']=float(ns['GW'](R,L,N,norm=1,version='multivariate'))
+out['GW_LEAR56_vs_LEARens_multivariate_norm2']=float(ns['GW'](R,L56,L,norm=2,version='multivariate'))
 json.dump(out,open(REPO / 'tests' / 'reference' / 'original_metrics_reference.json','w'),indent=1)
 print(json.dumps({k:v for k,v in out.items() if 'univariate' not in k},indent=1))

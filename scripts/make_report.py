@@ -23,6 +23,7 @@ from be_power_forecast.data.sources import (
     EpftoolboxZenodoSource,
 )
 from be_power_forecast.evaluation.dm import dm_matrix, dm_test
+from be_power_forecast.evaluation.gw import gw_matrix, gw_test
 from be_power_forecast.evaluation.metrics import mae, naive_forecast, rmae, rmse, smape
 from be_power_forecast.models.lear import ensemble
 from be_power_forecast.readme import render
@@ -111,6 +112,7 @@ def phase_b(missing: list[str]) -> tuple[dict | None, list[str], tuple | None]:
         "MAE ens. / MAE naive": mae(real, ens) / mae(real, naive),
         "gain vs naive (EUR per MWh)": mae(real, naive) - mae(real, ens),
         "gain vs naive %": 100 * (1 - mae(real, ens) / mae(real, naive)),
+        "GW p (ens. better than naive)": float(gw_test(real, naive, ens)[1]),
         "DM p (ens. better than naive)": float(dm_test(real, naive, ens)[1]),
     }
     out: dict = {
@@ -238,6 +240,8 @@ def main() -> None:
         "best_single_MAE": mae(real, ours[best_single]),
         "ensemble_vs_best_single_EUR_MWh": mae(real, ours[best_single]) - mae(real, ens),
         "ensemble_vs_best_single_pct": 100 * (1 - mae(real, ens) / mae(real, ours[best_single])),
+        "gw_p_ensemble_better_than_naive": float(gw_test(real, naive, ens)[1]),
+        "gw_p_ensemble_better_than_best_single": float(gw_test(real, ours[best_single], ens)[1]),
         "dm_p_ensemble_better_than_naive": float(dm_test(real, naive, ens)[1]),
         "dm_p_ensemble_better_than_best_single": float(dm_test(real, ours[best_single], ens)[1]),
     }
@@ -247,9 +251,16 @@ def main() -> None:
     md += ["## Accuracy on the test period (728 days)", fmt_table(head, 3), ""]
     md += ["## Headline", "```", json.dumps(gain, indent=1), "```", ""]
 
-    dm = dm_matrix(real.to_numpy(), {k: v.to_numpy() for k, v in models.items()})
+    # GW is the test of the paper's results (Lago et al., 2021, §6.2); DM is kept alongside.
+    arrays = {k: v.to_numpy() for k, v in models.items()}
+    gw = gw_matrix(real.to_numpy(), arrays)
+    dm = dm_matrix(real.to_numpy(), arrays)
+    out["gw_pvalues"] = gw.to_dict(orient="index")
     out["dm_pvalues"] = dm.to_dict(orient="index")
     md += [
+        "## Multivariate GW p-values (H1: column more accurate than row)",
+        fmt_table(gw, 4),
+        "",
         "## Multivariate DM p-values (H1: column more accurate than row)",
         fmt_table(dm, 4),
         "",
@@ -267,13 +278,14 @@ def main() -> None:
     out["phase_b"], md_b, frames_b = phase_b(missing)
     md += md_b
     monthly_figure((real, ens, naive), frames_b)
-    # Decision rule: deploy the LEAR ensemble if it
-    # beats the naive forecast on the whole phase B test (one-sided multivariate DM, 5 %).
+    # Decision rule: deploy the LEAR ensemble if it beats the naive forecast on the whole
+    # phase B test (one-sided multivariate GW, 5 %).
     if out["phase_b"] is not None:
-        p_value = out["phase_b"]["accuracy"]["DM p (ens. better than naive)"]
+        p_value = out["phase_b"]["accuracy"]["GW p (ens. better than naive)"]
         out["decision"] = {
-            "rule": "LEAR ensemble if one-sided DM p < 0.05 vs naive on the phase B test",
-            "dm_p": p_value,
+            "rule": "LEAR ensemble if one-sided GW p < 0.05 vs naive on the phase B test",
+            "gw_p": p_value,
+            "dm_p": out["phase_b"]["accuracy"]["DM p (ens. better than naive)"],
             "deployed_model": "lear_ensemble" if p_value < 0.05 else "naive",
             "recalibration": "daily, four windows (56, 84, 1092, 1456 days)",
             "fallback": "naive forecast when a day has no LEAR forecast",

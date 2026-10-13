@@ -54,8 +54,9 @@ numbers below are rendered by `scripts/make_report.py` from
   **ensemble** is the mean of the four windows.
 - **Naive benchmark**: Monday, Saturday and Sunday copy the same day one week before;
   Tuesday to Friday copy the previous day.
-- **Metrics**: MAE, RMSE, sMAPE, rMAE; one-sided **multivariate Diebold-Mariano** test on
-  daily-averaged loss differentials.
+- **Metrics**: MAE, RMSE, sMAPE, rMAE; one-sided **multivariate Giacomini-White** test on
+  daily-averaged loss differentials, the test of the paper's results; the multivariate
+  Diebold-Mariano test is reported alongside.
 - Code adapted, not imported, from `jeslago/epftoolbox` (Apache-2.0) and
   `EnergieID/entsoe-py` (MIT): [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
@@ -64,7 +65,7 @@ numbers below are rendered by `scripts/make_report.py` from
 The original LEAR no longer runs on scikit-learn ≥ 1.2 (`LassoLarsIC` changed); its
 penalty selection was re-implemented on top of `lars_path`. `tests/test_reference.py`
 checks the port against the original code run under scikit-learn 0.23.2: forecasts within
-the 10⁻⁶ EUR/MWh tolerance, metrics and DM p-values to machine precision.
+the 10⁻⁶ EUR/MWh tolerance, metrics and GW and DM p-values to machine precision.
 
 The public epftoolbox code itself does not reproduce, day by day, the LEAR forecasts
 published with the paper — neither with its current exogenous lags (d-1, d-7) nor with
@@ -98,9 +99,11 @@ fitted on fewer samples than inputs. For reference, the paper's published DNN en
 | **LEAR ensemble** | **{{accuracy/LEAR Ens./MAE}}** | **{{accuracy/LEAR Ens./RMSE}}** | **{{accuracy/LEAR Ens./sMAPE_pct}}** | **{{accuracy/LEAR Ens./rMAE}}** |
 
 - **LEAR ensemble vs naive: −{{headline/ensemble_vs_naive_EUR_MWh}} EUR/MWh
-  (−{{headline/ensemble_vs_naive_pct|.1f}} %)**, DM p {{headline/dm_p_ensemble_better_than_naive|p}}.
+  (−{{headline/ensemble_vs_naive_pct|.1f}} %)**, GW p {{headline/gw_p_ensemble_better_than_naive|p}}
+  (DM p {{headline/dm_p_ensemble_better_than_naive|p}}).
 - Ensemble vs the best single window ({{headline/best_single_window|d}} days):
-  −{{headline/ensemble_vs_best_single_EUR_MWh}} EUR/MWh, DM p {{headline/dm_p_ensemble_better_than_best_single|p}}.
+  −{{headline/ensemble_vs_best_single_EUR_MWh}} EUR/MWh, GW p {{headline/gw_p_ensemble_better_than_best_single|p}}
+  (DM p {{headline/dm_p_ensemble_better_than_best_single|p}}).
 
 ### 2. Extension to today, {{phase_b/test_period/0}} to {{phase_b/test_period/1}}
 
@@ -119,7 +122,8 @@ of hours with a negative price.
 | **LEAR ensemble** | **{{phase_b/accuracy/MAE LEAR ens.}}** |
 
 - **LEAR ensemble vs naive: −{{phase_b/accuracy/gain vs naive (EUR per MWh)}} EUR/MWh
-  (−{{phase_b/accuracy/gain vs naive %|.1f}} %)**, DM p {{phase_b/accuracy/DM p (ens. better than naive)|p}}.
+  (−{{phase_b/accuracy/gain vs naive %|.1f}} %)**, GW p {{phase_b/accuracy/GW p (ens. better than naive)|p}}
+  (DM p {{phase_b/accuracy/DM p (ens. better than naive)|p}}).
 - **15-minute products**: even a perfect hourly forecast would miss the quarter-hour prices
   by {{quarter_hour/perfect_hourly_forecast_MAE}} EUR/MWh on average
   ({{quarter_hour/period/0}} to {{quarter_hour/period/1}}, {{quarter_hour/hours|,d}} hours):
@@ -163,7 +167,8 @@ of hours with a negative price.
 
 **Deployed model: {{decision/deployed_model}}.** Rule: deploy the
 LEAR ensemble if it beats the naive forecast on the whole extension period with a
-one-sided DM p-value below 0.05, otherwise the naive forecast. Result: DM p {{decision/dm_p|p}}. The four windows are recalibrated every day; a day without a LEAR
+one-sided multivariate GW p-value below 0.05, otherwise the naive forecast. Result:
+GW p {{decision/gw_p|p}} (DM p {{decision/dm_p|p}}). The four windows are recalibrated every day; a day without a LEAR
 forecast gets the naive forecast, labelled as such.
 
 ## Limitations
@@ -214,6 +219,8 @@ python scripts/make_report.py               # metrics.json, figure, this README
   electricity spot price forecasting.* IEEE Transactions on Power Systems 33(2).
 - F. X. Diebold, R. S. Mariano (1995). *Comparing predictive accuracy.* Journal of
   Business & Economic Statistics 13(3).
+- R. Giacomini, H. White (2006). *Tests of conditional predictive ability.* Econometrica
+  74(6), 1545–1578.
 - Code: [jeslago/epftoolbox](https://github.com/jeslago/epftoolbox) (Apache-2.0),
   [EnergieID/entsoe-py](https://github.com/EnergieID/entsoe-py) (MIT).
 - Data: Zenodo record [4624805](https://zenodo.org/records/4624805); ENTSO-E Transparency

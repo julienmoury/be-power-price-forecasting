@@ -21,6 +21,7 @@ Adapted files and modifications (Apache-2.0 §4(b)):
 | `src/be_power_forecast/models/scaling.py` | `epftoolbox/data/_wrangling.py` | Kept only the median/MAD and asinh scalers; vectorised; zero-MAD guard; errors instead of prints. |
 | `src/be_power_forecast/evaluation/metrics.py` | `epftoolbox/evaluation/_mae.py`, `_smape.py`, `_rmae.py`, `_ancillary_functions.py` | Inputs restricted to `(n_days, 24)` arrays/frames; vectorised naive forecast; no type-dispatch helpers. |
 | `src/be_power_forecast/evaluation/dm.py` | `epftoolbox/evaluation/_dm.py` | Plotting removed; returns statistic and p-value; pairwise matrix helper. |
+| `src/be_power_forecast/evaluation/gw.py` | `epftoolbox/evaluation/_gw.py` | Plotting removed; returns statistic and p-value; `(T, T)` broadcast of the regression residuals replaced by the equivalent `(T,)` vector; pairwise matrix helper. |
 
 Data and reference files from the same project:
 

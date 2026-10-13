@@ -30,11 +30,23 @@
  "best_single_MAE": 6.606400448031136,
  "ensemble_vs_best_single_EUR_MWh": 0.3281133948746566,
  "ensemble_vs_best_single_pct": 4.9665986410563745,
+ "gw_p_ensemble_better_than_naive": 3.0531133177191805e-14,
+ "gw_p_ensemble_better_than_best_single": 6.686923782472931e-07,
  "dm_p_ensemble_better_than_naive": 1.3133938381315602e-13,
  "dm_p_ensemble_better_than_best_single": 1.2898622802071102e-06,
  "ensemble_vs_naive_EUR_per_MW_year": 16813.914303624995
 }
 ```
+
+## Multivariate GW p-values (H1: column more accurate than row)
+|  | Naive | LEAR 56 | LEAR 84 | LEAR 1092 | LEAR 1456 | LEAR Ens. |
+|---|---|---|---|---|---|---|
+| Naive | nan | 0.0000 | 0.0001 | 0.0000 | 0.0000 | 0.0000 |
+| LEAR 56 | 1.0000 | nan | 0.3027 | 0.0000 | 0.0000 | 0.0000 |
+| LEAR 84 | 1.0000 | 1.0000 | nan | 0.0000 | 0.0000 | 0.0000 |
+| LEAR 1092 | 1.0000 | 1.0000 | 1.0000 | nan | 1.0000 | 0.0000 |
+| LEAR 1456 | 1.0000 | 1.0000 | 1.0000 | 0.0250 | nan | 0.0000 |
+| LEAR Ens. | 1.0000 | 1.0000 | 1.0000 | 1.0000 | 1.0000 | nan |
 
 ## Multivariate DM p-values (H1: column more accurate than row)
 |  | Naive | LEAR 56 | LEAR 84 | LEAR 1092 | LEAR 1456 | LEAR Ens. |
@@ -74,6 +86,7 @@
  "MAE ens. / MAE naive": 0.6642720315131168,
  "gain vs naive (EUR per MWh)": 7.340794325314601,
  "gain vs naive %": 33.57279684868833,
+ "GW p (ens. better than naive)": 0.0,
  "DM p (ens. better than naive)": 0.0
 }
 ```
@@ -81,7 +94,8 @@
 ## Decision
 ```
 {
- "rule": "LEAR ensemble if one-sided DM p < 0.05 vs naive on the phase B test",
+ "rule": "LEAR ensemble if one-sided GW p < 0.05 vs naive on the phase B test",
+ "gw_p": 0.0,
  "dm_p": 0.0,
  "deployed_model": "lear_ensemble",
  "recalibration": "daily, four windows (56, 84, 1092, 1456 days)",

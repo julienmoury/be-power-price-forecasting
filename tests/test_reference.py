@@ -13,6 +13,7 @@ import pytest
 
 from be_power_forecast.data.sources import EpftoolboxZenodoSource
 from be_power_forecast.evaluation.dm import dm_test
+from be_power_forecast.evaluation.gw import gw_test
 from be_power_forecast.evaluation.metrics import mae, rmae, smape
 from be_power_forecast.models.lear import LEAR, FeatureSpec, build_features
 
@@ -86,3 +87,15 @@ def test_dm_matches_original_code(published):
     assert p == pytest.approx(ref["DM_LEARens_vs_DNNens_multivariate_norm1"], rel=1e-9)
     _, p = dm_test(real, published["LEAR 56"], lear, norm=2, version="multivariate")
     assert p == pytest.approx(ref["DM_LEAR56_vs_LEARens_multivariate_norm2"], rel=1e-9)
+
+
+def test_gw_matches_original_code(published):
+    ref = json.loads((REF / "original_metrics_reference.json").read_text())
+    real = published["Real price"]
+    lear, dnn = published["LEAR Ensemble"], published["DNN Ensemble"]
+    _, p_uni = gw_test(real, lear, dnn, norm=1, version="univariate")
+    np.testing.assert_allclose(p_uni, ref["GW_LEARens_vs_DNNens_univariate_norm1"], rtol=1e-9)
+    _, p = gw_test(real, lear, dnn, norm=1, version="multivariate")
+    assert p == pytest.approx(ref["GW_LEARens_vs_DNNens_multivariate_norm1"], rel=1e-9)
+    _, p = gw_test(real, published["LEAR 56"], lear, norm=2, version="multivariate")
+    assert p == pytest.approx(ref["GW_LEAR56_vs_LEARens_multivariate_norm2"], rel=1e-9)

@@ -54,8 +54,9 @@ numbers below are rendered by `scripts/make_report.py` from
   **ensemble** is the mean of the four windows.
 - **Naive benchmark**: Monday, Saturday and Sunday copy the same day one week before;
   Tuesday to Friday copy the previous day.
-- **Metrics**: MAE, RMSE, sMAPE, rMAE; one-sided **multivariate Diebold-Mariano** test on
-  daily-averaged loss differentials.
+- **Metrics**: MAE, RMSE, sMAPE, rMAE; one-sided **multivariate Giacomini-White** test on
+  daily-averaged loss differentials, the test of the paper's results; the multivariate
+  Diebold-Mariano test is reported alongside.
 - Code adapted, not imported, from `jeslago/epftoolbox` (Apache-2.0) and
   `EnergieID/entsoe-py` (MIT): [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
@@ -64,7 +65,7 @@ numbers below are rendered by `scripts/make_report.py` from
 The original LEAR no longer runs on scikit-learn ≥ 1.2 (`LassoLarsIC` changed); its
 penalty selection was re-implemented on top of `lars_path`. `tests/test_reference.py`
 checks the port against the original code run under scikit-learn 0.23.2: forecasts within
-the 10⁻⁶ EUR/MWh tolerance, metrics and DM p-values to machine precision.
+the 10⁻⁶ EUR/MWh tolerance, metrics and GW and DM p-values to machine precision.
 
 The public epftoolbox code itself does not reproduce, day by day, the LEAR forecasts
 published with the paper — neither with its current exogenous lags (d-1, d-7) nor with
@@ -98,9 +99,11 @@ fitted on fewer samples than inputs. For reference, the paper's published DNN en
 | **LEAR ensemble** | **6.28** | **16.04** | **14.97** | **0.76** |
 
 - **LEAR ensemble vs naive: −1.92 EUR/MWh
-  (−23.5 %)**, DM p = 1.3e-13.
+  (−23.5 %)**, GW p = 3.1e-14
+  (DM p = 1.3e-13).
 - Ensemble vs the best single window (1092 days):
-  −0.33 EUR/MWh, DM p = 1.3e-06.
+  −0.33 EUR/MWh, GW p = 6.7e-07
+  (DM p = 1.3e-06).
 
 ### 2. Extension to today, 2017-01-01 to 2026-09-30
 
@@ -119,7 +122,8 @@ of hours with a negative price.
 | **LEAR ensemble** | **14.52** |
 
 - **LEAR ensemble vs naive: −7.34 EUR/MWh
-  (−33.6 %)**, DM p < 10⁻¹⁵.
+  (−33.6 %)**, GW p < 10⁻¹⁵
+  (DM p < 10⁻¹⁵).
 - **15-minute products**: even a perfect hourly forecast would miss the quarter-hour prices
   by 7.91 EUR/MWh on average
   (2025-10-01 to 2026-09-30, 8,760 hours):
@@ -163,7 +167,8 @@ of hours with a negative price.
 
 **Deployed model: lear_ensemble.** Rule: deploy the
 LEAR ensemble if it beats the naive forecast on the whole extension period with a
-one-sided DM p-value below 0.05, otherwise the naive forecast. Result: DM p < 10⁻¹⁵. The four windows are recalibrated every day; a day without a LEAR
+one-sided multivariate GW p-value below 0.05, otherwise the naive forecast. Result:
+GW p < 10⁻¹⁵ (DM p < 10⁻¹⁵). The four windows are recalibrated every day; a day without a LEAR
 forecast gets the naive forecast, labelled as such.
 
 ## Limitations
@@ -214,6 +219,8 @@ python scripts/make_report.py               # metrics.json, figure, this README
   electricity spot price forecasting.* IEEE Transactions on Power Systems 33(2).
 - F. X. Diebold, R. S. Mariano (1995). *Comparing predictive accuracy.* Journal of
   Business & Economic Statistics 13(3).
+- R. Giacomini, H. White (2006). *Tests of conditional predictive ability.* Econometrica
+  74(6), 1545–1578.
 - Code: [jeslago/epftoolbox](https://github.com/jeslago/epftoolbox) (Apache-2.0),
   [EnergieID/entsoe-py](https://github.com/EnergieID/entsoe-py) (MIT).
 - Data: Zenodo record [4624805](https://zenodo.org/records/4624805); ENTSO-E Transparency

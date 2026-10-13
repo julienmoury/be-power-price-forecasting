@@ -102,9 +102,61 @@
   "best_single_MAE": 6.606400448031136,
   "ensemble_vs_best_single_EUR_MWh": 0.3281133948746566,
   "ensemble_vs_best_single_pct": 4.9665986410563745,
+  "gw_p_ensemble_better_than_naive": 3.0531133177191805e-14,
+  "gw_p_ensemble_better_than_best_single": 6.686923782472931e-07,
   "dm_p_ensemble_better_than_naive": 1.3133938381315602e-13,
   "dm_p_ensemble_better_than_best_single": 1.2898622802071102e-06,
   "ensemble_vs_naive_EUR_per_MW_year": 16813.914303624995
+ },
+ "gw_pvalues": {
+  "Naive": {
+   "Naive": NaN,
+   "LEAR 56": 2.5629350460354416e-05,
+   "LEAR 84": 6.480770919892187e-05,
+   "LEAR 1092": 1.2960723605459634e-09,
+   "LEAR 1456": 2.1766649593857323e-09,
+   "LEAR Ens.": 3.0531133177191805e-14
+  },
+  "LEAR 56": {
+   "Naive": 1.0,
+   "LEAR 56": NaN,
+   "LEAR 84": 0.3026657214463322,
+   "LEAR 1092": 1.7635670701565687e-11,
+   "LEAR 1456": 2.5496049715911795e-11,
+   "LEAR Ens.": 0.0
+  },
+  "LEAR 84": {
+   "Naive": 1.0,
+   "LEAR 56": 1.0,
+   "LEAR 84": NaN,
+   "LEAR 1092": 1.0433233399442798e-07,
+   "LEAR 1456": 1.3196878334564843e-07,
+   "LEAR Ens.": 0.0
+  },
+  "LEAR 1092": {
+   "Naive": 1.0,
+   "LEAR 56": 1.0,
+   "LEAR 84": 1.0,
+   "LEAR 1092": NaN,
+   "LEAR 1456": 1.0,
+   "LEAR Ens.": 6.686923782472931e-07
+  },
+  "LEAR 1456": {
+   "Naive": 1.0,
+   "LEAR 56": 1.0,
+   "LEAR 84": 1.0,
+   "LEAR 1092": 0.02498380180511417,
+   "LEAR 1456": NaN,
+   "LEAR Ens.": 5.6914917223593875e-11
+  },
+  "LEAR Ens.": {
+   "Naive": 1.0,
+   "LEAR 56": 1.0,
+   "LEAR 84": 1.0,
+   "LEAR 1092": 1.0,
+   "LEAR 1456": 1.0,
+   "LEAR Ens.": NaN
+  }
  },
  "dm_pvalues": {
   "Naive": {
@@ -184,11 +236,13 @@
    "MAE ens. / MAE naive": 0.6642720315131168,
    "gain vs naive (EUR per MWh)": 7.340794325314601,
    "gain vs naive %": 33.57279684868833,
+   "GW p (ens. better than naive)": 0.0,
    "DM p (ens. better than naive)": 0.0
   }
  },
  "decision": {
-  "rule": "LEAR ensemble if one-sided DM p < 0.05 vs naive on the phase B test",
+  "rule": "LEAR ensemble if one-sided GW p < 0.05 vs naive on the phase B test",
+  "gw_p": 0.0,
   "dm_p": 0.0,
   "deployed_model": "lear_ensemble",
   "recalibration": "daily, four windows (56, 84, 1092, 1456 days)",

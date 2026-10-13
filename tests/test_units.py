@@ -4,6 +4,7 @@ import pytest
 
 from be_power_forecast.data.sources import validate_standard_frame
 from be_power_forecast.evaluation.dm import dm_test
+from be_power_forecast.evaluation.gw import gw_test
 from be_power_forecast.evaluation.metrics import mae, naive_forecast, rmae, smape
 from be_power_forecast.models.lear import LEAR, FeatureSpec, build_features
 from be_power_forecast.models.scaling import InvariantScaler
@@ -84,6 +85,17 @@ def test_dm_detects_better_forecast():
     assert p < 0.01
     _, p = dm_test(real, good, bad)
     assert p > 0.99
+
+
+def test_gw_detects_better_forecast():
+    rng = np.random.default_rng(0)
+    real = rng.normal(50, 10, (300, 24))
+    good = real + rng.normal(0, 1, real.shape)
+    bad = real + rng.normal(0, 3, real.shape)
+    _, p = gw_test(real, bad, good)
+    assert p < 0.01
+    _, p = gw_test(real, good, bad)
+    assert p == 1.0  # one-sided: a negative statistic gives p = 1
 
 
 def test_standard_frame_validation():

@@ -1,0 +1,446 @@
+{
+ "SF 2015-01-04": {
+  "Xtrain": [
+   [
+    1087,
+    145
+   ],
+   "970e0f621bba03c7dc4e2601f08539205fbd52ade442d2d9abaa48e926212a09"
+  ],
+  "Ytrain": [
+   [
+    1087,
+    24
+   ],
+   "646f4f45b7f7bf0f4d948861e8a2aead103f6048022aec4a21942061490d260e"
+  ],
+  "Xval": [
+   [
+    362,
+    145
+   ],
+   "0f47c55ab39a6758b5f036004c533aad2409c853edfca6c78daf5460b97a0fb9"
+  ],
+  "Yval": [
+   [
+    362,
+    24
+   ],
+   "98c87deb1b5ce6efb3e2d126708190966fc00d5d757b18eed9bc5de721a83930"
+  ],
+  "Xtest": [
+   [
+    1,
+    145
+   ],
+   "ea3f5a862dfa84a0719a3a32ace750aee056567d73fe2c0fdc8ab0c59636f069"
+  ]
+ },
+ "SF 2016-02-08": {
+  "Xtrain": [
+   [
+    1087,
+    145
+   ],
+   "91e69345f40c939fe12fc0f01b97ce95a536d1e66c1ae5de63fedcdfb1898a58"
+  ],
+  "Ytrain": [
+   [
+    1087,
+    24
+   ],
+   "6102bfa1cce0de40d6986d96abf21718cb3e124d0d4b587ee5deebda533cca5e"
+  ],
+  "Xval": [
+   [
+    362,
+    145
+   ],
+   "14553865286500c6678245ea42c5f13333dd5a1a7ad76152150dd62b26cf8988"
+  ],
+  "Yval": [
+   [
+    362,
+    24
+   ],
+   "0fcfc8a396c0887535d12d6efb7a5626fd4f66967c4baddda026f03707e9f555"
+  ],
+  "Xtest": [
+   [
+    1,
+    145
+   ],
+   "bfbac470a039cdd9034c0dedde3383ca4d2ba3e6f90b1498bb3111e2da05b0ea"
+  ]
+ },
+ "SF 2016-12-31": {
+  "Xtrain": [
+   [
+    1087,
+    145
+   ],
+   "75eedd990edd733c724bf8951bee29793548ef264653b8f9c45925e00a5d492a"
+  ],
+  "Ytrain": [
+   [
+    1087,
+    24
+   ],
+   "4413b41eeca708ba21e6aefa88fbdb7d2e444155d690a8c54dc21f7224db480d"
+  ],
+  "Xval": [
+   [
+    362,
+    145
+   ],
+   "04c31c7292076dc24ca583eb73c5d5dd372054f457682c22ef9a59191a9a0f74"
+  ],
+  "Yval": [
+   [
+    362,
+    24
+   ],
+   "e3e61dd911a7db5b994323ab8796b1dccd81b18199b70fcab27344c3b2c1949c"
+  ],
+  "Xtest": [
+   [
+    1,
+    145
+   ],
+   "d268cf09a708973b6a21a3306450a37d13ddec86ffc7f8b42dd4b96f754effa3"
+  ]
+ },
+ "SF_DA 2015-01-04": {
+  "Xtrain": [
+   [
+    26065,
+    216
+   ],
+   "f6359fc555cae6ec4341beb6acdf611e56e90473bf225a6774b5cfd2f1a92372"
+  ],
+  "Ytrain": [
+   [
+    26065,
+    24
+   ],
+   "97ea195dc002e54736cb20c5e5db74763cef31fb74d30d2c744a727ffb4c4396"
+  ],
+  "Xval": [
+   [
+    8688,
+    216
+   ],
+   "a4c769136c45bd4177eadf0bd3e3cbcbafd709c0f2ef5172324c0c920741e8c1"
+  ],
+  "Yval": [
+   [
+    8688,
+    24
+   ],
+   "fe121ef8504e14d32f53f4c65b3758e3da8d2315d97e8febec81684e4a020571"
+  ],
+  "Xtest": [
+   [
+    1,
+    216
+   ],
+   "eaf53ef76748445135f246e092c2293d47b6a1368222c9b5758c5cbe9c69d4df"
+  ]
+ },
+ "SF_DA 2016-02-08": {
+  "Xtrain": [
+   [
+    26065,
+    216
+   ],
+   "0ab9ff538f7a7d90123ee64b582983909ffa18f07b602585be8327a982a1d838"
+  ],
+  "Ytrain": [
+   [
+    26065,
+    24
+   ],
+   "244a2af106b105a645d8556b9a72419b68f4b17955d43d6017e43f74d3437a8f"
+  ],
+  "Xval": [
+   [
+    8688,
+    216
+   ],
+   "3d5fbad0ff48a5ce423d20868b0f972519ec8196f46fe1c317e709aa43552341"
+  ],
+  "Yval": [
+   [
+    8688,
+    24
+   ],
+   "7839666ec0cecd13951d06d69b5182ff5a3cf11f3990f0d2ffd17767a5a514ef"
+  ],
+  "Xtest": [
+   [
+    1,
+    216
+   ],
+   "8e1cca6e5efc33c0bea0cd576c33b33b07ebbc8b17c1b15882d3227baa485b52"
+  ]
+ },
+ "SF_DA 2016-12-31": {
+  "Xtrain": [
+   [
+    26065,
+    216
+   ],
+   "78e30659f01751b842ad0d635eb754dca3f31959c36889d14422b32dc5c5b667"
+  ],
+  "Ytrain": [
+   [
+    26065,
+    24
+   ],
+   "a018dfda1e00a513cb96c84b24a806c65b1853b72e6d0edb946838d5fd824ba9"
+  ],
+  "Xval": [
+   [
+    8688,
+    216
+   ],
+   "331a08bb116a11d1104f0adf833859fcd5f849f4193ce128d1f5acac11911b22"
+  ],
+  "Yval": [
+   [
+    8688,
+    24
+   ],
+   "83e64ecadfc17094dad3714d8e2a46a7e204366babe07883256e4f00002c0e13"
+  ],
+  "Xtest": [
+   [
+    1,
+    216
+   ],
+   "9bf295a50b0db74f54d80945f15fcb0043414563194d1e08be463ff407747383"
+  ]
+ },
+ "SF_SF 2015-01-04": {
+  "Xtrain": [
+   [
+    1087,
+    121
+   ],
+   "6c3724393dba852a90031ab5608cc004ac85c4589579e9ebf6addd10b5c0c888"
+  ],
+  "Ytrain": [
+   [
+    1087,
+    24
+   ],
+   "8ff333022f4da8343fa4c289d443a2b65710bf1b30d354fdb049ee72393f40cc"
+  ],
+  "Xval": [
+   [
+    362,
+    121
+   ],
+   "72abc2341adc4d368e977075d0933bc4df5542fe2b70ee7b63c1ae66fcdcb720"
+  ],
+  "Yval": [
+   [
+    362,
+    24
+   ],
+   "4d2e0aeb7716a3f78a43248560343e16155ae51ac6014b930f2ccf1687b5940c"
+  ],
+  "Xtest": [
+   [
+    1,
+    121
+   ],
+   "356dbd44f1ac9c2de4ce2b73cb7d56b1226b389dbebe0b802d2bd0263fe8d1fa"
+  ]
+ },
+ "SF_SF 2016-02-08": {
+  "Xtrain": [
+   [
+    1087,
+    121
+   ],
+   "58ebe0ac1e9a4b46d19ed171ff48a0b3f3260adea4a53618f6db2328e6e58040"
+  ],
+  "Ytrain": [
+   [
+    1087,
+    24
+   ],
+   "6ff54935cd7eb261a80a9a57fa7e81d361d781316a032d549f12a66de1092ab2"
+  ],
+  "Xval": [
+   [
+    362,
+    121
+   ],
+   "9a4827f45175f5d26e6974b20aebd19c1d28db3bd684b7274cdcfa719c8830be"
+  ],
+  "Yval": [
+   [
+    362,
+    24
+   ],
+   "4a9b802722bd4bc7f7901527745b73e61a095a244a97d7380fa253e9c80d63f4"
+  ],
+  "Xtest": [
+   [
+    1,
+    121
+   ],
+   "446536dd8acea45be5178f2624b2e34a00597d4be5236821165c38adb02ce7d7"
+  ]
+ },
+ "SF_SF 2016-12-31": {
+  "Xtrain": [
+   [
+    1087,
+    121
+   ],
+   "9efc30471d6eec1061a402d1a68ee61188b0cf2954a0638705b34a2a08fb6713"
+  ],
+  "Ytrain": [
+   [
+    1087,
+    24
+   ],
+   "a01a14f5cbd18eef5042277f378aa2f16b0a3cc8efe19905298ee8347f93a433"
+  ],
+  "Xval": [
+   [
+    362,
+    121
+   ],
+   "6a1b1f5696f8ee88400799f3c439a5272a2ce411cd8f789e98c116abeb2e12fc"
+  ],
+  "Yval": [
+   [
+    362,
+    24
+   ],
+   "01936ef45754e9132ff748c42b70a0fda39456e6953f9053ae99f3f690d70177"
+  ],
+  "Xtest": [
+   [
+    1,
+    121
+   ],
+   "011b0604c8647e421c8c34981c978ed0aac429784f613347ed1a788c7d7ac8bb"
+  ]
+ },
+ "SF_SF_DA 2015-01-04": {
+  "Xtrain": [
+   [
+    26065,
+    217
+   ],
+   "3d19ef9fd92d167df484881919fbd5bbc947890f8c89a39d841b50c2053369f5"
+  ],
+  "Ytrain": [
+   [
+    26065,
+    24
+   ],
+   "ea421cfeed5c2b7dc908bae1ba9be30138527b6e8fbfa039c5de7ad22f4cf7ae"
+  ],
+  "Xval": [
+   [
+    8688,
+    217
+   ],
+   "83af021212f8094ae4d83bd1edb360d870a6f19cac540554567f1021df3c2580"
+  ],
+  "Yval": [
+   [
+    8688,
+    24
+   ],
+   "8ffbd953e9c242621a9213cb7c23ff70bb7a2ad7180e30bbec2715afc6cd3e93"
+  ],
+  "Xtest": [
+   [
+    1,
+    217
+   ],
+   "06284190cdb55814909fb222b64a97917665ce42a43d759cbff0c37d5e83485d"
+  ]
+ },
+ "SF_SF_DA 2016-02-08": {
+  "Xtrain": [
+   [
+    26065,
+    217
+   ],
+   "daf5666fd1c7aad7b4e3131ff6b138be9affe132f8a4f5fb11348f829d7dbe85"
+  ],
+  "Ytrain": [
+   [
+    26065,
+    24
+   ],
+   "d2f9e1e03a68704c953c94f4d7ecbf9c070e1ae029d968b001d12038ed842864"
+  ],
+  "Xval": [
+   [
+    8688,
+    217
+   ],
+   "ccc37fcf45feeffd71bb8b74734728a6234226d6fa0c23b7ba1218a1678bf8f5"
+  ],
+  "Yval": [
+   [
+    8688,
+    24
+   ],
+   "109d1cf3ed4706648ea1c4ea375c97b05ef9b32da1f5f388323a40c3518545a2"
+  ],
+  "Xtest": [
+   [
+    1,
+    217
+   ],
+   "10777c9426fd58406b5fd0ac60d03ca8aa45350ac7c6427f54df374a9e77aa4e"
+  ]
+ },
+ "SF_SF_DA 2016-12-31": {
+  "Xtrain": [
+   [
+    26065,
+    217
+   ],
+   "215f593b847158b8450cc4038b229c5b3e6ac2fbf4f851c6d383ace10fd53f89"
+  ],
+  "Ytrain": [
+   [
+    26065,
+    24
+   ],
+   "57c12b3fdc773c9a0f6d13df9cfa312bb13cd588bce6fec0b0e358cae8b8cd58"
+  ],
+  "Xval": [
+   [
+    8688,
+    217
+   ],
+   "144297c3ae10a9813b5611a9750dcb810715304be63f7ee88fb0dfa19bed7555"
+  ],
+  "Yval": [
+   [
+    8688,
+    24
+   ],
+   "acd96d6ad3d658c36ad5752eb7463dd2e2301e1abe337be5e7eb26f0f00c68af"
+  ],
+  "Xtest": [
+   [
+    1,
+    217
+   ],
+   "4251094dd8914ac4863e33ee53d0c7ce73da7f9a9a7d741b17ff6d9a8ec5b063"
+  ]
+ }
+}

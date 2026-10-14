@@ -1,0 +1,114 @@
+{
+ "tolerance": 1e-06,
+ "all_ok": true,
+ "cases": [
+  {
+   "dnn": "SF_DA",
+   "date": "2015-01-04",
+   "max_abs_diff": 4.892577010195964e-09,
+   "epochs": 244,
+   "epochs_original": 244,
+   "ok": true
+  },
+  {
+   "dnn": "SF_DA",
+   "date": "2016-02-08",
+   "max_abs_diff": 4.794920016593096e-09,
+   "epochs": 106,
+   "epochs_original": 106,
+   "ok": true
+  },
+  {
+   "dnn": "SF_DA",
+   "date": "2016-12-31",
+   "max_abs_diff": 3.857422825603862e-09,
+   "epochs": 190,
+   "epochs_original": 190,
+   "ok": true
+  },
+  {
+   "dnn": "SF_SF_DA",
+   "date": "2015-01-04",
+   "max_abs_diff": 4.978751633188949e-09,
+   "epochs": 115,
+   "epochs_original": 115,
+   "ok": true
+  },
+  {
+   "dnn": "SF_SF_DA",
+   "date": "2016-02-08",
+   "max_abs_diff": 4.691152355462691e-09,
+   "epochs": 114,
+   "epochs_original": 114,
+   "ok": true
+  },
+  {
+   "dnn": "SF_SF_DA",
+   "date": "2016-12-31",
+   "max_abs_diff": 4.779131757004507e-09,
+   "epochs": 115,
+   "epochs_original": 115,
+   "ok": true
+  },
+  {
+   "dnn": "SF",
+   "date": "2015-01-04",
+   "max_abs_diff": 4.248043694587977e-09,
+   "epochs": 187,
+   "epochs_original": 187,
+   "ok": true
+  },
+  {
+   "dnn": "SF",
+   "date": "2016-02-08",
+   "max_abs_diff": 4.765624339597707e-09,
+   "epochs": 164,
+   "epochs_original": 164,
+   "ok": true
+  },
+  {
+   "dnn": "SF",
+   "date": "2016-12-31",
+   "max_abs_diff": 4.941405506997398e-09,
+   "epochs": 169,
+   "epochs_original": 169,
+   "ok": true
+  },
+  {
+   "dnn": "SF_SF",
+   "date": "2015-01-04",
+   "max_abs_diff": 4.9874202545652224e-09,
+   "epochs": 250,
+   "epochs_original": 250,
+   "ok": true
+  },
+  {
+   "dnn": "SF_SF",
+   "date": "2016-02-08",
+   "max_abs_diff": 4.851855806009553e-09,
+   "epochs": 199,
+   "epochs_original": 199,
+   "ok": true
+  },
+  {
+   "dnn": "SF_SF",
+   "date": "2016-12-31",
+   "max_abs_diff": 4.950202026066108e-09,
+   "epochs": 190,
+   "epochs_original": 190,
+   "ok": true
+  }
+ ],
+ "environment": {
+  "host": "juliens-air.home",
+  "platform": "macOS-14.5-arm64-arm-64bit",
+  "cpu": "arm",
+  "cpu_count": 8,
+  "python": "3.12.15",
+  "commit": "b864cbeb423d61477b9aedaa4b9ad956c2ae852f",
+  "tensorflow": "2.21.0",
+  "keras": "3.15.1",
+  "numpy": "2.5.4",
+  "scikit-learn": "1.9.1"
+ }
+}

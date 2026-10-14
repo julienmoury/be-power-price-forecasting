@@ -16,3 +16,5 @@ results/run_log.txt
 data/cache/
 mlruns/
 /models/
+# DNN training records and weights (archived outside the repository, see scripts/run_dnn.py)
+artifacts/

@@ -18,7 +18,8 @@ Adapted files and modifications (Apache-2.0 §4(b)):
 | File in this repository | Original file(s) | Modifications |
 |---|---|---|
 | `src/be_power_forecast/models/lear.py` | `epftoolbox/models/_lear.py` | Vectorised feature construction (same features, same order); configurable lags for ablations; re-implementation of the scikit-learn < 1.2 `LassoLarsIC(criterion="aic", normalize=True)` penalty selection on top of `lars_path`; removed file I/O and printing. |
-| `src/be_power_forecast/models/scaling.py` | `epftoolbox/data/_wrangling.py` | Kept only the median/MAD and asinh scalers; vectorised; zero-MAD guard; errors instead of prints. |
+| `src/be_power_forecast/models/scaling.py` | `epftoolbox/data/_wrangling.py` | Kept the median/MAD and asinh scalers and the name-to-scaler mapping of `DataScaler`; vectorised; zero-MAD guard; errors instead of prints. |
+| `src/be_power_forecast/models/dnn.py` | `epftoolbox/models/_dnn.py` | Keras 3 API (`learning_rate`, no `batch_input_shape` on hidden layers, `negative_slope`); samples built with numpy index arithmetic (same features, same order); vectorised weekly validation shuffle (same permutation); hyperparameters read from a JSON extract of the published trial files; numpy seeded before each day's validation draw, Python and TensorFlow seeded too; samples touching dropped days removed; training history and weight hash returned; no file I/O or printing. |
 | `src/be_power_forecast/evaluation/metrics.py` | `epftoolbox/evaluation/_mae.py`, `_smape.py`, `_rmae.py`, `_ancillary_functions.py` | Inputs restricted to `(n_days, 24)` arrays/frames; vectorised naive forecast; no type-dispatch helpers. |
 | `src/be_power_forecast/evaluation/dm.py` | `epftoolbox/evaluation/_dm.py` | Plotting removed; returns statistic and p-value; pairwise matrix helper. |
 | `src/be_power_forecast/evaluation/gw.py` | `epftoolbox/evaluation/_gw.py` | Plotting removed; returns statistic and p-value; `(T, T)` broadcast of the regression residuals replaced by the equivalent `(T,)` vector; pairwise matrix helper. |
@@ -30,6 +31,10 @@ Data and reference files from the same project:
   `e05ce0b1d869bff23d81faac4737c623bfeedc65c1965d792c8b509e20c65a20`).
 - `tests/reference/Forecasts_BE_DNN_LEAR_ensembles.csv`: forecasts published in the
   epftoolbox repository (`forecasts/`), unmodified.
+- `data/raw/dnn_hyperparameters_BE.json`: best trial of each of the four BE hyperopt
+  trial files of the epftoolbox repository (`examples/experimental_files/`), decoded as
+  `format_best_trial` does (`scripts/make_dnn_hyperparameters.py`, SHA-256 of each file
+  recorded).
 
 ### Apache License 2.0 (full text)
 

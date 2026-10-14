@@ -85,6 +85,19 @@ The long windows match the published MAE closely; the gap comes from the short w
 fitted on fewer samples than inputs. For reference, the paper's published DNN ensemble
 (not a model of this project) has an MAE of 5.87.
 
+### DNN of the paper (in progress)
+
+The four DNNs of the paper's ensemble are re-implemented (`models/dnn.py`) and recalibrated
+every day, as in the paper. **Their hyperparameters and input features are the published
+ones, for both test periods**: the paper chose them with a hyperparameter search
+(hyperopt, 1 500 trials per DNN) on 2011–2016 data, and this project does not run a new
+search on recent data. Only the daily training is computed, for every test day.
+The port reproduces the original code exactly (same seeds: same epochs, forecasts within
+1e-6 EUR/MWh, `results/dnn/port_check.json`). Every training is recorded (per-epoch
+losses, seeds, hashes of data and weights, machine, versions): summaries in
+`results/dnn/`, per-day records and weights in a GitHub Release. **Results are not
+available yet.**
+
 ## Results
 
 ### 1. Paper's test period, 2015-01-04 to 2016-12-31 (728 days)

@@ -69,6 +69,22 @@ class HourlyInputs:
         )
 
 
+def forecastable(inputs: HourlyInputs) -> np.ndarray:
+    """Days whose own data and every possible input day (d-1, d-2, d-3, d-7) are complete.
+
+    The same days as the LEAR backtest: days that depend on a day dropped by the data rules
+    are not forecast, whatever inputs a DNN selects.
+    """
+    n = len(inputs.dates)
+    daily = np.column_stack([inputs.price.reshape(n, 24), inputs.exog.reshape(n, -1)])
+    complete = np.isfinite(daily).all(axis=1)
+    ok = complete.copy()
+    for k in sorted({*PRICE_LAGS, *EXOGENOUS_LAGS}):
+        ok[k:] &= complete[:-k]
+        ok[:k] = False
+    return ok
+
+
 def build_samples(inputs: HourlyInputs, hp: dict, starts: np.ndarray):
     """Inputs ``X`` and 24 prices ``Y`` of the samples starting at the hours ``starts``.
 

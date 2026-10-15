@@ -45,7 +45,12 @@ from be_power_forecast.data.sources import (
     EpftoolboxZenodoSource,
     validate_standard_frame,
 )
-from be_power_forecast.models.dnn import HourlyInputs, forecast_day, load_hyperparameters
+from be_power_forecast.models.dnn import (
+    HourlyInputs,
+    forecast_day,
+    forecastable,
+    load_hyperparameters,
+)
 
 RECORDS = REPO_ROOT / "artifacts" / "dnn"  # git-ignored, archived outside the repository
 HOURS = [f"h{h}" for h in range(24)]
@@ -118,9 +123,8 @@ def jobs(phase: str, names: list[str], record_dir: Path, days: int | None):
     inputs = HourlyInputs.from_frame(df)
     dates = inputs.dates
     test = np.flatnonzero((dates >= pd.Timestamp(begin)) & (dates <= pd.Timestamp(end)))
-    # Days whose own inputs or prices were dropped by the data rules are not forecast.
-    daily = np.column_stack([inputs.price.reshape(-1, 24), inputs.exog.reshape(len(dates), -1)])
-    test = [t for t in test if np.isfinite(daily[t]).all()][:days]
+    # Days that depend on a day dropped by the data rules are not forecast (as for LEAR).
+    test = test[forecastable(inputs)[test]][:days]
     settings = load_hyperparameters()
     # Longest jobs (data augmentation) first, for load balancing.
     order = sorted(names, key=lambda n: not settings[n]["data_augmentation"])

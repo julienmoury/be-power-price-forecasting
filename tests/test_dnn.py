@@ -116,3 +116,13 @@ def test_training_is_seeded_and_recorded(monkeypatch):
     assert r1["weights_sha256"] == r2["weights_sha256"] == dnn.weights_sha256(w1)
     assert r1["epochs"] == len(r1["history"]) == 2 and r1["n_train"] + r1["n_val"] == 1449
     assert r1["date"] == str(inputs.dates[-1].date()) and len(r1["forecast"]) == 24
+
+
+def test_forecastable_days_skip_dropped_inputs():
+    days = 20
+    index = pd.date_range("2020-01-06", periods=days * 24, freq="h")
+    df = pd.DataFrame({"Price": 1.0, "Exogenous 1": 2.0}, index=index)
+    df.iloc[10 * 24 : 11 * 24, 1] = np.nan  # day 10 dropped (exogenous missing)
+    ok = dnn.forecastable(dnn.HourlyInputs.from_frame(df))
+    assert not ok[:7].any()  # no d-7 input yet
+    assert [t for t in range(7, days) if not ok[t]] == [10, 11, 12, 13, 17]

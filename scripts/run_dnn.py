@@ -138,11 +138,17 @@ def collect(phase: str, record_dir: Path) -> None:
     sub = "phase_b/" if phase == "B" else ""
     out = RESULTS_DIR / "dnn" / f"phase_{phase.lower()}"
     out.mkdir(parents=True, exist_ok=True)
+    inputs = HourlyInputs.from_frame(load_phase(phase)[0])
+    keep = {str(d.date()) for d in inputs.dates[forecastable(inputs)]}
     for name in load_hyperparameters():
         files = sorted((record_dir / phase / name).glob("*.json"))
         if not files:
             continue
-        records = [json.loads(f.read_text()) for f in files]
+        # Records of days the rule excludes (made before it existed) are not collected.
+        skipped = [f.stem for f in files if f.stem not in keep]
+        if skipped:
+            print(f"{name}: not collected (depends on a dropped day): {', '.join(skipped)}")
+        records = [json.loads(f.read_text()) for f in files if f.stem in keep]
         index = pd.DatetimeIndex([r["date"] for r in records], name="Date")
         fc = pd.DataFrame([r["forecast"] for r in records], index=index, columns=HOURS)
         fc.to_csv(RESULTS_DIR / "forecasts" / f"{sub}dnn_{name}.csv", float_format="%.6f")

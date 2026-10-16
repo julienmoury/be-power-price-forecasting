@@ -50,8 +50,13 @@ def check(phase: str, name: str, days: list[Path]) -> None:
             weights = [npz[f"arr_{i}"] for i in range(len(npz.files))]
         if weights_sha256(weights) != record["weights_sha256"]:
             raise ValueError(f"{js}: weights do not match their hash")
-        if collected is not None and not np.allclose(
-            collected.loc[record["date"]].to_numpy(float), record["forecast"], atol=1e-6
+        # Days not collected (excluded by the forecastable-day rule) keep only the hash check.
+        if (
+            collected is not None
+            and record["date"] in collected.index
+            and not np.allclose(
+                collected.loc[record["date"]].to_numpy(float), record["forecast"], atol=1e-6
+            )
         ):
             raise ValueError(f"{js}: forecast differs from {csv.name}")
 

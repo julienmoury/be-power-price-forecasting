@@ -37,6 +37,7 @@ PAPER_WINDOWS = [56, 84, 1092, 1456]
 
 # Reference palette (dataviz skill, light mode): categorical slots 1-3 + neutral ink.
 BLUE, ORANGE, GREY, INK = "#2a78d6", "#eb6834", "#8a8984", "#52514e"
+AQUA = "#1baf7a"  # categorical slot 3
 
 
 def load(name: str) -> pd.DataFrame | None:
@@ -112,6 +113,7 @@ def dnn_block(phase: str, real, lear_ens, naive, missing: list[str], published=N
         P = published["DNN Ensemble"].to_numpy()
         out["published"] = {
             **{f"DNN {n} MAE": mae(real, published[k]) for n, k in DNNS.items()},
+            **{f"DNN {n} gap to published": mae(published[k], fcs[n]) for n, k in DNNS.items()},
             "DNN Ens. MAE": mae(real, published["DNN Ensemble"]),
             "mean abs gap of the ensemble to published": mae(published["DNN Ensemble"], ens),
             "gw_p_ours_better_than_published": float(gw_test(R, P, E)[1]),
@@ -187,6 +189,7 @@ def phase_b(missing: list[str]) -> tuple[dict | None, list[str], tuple | None]:
     dnn = dnn_block("B", real, ens, naive, missing)
     if dnn is not None:
         out["dnn"] = dnn[0]
+    dnn_ens = None if dnn is None else dnn[1]
     md = [
         f"## Phase B: 4-window LEAR on BE.csv + ENTSO-E data, {begin} to {end}",
         f"{len(real)} of {out['test_days']} test days evaluated (days depending on a "
@@ -198,19 +201,26 @@ def phase_b(missing: list[str]) -> tuple[dict | None, list[str], tuple | None]:
     ]
     if "dnn" in out:
         md += ["### Phase B: our DNNs", "```", json.dumps(out["dnn"], indent=1), "```", ""]
-    return out, md, (real, ens, naive)
+    return out, md, (real, ens, naive, dnn_ens)
+
+
+def _xy(series: pd.Series):
+    return series.index, series.to_numpy()
 
 
 def monthly_figure(phase_a: tuple, phase_b_frames: tuple | None) -> None:
-    """Monthly MAE of the LEAR ensemble and the naive forecast, phase A then phase B."""
+    """Monthly MAE of the LEAR and DNN ensembles and the naive forecast, phase A then B."""
     frames = [phase_a] if phase_b_frames is None else [phase_a, phase_b_frames]
-    real, ens, naive = (pd.concat(parts) for parts in zip(*frames, strict=True))
-    abs_n = (real - naive).abs().mean(axis=1).resample("MS").mean()
-    abs_e = (real - ens).abs().mean(axis=1).resample("MS").mean()
+    real, ens, naive = (pd.concat(parts) for parts in list(zip(*frames, strict=True))[:3])
+    monthly = lambda f: (real - f).abs().mean(axis=1).resample("MS").mean()  # noqa: E731
     fig, ax = plt.subplots(figsize=(7.5, 3.6), dpi=150)
     style(ax)
-    ax.plot(abs_n.index, abs_n, color=ORANGE, lw=1.8, label="Naive benchmark")
-    ax.plot(abs_e.index, abs_e, color=BLUE, lw=1.8, label="LEAR ensemble")
+    ax.plot(*_xy(monthly(naive)), color=ORANGE, lw=1.8, label="Naive benchmark")
+    ax.plot(*_xy(monthly(ens)), color=BLUE, lw=1.8, label="LEAR ensemble")
+    # DNN ensemble, when both phases (or phase A alone) have it.
+    if all(len(f) > 3 and f[3] is not None for f in frames):
+        dnn = pd.concat([f[3] for f in frames])
+        ax.plot(*_xy(monthly(dnn)), color=AQUA, lw=1.8, label="DNN ensemble")
     if phase_b_frames is not None:
         start = phase_b_frames[0].index[0]
         ax.axvline(start, color=GREY, lw=1, ls=":")
@@ -226,7 +236,7 @@ def monthly_figure(phase_a: tuple, phase_b_frames: tuple | None) -> None:
         )
     ax.set_ylabel("Monthly MAE (EUR/MWh)", color=INK)
     ax.set_title("Belgian day-ahead price: monthly forecast error", color=INK, fontsize=10)
-    ax.legend(frameon=False, fontsize=8, loc="center left")
+    ax.legend(frameon=False, fontsize=8, loc="upper left", bbox_to_anchor=(0, 0.9))
     fig.tight_layout()
     fig.savefig(FIG / "monthly_mae.png")
     plt.close(fig)
@@ -371,7 +381,8 @@ def main() -> None:
 
     out["phase_b"], md_b, frames_b = phase_b(missing)
     md += md_b
-    monthly_figure((real, ens, naive), frames_b)
+    dnn_ens_a = None if dnn is None else dnn[1]
+    monthly_figure((real, ens, naive, dnn_ens_a), frames_b)
     # Decision rule: deploy the LEAR ensemble if it beats the naive forecast on the whole
     # phase B test (one-sided multivariate GW, 5 %).
     if out["phase_b"] is not None:

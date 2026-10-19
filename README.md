@@ -6,11 +6,13 @@
 
 ## Question
 
-1. **Reproduction.** Does this implementation reproduce the LEAR benchmark of Lago et al.
-   (2021) on the Belgian market, and by how many EUR/MWh does the 4-window LEAR ensemble
-   beat the naive forecast on the paper's test period (2015–2016)?
-2. **Today's market.** Does the same protocol, unchanged, still beat the naive forecast
-   when it is continued day after day from the end of the paper's test period to today
+1. **Reproduction.** Does this implementation reproduce the two benchmark models of Lago
+   et al. (2021) on the Belgian market, the LEAR and the DNN, and by how many EUR/MWh does
+   the 4-window LEAR ensemble beat the naive forecast on the paper's test period
+   (2015–2016)?
+2. **Today's market.** Does the same protocol, unchanged, still beat the naive forecast,
+   and is the DNN still more accurate than the LEAR, when both are continued day after day
+   from the end of the paper's test period to today
    (2017-01-01 to 2026-09-30: 2022 crisis, negative prices,
    15-minute products)?
 3. **Tool.** Can it run every day on its own and be served reliably? → **[Live forecast
@@ -80,9 +82,15 @@ those used before June 2024 (d-1, d-2):
 | LEAR ensemble | 6.28 | 6.14 | 0.88 |
 | LEAR 56, lags d-1/d-2 | 7.25 | 6.92 | 2.29 |
 | LEAR 84, lags d-1/d-2 | 7.28 | 6.80 | 2.47 |
+| DNN 1 (`SF`) | 6.36 | 6.30 | 1.64 |
+| DNN 2 (`SF_DA`) | 6.22 | 6.31 | 2.04 |
+| DNN 3 (`SF_SF`) | 6.34 | 6.30 | 1.27 |
+| DNN 4 (`SF_SF_DA`) | 6.06 | 6.07 | 1.69 |
+| DNN ensemble | 5.85 | 5.87 | 0.87 |
 
 The long windows match the published MAE closely; the gap comes from the short windows,
-fitted on fewer samples than inputs.
+fitted on fewer samples than inputs. The DNN rows are discussed below; DNN 1 to 4 are the
+networks of the four published trial files, in their order.
 
 ### DNN of the paper
 
@@ -123,6 +131,10 @@ recent data; only the daily training is computed, for every test day.
 | LEAR 1092 | 6.61 | 16.47 | 16.92 | 0.80 |
 | LEAR 1456 | 6.65 | 16.42 | 17.36 | 0.81 |
 | **LEAR ensemble** | **6.28** | **16.04** | **14.97** | **0.76** |
+| DNN 1 (`SF`) | 6.36 | 16.88 | 14.53 | 0.77 |
+| DNN 2 (`SF_DA`) | 6.22 | 16.53 | 14.48 | 0.76 |
+| DNN 3 (`SF_SF`) | 6.34 | 16.22 | 14.99 | 0.77 |
+| DNN 4 (`SF_SF_DA`) | 6.06 | 15.91 | 14.08 | 0.74 |
 | **DNN ensemble** | **5.85** | **16.03** | **13.35** | **0.71** |
 
 - **LEAR ensemble vs naive: −1.92 EUR/MWh
@@ -150,6 +162,10 @@ of hours with a negative price.
 | LEAR 1092 | 15.65 |
 | LEAR 1456 | 15.55 |
 | **LEAR ensemble** | **14.52** |
+| DNN 1 (`SF`) | 15.61 |
+| DNN 2 (`SF_DA`) | 15.65 |
+| DNN 3 (`SF_SF`) | 16.55 |
+| DNN 4 (`SF_SF_DA`) | 15.40 |
 | **DNN ensemble** | **14.46** |
 
 - **LEAR ensemble vs naive: −7.34 EUR/MWh

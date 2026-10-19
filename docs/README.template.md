@@ -6,11 +6,13 @@
 
 ## Question
 
-1. **Reproduction.** Does this implementation reproduce the LEAR benchmark of Lago et al.
-   (2021) on the Belgian market, and by how many EUR/MWh does the 4-window LEAR ensemble
-   beat the naive forecast on the paper's test period (2015–2016)?
-2. **Today's market.** Does the same protocol, unchanged, still beat the naive forecast
-   when it is continued day after day from the end of the paper's test period to today
+1. **Reproduction.** Does this implementation reproduce the two benchmark models of Lago
+   et al. (2021) on the Belgian market, the LEAR and the DNN, and by how many EUR/MWh does
+   the 4-window LEAR ensemble beat the naive forecast on the paper's test period
+   (2015–2016)?
+2. **Today's market.** Does the same protocol, unchanged, still beat the naive forecast,
+   and is the DNN still more accurate than the LEAR, when both are continued day after day
+   from the end of the paper's test period to today
    ({{phase_b/test_period/0}} to {{phase_b/test_period/1}}: 2022 crisis, negative prices,
    15-minute products)?
 3. **Tool.** Can it run every day on its own and be served reliably? → **[Live forecast
@@ -80,9 +82,15 @@ those used before June 2024 (d-1, d-2):
 | LEAR ensemble | {{reproduction/LEAR Ensemble/MAE (ours)}} | {{reproduction/LEAR Ensemble/MAE (published)}} | {{reproduction/LEAR Ensemble/mean abs gap to published}} |
 | LEAR 56, lags d-1/d-2 | {{reproduction/LEAR 56, pre-2024 exogenous lags (d-1, d-2)/MAE (ours)}} | {{reproduction/LEAR 56, pre-2024 exogenous lags (d-1, d-2)/MAE (published)}} | {{reproduction/LEAR 56, pre-2024 exogenous lags (d-1, d-2)/mean abs gap to published}} |
 | LEAR 84, lags d-1/d-2 | {{reproduction/LEAR 84, pre-2024 exogenous lags (d-1, d-2)/MAE (ours)}} | {{reproduction/LEAR 84, pre-2024 exogenous lags (d-1, d-2)/MAE (published)}} | {{reproduction/LEAR 84, pre-2024 exogenous lags (d-1, d-2)/mean abs gap to published}} |
+| DNN 1 (`SF`) | {{dnn/accuracy/DNN SF/MAE}} | {{dnn/published/DNN SF MAE}} | {{dnn/published/DNN SF gap to published}} |
+| DNN 2 (`SF_DA`) | {{dnn/accuracy/DNN SF_DA/MAE}} | {{dnn/published/DNN SF_DA MAE}} | {{dnn/published/DNN SF_DA gap to published}} |
+| DNN 3 (`SF_SF`) | {{dnn/accuracy/DNN SF_SF/MAE}} | {{dnn/published/DNN SF_SF MAE}} | {{dnn/published/DNN SF_SF gap to published}} |
+| DNN 4 (`SF_SF_DA`) | {{dnn/accuracy/DNN SF_SF_DA/MAE}} | {{dnn/published/DNN SF_SF_DA MAE}} | {{dnn/published/DNN SF_SF_DA gap to published}} |
+| DNN ensemble | {{dnn/accuracy/DNN Ens./MAE}} | {{dnn/published/DNN Ens. MAE}} | {{dnn/published/mean abs gap of the ensemble to published}} |
 
 The long windows match the published MAE closely; the gap comes from the short windows,
-fitted on fewer samples than inputs.
+fitted on fewer samples than inputs. The DNN rows are discussed below; DNN 1 to 4 are the
+networks of the four published trial files, in their order.
 
 ### DNN of the paper
 
@@ -123,6 +131,10 @@ recent data; only the daily training is computed, for every test day.
 | LEAR 1092 | {{accuracy/LEAR 1092/MAE}} | {{accuracy/LEAR 1092/RMSE}} | {{accuracy/LEAR 1092/sMAPE_pct}} | {{accuracy/LEAR 1092/rMAE}} |
 | LEAR 1456 | {{accuracy/LEAR 1456/MAE}} | {{accuracy/LEAR 1456/RMSE}} | {{accuracy/LEAR 1456/sMAPE_pct}} | {{accuracy/LEAR 1456/rMAE}} |
 | **LEAR ensemble** | **{{accuracy/LEAR Ens./MAE}}** | **{{accuracy/LEAR Ens./RMSE}}** | **{{accuracy/LEAR Ens./sMAPE_pct}}** | **{{accuracy/LEAR Ens./rMAE}}** |
+| DNN 1 (`SF`) | {{dnn/accuracy/DNN SF/MAE}} | {{dnn/accuracy/DNN SF/RMSE}} | {{dnn/accuracy/DNN SF/sMAPE_pct}} | {{dnn/accuracy/DNN SF/rMAE}} |
+| DNN 2 (`SF_DA`) | {{dnn/accuracy/DNN SF_DA/MAE}} | {{dnn/accuracy/DNN SF_DA/RMSE}} | {{dnn/accuracy/DNN SF_DA/sMAPE_pct}} | {{dnn/accuracy/DNN SF_DA/rMAE}} |
+| DNN 3 (`SF_SF`) | {{dnn/accuracy/DNN SF_SF/MAE}} | {{dnn/accuracy/DNN SF_SF/RMSE}} | {{dnn/accuracy/DNN SF_SF/sMAPE_pct}} | {{dnn/accuracy/DNN SF_SF/rMAE}} |
+| DNN 4 (`SF_SF_DA`) | {{dnn/accuracy/DNN SF_SF_DA/MAE}} | {{dnn/accuracy/DNN SF_SF_DA/RMSE}} | {{dnn/accuracy/DNN SF_SF_DA/sMAPE_pct}} | {{dnn/accuracy/DNN SF_SF_DA/rMAE}} |
 | **DNN ensemble** | **{{dnn/accuracy/DNN Ens./MAE}}** | **{{dnn/accuracy/DNN Ens./RMSE}}** | **{{dnn/accuracy/DNN Ens./sMAPE_pct}}** | **{{dnn/accuracy/DNN Ens./rMAE}}** |
 
 - **LEAR ensemble vs naive: −{{headline/ensemble_vs_naive_EUR_MWh}} EUR/MWh
@@ -150,6 +162,10 @@ of hours with a negative price.
 | LEAR 1092 | {{phase_b/accuracy/MAE LEAR 1092}} |
 | LEAR 1456 | {{phase_b/accuracy/MAE LEAR 1456}} |
 | **LEAR ensemble** | **{{phase_b/accuracy/MAE LEAR ens.}}** |
+| DNN 1 (`SF`) | {{phase_b/dnn/accuracy/DNN SF/MAE}} |
+| DNN 2 (`SF_DA`) | {{phase_b/dnn/accuracy/DNN SF_DA/MAE}} |
+| DNN 3 (`SF_SF`) | {{phase_b/dnn/accuracy/DNN SF_SF/MAE}} |
+| DNN 4 (`SF_SF_DA`) | {{phase_b/dnn/accuracy/DNN SF_SF_DA/MAE}} |
 | **DNN ensemble** | **{{phase_b/dnn/accuracy/DNN Ens./MAE}}** |
 
 - **LEAR ensemble vs naive: −{{phase_b/accuracy/gain vs naive (EUR per MWh)}} EUR/MWh

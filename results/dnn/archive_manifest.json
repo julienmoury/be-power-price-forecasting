@@ -1,0 +1,82 @@
+[
+ {
+  "file": "dnn_phase_a_SF_01.tar",
+  "sha256": "bff9ba180aced62c0896ee5a309ed5e0fe8b6933c931e53807ed119918e78f53",
+  "bytes": 393973760,
+  "days": 728,
+  "first": "2015-01-04",
+  "last": "2016-12-31"
+ },
+ {
+  "file": "dnn_phase_a_SF_DA_01.tar",
+  "sha256": "88fda74fa16428c1302528195bfac0b8de49f3d46ab7914e5e292511709261f1",
+  "bytes": 752558080,
+  "days": 728,
+  "first": "2015-01-04",
+  "last": "2016-12-31"
+ },
+ {
+  "file": "dnn_phase_a_SF_SF_01.tar",
+  "sha256": "e494c923ac668f5553e5fad06a58f956cd5afdba3b636db73bf77a35875e2b6e",
+  "bytes": 169717760,
+  "days": 728,
+  "first": "2015-01-04",
+  "last": "2016-12-31"
+ },
+ {
+  "file": "dnn_phase_a_SF_SF_DA_01.tar",
+  "sha256": "9a1b633a8c836e7b63ce2ea369069f49aaec4883308d18b64c2d45335a505b24",
+  "bytes": 665036800,
+  "days": 728,
+  "first": "2015-01-04",
+  "last": "2016-12-31"
+ },
+ {
+  "file": "dnn_phase_b_SF_01.tar",
+  "sha256": "a85c6ebf00065830c5644e07c2ddb94389bddccc0caa10a817acf28cdd2adbb0",
+  "bytes": 1905274880,
+  "days": 3523,
+  "first": "2017-01-01",
+  "last": "2026-09-30"
+ },
+ {
+  "file": "dnn_phase_b_SF_DA_01.tar",
+  "sha256": "87a7931efa7aca81a70d43d710e1363805844c94f4628b68d51b1d1dfa6624be",
+  "bytes": 1999134720,
+  "days": 1934,
+  "first": "2017-01-01",
+  "last": "2022-05-19"
+ },
+ {
+  "file": "dnn_phase_b_SF_DA_02.tar",
+  "sha256": "6c7d920fb68c2f5818dabb644a8aed79e954dc810a0f2b529c5180859d3ab0e4",
+  "bytes": 1644236800,
+  "days": 1590,
+  "first": "2022-05-20",
+  "last": "2026-09-30"
+ },
+ {
+  "file": "dnn_phase_b_SF_SF_01.tar",
+  "sha256": "69dbcce26b09285ec369e73e555ba70c5ad7b1b2ef06669c14c71182265d96c6",
+  "bytes": 813322240,
+  "days": 3523,
+  "first": "2017-01-01",
+  "last": "2026-09-30"
+ },
+ {
+  "file": "dnn_phase_b_SF_SF_DA_01.tar",
+  "sha256": "00344d837536f3411aed9bd9241c483c575058287ef461d52c85f7fd8f2ae6df",
+  "bytes": 2000107520,
+  "days": 2190,
+  "first": "2017-01-01",
+  "last": "2023-01-31"
+ },
+ {
+  "file": "dnn_phase_b_SF_SF_DA_02.tar",
+  "sha256": "ea9b4a6d4b42ce6475e4f7a9106d0406f54d9909f80ba3e5b5b963b4e6e92f27",
+  "bytes": 1217095680,
+  "days": 1333,
+  "first": "2023-02-01",
+  "last": "2026-09-30"
+ }
+]

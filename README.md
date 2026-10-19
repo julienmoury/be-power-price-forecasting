@@ -116,8 +116,11 @@ recent data; only the daily training is computed, for every test day.
   (x86_64, TensorFlow 2.21.0). Per day: seed, sample
   sizes, losses of every epoch, epoch kept, hashes of the input data, of the validation
   draw and of the final weights, machine, versions and code commit
-  ([`results/dnn/`](results/dnn/)); the final weights of every network will be archived in
-  a GitHub Release (not published yet).
+  ([`results/dnn/`](results/dnn/)); the records of every day and the final weights of every
+  network are in the GitHub Release
+  [`dnn-records-v1`](https://github.com/julienmoury/be-power-price-forecasting/releases/tag/dnn-records-v1)
+  (SHA-256 of each archive in
+  [`results/dnn/archive_manifest.json`](results/dnn/archive_manifest.json)).
 
 ## Results
 

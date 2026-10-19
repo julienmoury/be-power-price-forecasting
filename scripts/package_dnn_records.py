@@ -67,7 +67,11 @@ def main() -> None:
     parser.add_argument("--record-dir", type=Path, default=RECORDS)
     args = parser.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
-    manifest = []
+    path = RESULTS_DIR / "dnn" / "archive_manifest.json"
+    # Phases packed separately add to the manifest (entries of the packed phases are replaced).
+    prefixes = tuple(f"dnn_phase_{p.lower()}_" for p in args.phase)
+    old = json.loads(path.read_text()) if path.exists() else []
+    manifest = [m for m in old if not m["file"].startswith(prefixes)]
     for phase in args.phase:
         for name in load_hyperparameters():
             days = sorted((args.record_dir / phase / name).glob("*.json"))
@@ -83,25 +87,26 @@ def main() -> None:
                 chunks[-1].append(js)
                 size += n
             for k, chunk in enumerate(chunks, start=1):
-                path = OUT / f"dnn_phase_{phase.lower()}_{name}_{k:02d}.tar"
-                with tarfile.open(path, "w") as tar:
+                tar_path = OUT / f"dnn_phase_{phase.lower()}_{name}_{k:02d}.tar"
+                with tarfile.open(tar_path, "w") as tar:
                     for js in chunk:
                         for f in (js, js.with_suffix(".npz")):
                             tar.add(f, arcname=f"{phase}/{name}/{f.name}")
                 manifest.append(
                     {
-                        "file": path.name,
-                        "sha256": sha256(path),
-                        "bytes": path.stat().st_size,
+                        "file": tar_path.name,
+                        "sha256": sha256(tar_path),
+                        "bytes": tar_path.stat().st_size,
                         "days": len(chunk),
                         "first": chunk[0].stem,
                         "last": chunk[-1].stem,
                     }
                 )
-                print(f"{path.name}: {len(chunk)} days, {path.stat().st_size / 2**20:.0f} MiB")
-    out = RESULTS_DIR / "dnn" / "archive_manifest.json"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(manifest, indent=1) + "\n")
+                print(
+                    f"{tar_path.name}: {len(chunk)} days, {tar_path.stat().st_size / 2**20:.0f} MiB"
+                )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(sorted(manifest, key=lambda m: m["file"]), indent=1) + "\n")
 
 
 if __name__ == "__main__":

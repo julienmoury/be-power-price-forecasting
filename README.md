@@ -190,15 +190,20 @@ of hours with a negative price.
 
 - **Live forecast** ([`live/README.md`](live/README.md)): every morning before the 12:00
   gate closure, a GitHub Actions workflow builds the Docker image, downloads the new
-  ENTSO-E data, recalibrates the four windows and publishes the LEAR forecast of the next
-  day, then checks that the forecast service of the same image serves it. When a French
+  ENTSO-E data, recalibrates the four LEAR windows and the four DNNs and publishes both
+  forecasts of the next day side by side (never averaged), then checks that the forecast
+  service of the same image serves them. Each DNN training of the day is recorded in
+  `results/dnn/live/summary.csv` (its weights are not
+  kept). The live DNN runs on GitHub's machines, not on the backtest machine, so its
+  forecasts are not bit-identical to what the backtest machine would give. When a French
   forecast is not published yet, the page says so and shows no price.
 - **Service** (`src/be_power_forecast/api/app.py`, FastAPI, same Docker image): `POST
   /forecast` returns the 24 hourly prices of a delivery day from 2017-01-01,
   `GET /forecasts?start=&end=` those of a range of days. Forecasts are computed in batch,
   not at request time (the daily recalibration of four windows is too slow for that), each
   day calibrated only on the days before it; the answer says whether it is the LEAR
-  ensemble or the naive fallback. The service runs locally, with your own ENTSO-E data for
+  ensemble or the naive fallback, and gives the DNN ensemble next to it (`dnn_prices`)
+  when the day has one. The service runs locally, with your own ENTSO-E data for
   the naive fallback; it never calls ENTSO-E and holds no key. Its schema,
   [`docs/openapi.json`](docs/openapi.json), is the contract with the projects that use the
   forecasts, and a test keeps it up to date.

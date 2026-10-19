@@ -17,13 +17,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     MPLCONFIGDIR=/tmp/matplotlib \
     BE_FORECAST_DIR=/app/forecasts \
     BE_PRICE_PATH=/data/prices_BE.parquet \
-    BE_LIVE_PATH=/app/live/forecasts.csv
+    BE_LIVE_PATH=/app/live/forecasts.csv \
+    BE_DNN_LIVE_PATH=/app/live/dnn_forecasts.csv
 
 WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY src ./src
 RUN pip install ".[api]" && rm -rf src
-COPY scripts/live_forecast.py ./scripts/
+COPY scripts/live_forecast.py scripts/run_dnn.py ./scripts/
 COPY results/forecasts/phase_b ./forecasts
 COPY results/forecasts/live ./live
 

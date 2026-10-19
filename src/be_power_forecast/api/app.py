@@ -1,19 +1,22 @@
-"""Forecast service: serves the LEAR ensemble forecast of a delivery day, with a naive fallback.
+"""Forecast service: the LEAR ensemble forecast of a delivery day, with a naive fallback,
+and the DNN ensemble forecast next to it.
 
 Forecasts are computed in batch, never at request time: recalibrating the four LEAR windows
 takes ~30 s of CPU per day. The service reads
 
-* the LEAR forecasts already computed: the phase B backtest (one CSV per calibration
-  window, each day calibrated only on the days before it) and the daily live forecasts
-  (``scripts/live_forecast.py``);
+* the LEAR and DNN forecasts already computed: the phase B backtests (one CSV per
+  calibration window or DNN, each day calibrated only on the days before it) and the daily
+  live forecasts (``scripts/live_forecast.py``);
 * the Belgian prices (price-only standard frame), for the naive fallback.
 
 ``POST /forecast`` returns the LEAR ensemble when the day has one, otherwise the naive
-forecast (the forecasts are missing or could not be read); ``GET /forecasts`` does the same
-for a range of days. The service runs locally with the user's own ENTSO-E data (the naive
-forecast is a copy of past prices); it never calls ENTSO-E and holds no API key. Paths come
-from ``BE_FORECAST_DIR``, ``BE_LIVE_PATH`` and ``BE_PRICE_PATH``. Its OpenAPI schema is
-kept in ``docs/openapi.json`` (``scripts/export_openapi.py``).
+forecast (the forecasts are missing or could not be read), and the DNN ensemble in
+``dnn_prices`` when the day has one (shown next to the LEAR, never averaged with it);
+``GET /forecasts`` does the same for a range of days. The service runs locally with the
+user's own ENTSO-E data (the naive forecast is a copy of past prices); it never calls
+ENTSO-E and holds no API key. Paths come from ``BE_FORECAST_DIR``, ``BE_LIVE_PATH``,
+``BE_DNN_LIVE_PATH`` and ``BE_PRICE_PATH``. Its OpenAPI schema is kept in
+``docs/openapi.json`` (``scripts/export_openapi.py``).
 """
 
 from __future__ import annotations
@@ -35,19 +38,18 @@ from be_power_forecast.config import CACHE_DIR, PAPER_WINDOWS, PHASE_B_TEST, RES
 from be_power_forecast.evaluation.metrics import naive_source_day
 from be_power_forecast.models.lear import ensemble
 
+DNNS = ("SF", "SF_DA", "SF_SF", "SF_SF_DA")  # the four DNNs of the ensemble
+
 log = logging.getLogger(__name__)
 
 
-def load_lear_forecasts(directory: Path, live_path: Path | None = None) -> pd.DataFrame:
-    """LEAR ensemble forecasts by day (24 hours), each calibrated on the days before it.
+def load_forecasts(directory: Path, names, live_path: Path | None = None) -> pd.DataFrame:
+    """Ensemble forecasts by day (24 hours), each calibrated on the days before it.
 
-    The mean of the four calibration windows of the phase B backtest CSVs, followed by the
-    days forecast by the daily live run.
+    The mean of the backtest CSVs ``<name>.csv`` of ``directory``, followed by the days
+    forecast by the daily live run.
     """
-    fcs = [
-        pd.read_csv(Path(directory) / f"lear_cw{cw}.csv", index_col=0, parse_dates=True)
-        for cw in PAPER_WINDOWS
-    ]
+    fcs = [pd.read_csv(Path(directory) / f"{n}.csv", index_col=0, parse_dates=True) for n in names]
     days = fcs[0].index
     for f in fcs[1:]:
         days = days.intersection(f.index)
@@ -56,6 +58,16 @@ def load_lear_forecasts(directory: Path, live_path: Path | None = None) -> pd.Da
         live = pd.read_csv(live_path, index_col=0, parse_dates=True)[HOURS]
         out = pd.concat([out.drop(index=live.index, errors="ignore"), live]).sort_index()
     return out
+
+
+def load_lear_forecasts(directory: Path, live_path: Path | None = None) -> pd.DataFrame:
+    """LEAR ensemble: the mean of the four calibration windows, then the live days."""
+    return load_forecasts(directory, [f"lear_cw{cw}" for cw in PAPER_WINDOWS], live_path)
+
+
+def load_dnn_forecasts(directory: Path, live_path: Path | None = None) -> pd.DataFrame:
+    """DNN ensemble: the mean of the four DNNs, then the live days."""
+    return load_forecasts(directory, [f"dnn_{n}" for n in DNNS], live_path)
 
 
 def load_prices(path: Path) -> pd.DataFrame:
@@ -72,6 +84,7 @@ class ForecastResponse(BaseModel):
     model: str  # "lear_ensemble" | "naive_fallback"
     prices: list[float]  # EUR/MWh, hours 00:00..23:00 Brussels time (calendar.py rules)
     inputs_until: dt.date  # last day of prices the forecast depends on
+    dnn_prices: list[float] | None = None  # DNN ensemble of the day, when there is one
 
 
 def _safe(loader: Callable[[], pd.DataFrame], name: str) -> pd.DataFrame | None:
@@ -86,6 +99,7 @@ def create_app(
     lear_loader: Callable[[], pd.DataFrame],
     price_loader: Callable[[], pd.DataFrame],
     first_day: str = PHASE_B_TEST[0],
+    dnn_loader: Callable[[], pd.DataFrame] | None = None,
 ) -> FastAPI:
     data: dict = {}
 
@@ -93,6 +107,7 @@ def create_app(
     async def lifespan(_: FastAPI):
         lear = data["lear"] = _safe(lear_loader, "LEAR forecasts")
         prices = data["prices"] = _safe(price_loader, "prices")
+        data["dnn"] = None if dnn_loader is None else _safe(dnn_loader, "DNN forecasts")
         # Last servable day: the last LEAR forecast, or the day after the last known prices.
         ends = []
         if lear is not None and len(lear):
@@ -105,7 +120,15 @@ def create_app(
     app = FastAPI(title="Belgian day-ahead price forecast", version="1.0", lifespan=lifespan)
 
     def resolve(day: pd.Timestamp) -> ForecastResponse | None:
-        """LEAR ensemble of ``day``, else its naive forecast, else ``None``."""
+        """LEAR ensemble of ``day``, else its naive forecast, else ``None``; with its DNN
+        ensemble when there is one."""
+        answer = _resolve(day)
+        dnn = data["dnn"]
+        if answer is not None and dnn is not None and day in dnn.index:
+            answer.dnn_prices = dnn.loc[day, HOURS].to_numpy(dtype=float).tolist()
+        return answer
+
+    def _resolve(day: pd.Timestamp) -> ForecastResponse | None:
         lear, prices = data["lear"], data["prices"]
         if lear is not None and day in lear.index:
             return ForecastResponse(
@@ -139,6 +162,7 @@ def create_app(
         return {
             "status": "ok" if end is not None else "degraded",
             "lear_forecasts": data["lear"] is not None,
+            "dnn_forecasts": data["dnn"] is not None,
             "prices": data["prices"] is not None,
             "first_day": first_day,
             "last_day": None if end is None else str(end.date()),
@@ -172,4 +196,12 @@ app = create_app(
         Path(os.environ.get("BE_LIVE_PATH", RESULTS_DIR / "forecasts" / "live" / "forecasts.csv")),
     ),
     lambda: load_prices(Path(os.environ.get("BE_PRICE_PATH", CACHE_DIR / "prices_BE.parquet"))),
+    dnn_loader=lambda: load_dnn_forecasts(
+        Path(os.environ.get("BE_FORECAST_DIR", RESULTS_DIR / "forecasts" / "phase_b")),
+        Path(
+            os.environ.get(
+                "BE_DNN_LIVE_PATH", RESULTS_DIR / "forecasts" / "live" / "dnn_forecasts.csv"
+            )
+        ),
+    ),
 )

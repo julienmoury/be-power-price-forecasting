@@ -5,7 +5,14 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
-from be_power_forecast.api.app import app, create_app, load_lear_forecasts, load_prices
+from be_power_forecast.api.app import (
+    DNNS,
+    app,
+    create_app,
+    load_dnn_forecasts,
+    load_lear_forecasts,
+    load_prices,
+)
 from be_power_forecast.backtest import HOURS
 from be_power_forecast.config import PAPER_WINDOWS, REPO_ROOT
 from be_power_forecast.evaluation.metrics import naive_forecast, naive_source_day
@@ -49,6 +56,7 @@ def test_health(api):
     assert api.get("/health").json() == {
         "status": "ok",
         "lear_forecasts": True,
+        "dnn_forecasts": False,
         "prices": True,
         "first_day": "2019-01-01",
         "last_day": "2019-02-01",  # day after the last known prices
@@ -137,3 +145,33 @@ def test_range_of_days(api):
 def test_openapi_contract_is_up_to_date():
     # docs/openapi.json is the contract with the consumers: python scripts/export_openapi.py
     assert json.loads((REPO_ROOT / "docs" / "openapi.json").read_text()) == app.openapi()
+
+
+def test_dnn_ensemble_is_served_next_to_the_lear(data_dir):
+    # DNN backtest for the first ten days, live DNN forecast for 2019-01-20.
+    rng = np.random.default_rng(2026)
+    days = FORECAST_DAYS[:10]
+    fcs = {}
+    for name in DNNS:
+        fcs[name] = pd.DataFrame(rng.normal(60, 10, (len(days), 24)), days, HOURS)
+        fcs[name].index.name = "Date"
+        fcs[name].to_csv(data_dir / f"dnn_{name}.csv", float_format="%.6f")
+    live = pd.DataFrame([np.arange(24.0)], pd.DatetimeIndex(["2019-01-20"], name="Date"), HOURS)
+    live.to_csv(data_dir / "dnn_live.csv")
+    app_ = create_app(
+        lambda: load_lear_forecasts(data_dir),
+        lambda: load_prices(data_dir / "frame.parquet"),
+        first_day="2019-01-01",
+        dnn_loader=lambda: load_dnn_forecasts(data_dir, data_dir / "dnn_live.csv"),
+    )
+    with TestClient(app_) as c:
+        assert c.get("/health").json()["dnn_forecasts"] is True
+        body = post(c, "2019-01-03").json()
+        expected = np.mean(
+            [pd.read_csv(data_dir / f"dnn_{n}.csv", index_col=0).loc["2019-01-03"] for n in DNNS],
+            axis=0,
+        )
+        assert body["model"] == "lear_ensemble"
+        np.testing.assert_allclose(body["dnn_prices"], expected)
+        assert post(c, "2019-01-20").json()["dnn_prices"] == list(range(24))
+        assert post(c, "2019-01-25").json()["dnn_prices"] is None

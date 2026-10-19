@@ -157,6 +157,20 @@
             "type": "string",
             "format": "date",
             "title": "Inputs Until"
+          },
+          "dnn_prices": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dnn Prices"
           }
         },
         "type": "object",

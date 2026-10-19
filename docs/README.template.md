@@ -82,21 +82,34 @@ those used before June 2024 (d-1, d-2):
 | LEAR 84, lags d-1/d-2 | {{reproduction/LEAR 84, pre-2024 exogenous lags (d-1, d-2)/MAE (ours)}} | {{reproduction/LEAR 84, pre-2024 exogenous lags (d-1, d-2)/MAE (published)}} | {{reproduction/LEAR 84, pre-2024 exogenous lags (d-1, d-2)/mean abs gap to published}} |
 
 The long windows match the published MAE closely; the gap comes from the short windows,
-fitted on fewer samples than inputs. For reference, the paper's published DNN ensemble
-(not a model of this project) has an MAE of {{published_reference/MAE/DNN Ensemble}}.
+fitted on fewer samples than inputs.
 
-### DNN of the paper (in progress)
+### DNN of the paper
 
 The four DNNs of the paper's ensemble are re-implemented (`models/dnn.py`) and recalibrated
 every day, as in the paper. **Their hyperparameters and input features are the published
 ones, for both test periods**: the paper chose them with a hyperparameter search
-(hyperopt, 1 500 trials per DNN) on 2011–2016 data, and this project does not run a new
-search on recent data. Only the daily training is computed, for every test day.
-The port reproduces the original code exactly (same seeds: same epochs, forecasts within
-1e-6 EUR/MWh, `results/dnn/port_check.json`). Every training is recorded (per-epoch
-losses, seeds, hashes of data and weights, machine, versions): summaries in
-`results/dnn/`, per-day records and weights in a GitHub Release. **Results are not
-available yet.**
+(hyperopt, 1 500 trials per DNN) on 2011–2016 data, and this project runs no new search on
+recent data; only the daily training is computed, for every test day.
+
+- **The port is exact.** With the same seeds as the original code, on the same machine,
+  {{dnn/port_check/cases|d}} trainings (3 days × 4 DNNs) give the same number of epochs and
+  forecasts within {{dnn/port_check/max_abs_diff|.0e}} EUR/MWh
+  ([`results/dnn/port_check.json`](results/dnn/port_check.json)).
+- **The paper's DNN result is reproduced:** our DNN ensemble has an MAE of
+  {{dnn/accuracy/DNN Ens./MAE}} on 2015–2016, the published one
+  {{dnn/published/DNN Ens. MAE}}; neither is significantly more accurate than the other
+  (GW p {{dnn/published/gw_p_ours_better_than_published|p}} that ours is more accurate,
+  p {{dnn/published/gw_p_published_better_than_ours|p}} that the published one is). Day by day the forecasts differ
+  (mean gap {{dnn/published/mean abs gap of the ensemble to published}} EUR/MWh): the
+  original training is not seeded, so nobody can match it exactly.
+- **Every training is recorded**: {{dnn/training/trainings|,d}} trainings on 2015–2016 and
+  {{phase_b/dnn/training/trainings|,d}} on the extension, all on one machine
+  ({{dnn/training/cpu/0}}, TensorFlow {{dnn/training/tensorflow/0}}). Per day: seed, sample
+  sizes, losses of every epoch, epoch kept, hashes of the input data, of the validation
+  draw and of the final weights, machine, versions and code commit
+  ([`results/dnn/`](results/dnn/)); the final weights of every network will be archived in
+  a GitHub Release (not published yet).
 
 ## Results
 
@@ -110,6 +123,7 @@ available yet.**
 | LEAR 1092 | {{accuracy/LEAR 1092/MAE}} | {{accuracy/LEAR 1092/RMSE}} | {{accuracy/LEAR 1092/sMAPE_pct}} | {{accuracy/LEAR 1092/rMAE}} |
 | LEAR 1456 | {{accuracy/LEAR 1456/MAE}} | {{accuracy/LEAR 1456/RMSE}} | {{accuracy/LEAR 1456/sMAPE_pct}} | {{accuracy/LEAR 1456/rMAE}} |
 | **LEAR ensemble** | **{{accuracy/LEAR Ens./MAE}}** | **{{accuracy/LEAR Ens./RMSE}}** | **{{accuracy/LEAR Ens./sMAPE_pct}}** | **{{accuracy/LEAR Ens./rMAE}}** |
+| **DNN ensemble** | **{{dnn/accuracy/DNN Ens./MAE}}** | **{{dnn/accuracy/DNN Ens./RMSE}}** | **{{dnn/accuracy/DNN Ens./sMAPE_pct}}** | **{{dnn/accuracy/DNN Ens./rMAE}}** |
 
 - **LEAR ensemble vs naive: −{{headline/ensemble_vs_naive_EUR_MWh}} EUR/MWh
   (−{{headline/ensemble_vs_naive_pct|.1f}} %)**, GW p {{headline/gw_p_ensemble_better_than_naive|p}}
@@ -117,6 +131,9 @@ available yet.**
 - Ensemble vs the best single window ({{headline/best_single_window|d}} days):
   −{{headline/ensemble_vs_best_single_EUR_MWh}} EUR/MWh, GW p {{headline/gw_p_ensemble_better_than_best_single|p}}
   (DM p {{headline/dm_p_ensemble_better_than_best_single|p}}).
+- **DNN ensemble vs LEAR ensemble: {{dnn/accuracy/DNN Ens./MAE}} vs {{accuracy/LEAR Ens./MAE}}**,
+  GW p {{dnn/tests/gw_p_dnn_better_than_lear|p}} (DM p {{dnn/tests/dm_p_dnn_better_than_lear|p}}):
+  the DNN is significantly more accurate, as in the paper.
 
 ### 2. Extension to today, {{phase_b/test_period/0}} to {{phase_b/test_period/1}}
 
@@ -133,10 +150,16 @@ of hours with a negative price.
 | LEAR 1092 | {{phase_b/accuracy/MAE LEAR 1092}} |
 | LEAR 1456 | {{phase_b/accuracy/MAE LEAR 1456}} |
 | **LEAR ensemble** | **{{phase_b/accuracy/MAE LEAR ens.}}** |
+| **DNN ensemble** | **{{phase_b/dnn/accuracy/DNN Ens./MAE}}** |
 
 - **LEAR ensemble vs naive: −{{phase_b/accuracy/gain vs naive (EUR per MWh)}} EUR/MWh
   (−{{phase_b/accuracy/gain vs naive %|.1f}} %)**, GW p {{phase_b/accuracy/GW p (ens. better than naive)|p}}
   (DM p {{phase_b/accuracy/DM p (ens. better than naive)|p}}).
+- **DNN ensemble vs LEAR ensemble: {{phase_b/dnn/accuracy/DNN Ens./MAE}} vs
+  {{phase_b/accuracy/MAE LEAR ens.}}**, GW p {{phase_b/dnn/tests/gw_p_dnn_better_than_lear|p}}
+  (DM p {{phase_b/dnn/tests/dm_p_dnn_better_than_lear|p}}), and GW p
+  {{phase_b/dnn/tests/gw_p_lear_better_than_dnn|p}} the other way: on today's market, with
+  the hyperparameters chosen on 2011–2016, neither model is significantly more accurate.
 - **15-minute products**: even a perfect hourly forecast would miss the quarter-hour prices
   by {{quarter_hour/perfect_hourly_forecast_MAE}} EUR/MWh on average
   ({{quarter_hour/period/0}} to {{quarter_hour/period/1}}, {{quarter_hour/hours|,d}} hours):

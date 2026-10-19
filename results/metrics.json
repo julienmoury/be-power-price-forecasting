@@ -215,6 +215,81 @@
    "DNN Ensemble": 5.869865859211076
   }
  },
+ "dnn": {
+  "accuracy": {
+   "DNN SF": {
+    "MAE": 6.363357948946886,
+    "RMSE": 16.884944129971398,
+    "sMAPE_pct": 14.53028408958973,
+    "rMAE": 0.7730434114793608
+   },
+   "DNN SF_DA": {
+    "MAE": 6.2234268185096155,
+    "RMSE": 16.533647058825274,
+    "sMAPE_pct": 14.483525991156633,
+    "rMAE": 0.7560440788450411
+   },
+   "DNN SF_SF": {
+    "MAE": 6.338105046417125,
+    "RMSE": 16.222911884037867,
+    "sMAPE_pct": 14.988497400708258,
+    "rMAE": 0.769975598843645
+   },
+   "DNN SF_SF_DA": {
+    "MAE": 6.058942837969322,
+    "RMSE": 15.909166126111218,
+    "sMAPE_pct": 14.07543230839012,
+    "rMAE": 0.7360619784397643
+   },
+   "DNN Ens.": {
+    "MAE": 5.8510282735662775,
+    "RMSE": 16.03231561822193,
+    "sMAPE_pct": 13.346263345379478,
+    "rMAE": 0.7108037758599495
+   }
+  },
+  "tests": {
+   "gw_p_dnn_better_than_lear": 2.8209988789384965e-08,
+   "gw_p_lear_better_than_dnn": 1.0,
+   "gw_p_dnn_better_than_naive": 0.0,
+   "dm_p_dnn_better_than_lear": 8.46515080255017e-10,
+   "dm_p_lear_better_than_dnn": 0.9999999991534849,
+   "dm_p_dnn_better_than_naive": 0.0
+  },
+  "published": {
+   "DNN SF MAE": 6.298735444282332,
+   "DNN SF_DA MAE": 6.307692510410325,
+   "DNN SF_SF MAE": 6.296795916515829,
+   "DNN SF_SF_DA MAE": 6.067794724366603,
+   "DNN Ens. MAE": 5.869865859211076,
+   "mean abs gap of the ensemble to published": 0.8730507902159986,
+   "gw_p_ours_better_than_published": 0.7144963396167451,
+   "gw_p_published_better_than_ours": 1.0,
+   "dm_p_ours_better_than_published": 0.21036333698878995,
+   "dm_p_published_better_than_ours": 0.78963666301121
+  },
+  "training": {
+   "trainings": 2912,
+   "epochs_mean": 161.73626373626374,
+   "cpu": [
+    "x86_64"
+   ],
+   "machines": 1,
+   "commits": [
+    "d987d43"
+   ],
+   "tensorflow": [
+    "2.21.0"
+   ],
+   "vcpu_hours": 191.921
+  },
+  "port_check": {
+   "cases": 12,
+   "all_ok": true,
+   "max_abs_diff": 4.9874202545652224e-09,
+   "tolerance": 1e-06
+  }
+ },
  "phase_b": {
   "test_period": [
    "2017-01-01",
@@ -238,6 +313,64 @@
    "gain vs naive %": 33.57279684868833,
    "GW p (ens. better than naive)": 0.0,
    "DM p (ens. better than naive)": 0.0
+  },
+  "dnn": {
+   "accuracy": {
+    "DNN SF": {
+     "MAE": 15.60525797593197,
+     "RMSE": 28.2220179300338,
+     "sMAPE_pct": 23.996444203660424,
+     "rMAE": 0.7110260846479022
+    },
+    "DNN SF_DA": {
+     "MAE": 15.647612000555869,
+     "RMSE": 28.548384478199964,
+     "sMAPE_pct": 23.87994432357617,
+     "rMAE": 0.7129558711560047
+    },
+    "DNN SF_SF": {
+     "MAE": 16.550675744216576,
+     "RMSE": 30.69336792839569,
+     "sMAPE_pct": 24.383182362383273,
+     "rMAE": 0.7541023795208689
+    },
+    "DNN SF_SF_DA": {
+     "MAE": 15.403107355355283,
+     "RMSE": 28.808960036825567,
+     "sMAPE_pct": 23.65740321513103,
+     "rMAE": 0.7018154477920766
+    },
+    "DNN Ens.": {
+     "MAE": 14.455521007335724,
+     "RMSE": 26.586695135071725,
+     "sMAPE_pct": 22.668777360726793,
+     "rMAE": 0.6586403454043243
+    }
+   },
+   "tests": {
+    "gw_p_dnn_better_than_lear": 0.5115095265988246,
+    "gw_p_lear_better_than_dnn": 1.0,
+    "gw_p_dnn_better_than_naive": 0.0,
+    "dm_p_dnn_better_than_lear": 0.24271303912290687,
+    "dm_p_lear_better_than_dnn": 0.7572869608770931,
+    "dm_p_dnn_better_than_naive": 0.0
+   },
+   "training": {
+    "trainings": 14092,
+    "epochs_mean": 148.544777178541,
+    "cpu": [
+     "x86_64"
+    ],
+    "machines": 1,
+    "commits": [
+     "4ee9d02",
+     "d987d43"
+    ],
+    "tensorflow": [
+     "2.21.0"
+    ],
+    "vcpu_hours": 885.2894444444445
+   }
   }
  },
  "decision": {

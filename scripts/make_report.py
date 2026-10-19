@@ -74,6 +74,69 @@ def style(ax):
     ax.set_axisbelow(True)
 
 
+DNNS = {"SF": "DNN 1", "SF_DA": "DNN 2", "SF_SF": "DNN 3", "SF_SF_DA": "DNN 4"}
+
+
+def dnn_block(phase: str, real, lear_ens, naive, missing: list[str], published=None):
+    """Our four DNNs and their ensemble on the days of ``real``; ``None`` if any is missing.
+
+    ``published``: the paper's daily forecasts (phase A), keyed as in the published file
+    ("DNN 1".."DNN 4" follow the order of the trial files: SF, SF_DA, SF_SF, SF_SF_DA).
+    """
+    sub = "phase_b/" if phase == "B" else ""
+    fcs = {n: load(f"{sub}dnn_{n}") for n in DNNS}
+    absent = [f"{sub}dnn_{n}" for n, f in fcs.items() if f is None]
+    if absent:
+        missing += absent
+        return None
+    fcs = {n: f.loc[real.index] for n, f in fcs.items()}
+    ens = pd.DataFrame(
+        ensemble([f.to_numpy() for f in fcs.values()]), index=real.index, columns=real.columns
+    )
+    R, E, L, N = (x.to_numpy() for x in (real, ens, lear_ens, naive))
+    out = {
+        "accuracy": {
+            **{f"DNN {n}": scores(real, f) for n, f in fcs.items()},
+            "DNN Ens.": scores(real, ens),
+        },
+        "tests": {
+            "gw_p_dnn_better_than_lear": float(gw_test(R, L, E)[1]),
+            "gw_p_lear_better_than_dnn": float(gw_test(R, E, L)[1]),
+            "gw_p_dnn_better_than_naive": float(gw_test(R, N, E)[1]),
+            "dm_p_dnn_better_than_lear": float(dm_test(R, L, E)[1]),
+            "dm_p_lear_better_than_dnn": float(dm_test(R, E, L)[1]),
+            "dm_p_dnn_better_than_naive": float(dm_test(R, N, E)[1]),
+        },
+    }
+    if published is not None:
+        P = published["DNN Ensemble"].to_numpy()
+        out["published"] = {
+            **{f"DNN {n} MAE": mae(real, published[k]) for n, k in DNNS.items()},
+            "DNN Ens. MAE": mae(real, published["DNN Ensemble"]),
+            "mean abs gap of the ensemble to published": mae(published["DNN Ensemble"], ens),
+            "gw_p_ours_better_than_published": float(gw_test(R, P, E)[1]),
+            "gw_p_published_better_than_ours": float(gw_test(R, E, P)[1]),
+            "dm_p_ours_better_than_published": float(dm_test(R, P, E)[1]),
+            "dm_p_published_better_than_ours": float(dm_test(R, E, P)[1]),
+        }
+    # Training records (scripts/run_dnn.py --collect): where and with what each day was run.
+    summaries = [
+        ROOT / "results" / "dnn" / f"phase_{phase.lower()}" / f"summary_{n}.csv" for n in DNNS
+    ]
+    if all(p.exists() for p in summaries):
+        rec = pd.concat([pd.read_csv(p) for p in summaries])
+        out["training"] = {
+            "trainings": len(rec),
+            "epochs_mean": float(rec["epochs"].mean()),
+            "cpu": sorted(rec["cpu"].unique()),
+            "machines": int(rec["host"].nunique()),
+            "commits": sorted(c[:7] for c in rec["commit"].unique()),
+            "tensorflow": sorted(rec["tensorflow"].unique()),
+            "vcpu_hours": float(rec["seconds"].sum() / 3600),
+        }
+    return out, ens
+
+
 def phase_b(missing: list[str]) -> tuple[dict | None, list[str], tuple | None]:
     """Phase B: the paper's protocol on the joined BE.csv + ENTSO-E frame, 2017-2026.
 
@@ -121,6 +184,9 @@ def phase_b(missing: list[str]) -> tuple[dict | None, list[str], tuple | None]:
         "evaluated_days": len(real),
         "accuracy": accuracy,
     }
+    dnn = dnn_block("B", real, ens, naive, missing)
+    if dnn is not None:
+        out["dnn"] = dnn[0]
     md = [
         f"## Phase B: 4-window LEAR on BE.csv + ENTSO-E data, {begin} to {end}",
         f"{len(real)} of {out['test_days']} test days evaluated (days depending on a "
@@ -130,6 +196,8 @@ def phase_b(missing: list[str]) -> tuple[dict | None, list[str], tuple | None]:
         "```",
         "",
     ]
+    if "dnn" in out:
+        md += ["### Phase B: our DNNs", "```", json.dumps(out["dnn"], indent=1), "```", ""]
     return out, md, (real, ens, naive)
 
 
@@ -147,8 +215,15 @@ def monthly_figure(phase_a: tuple, phase_b_frames: tuple | None) -> None:
         start = phase_b_frames[0].index[0]
         ax.axvline(start, color=GREY, lw=1, ls=":")
         ax.text(start, ax.get_ylim()[1], " extension →", color=INK, fontsize=8, va="top")
-        ax.text(start, ax.get_ylim()[1], "← paper test period ", color=INK, fontsize=8,
-                va="top", ha="right")  # fmt: skip
+        ax.text(
+            start,
+            ax.get_ylim()[1],
+            "← paper test period ",
+            color=INK,
+            fontsize=8,
+            va="top",
+            ha="right",
+        )
     ax.set_ylabel("Monthly MAE (EUR/MWh)", color=INK)
     ax.set_title("Belgian day-ahead price: monthly forecast error", color=INK, fontsize=10)
     ax.legend(frameon=False, fontsize=8, loc="center left")
@@ -266,14 +341,33 @@ def main() -> None:
         "",
     ]
 
-    # Published results of the paper, quoted for reference only (not models of this project:
-    # the DNN is neither retrained nor tested here).
+    # Published results of the paper, quoted next to ours.
     out["published_reference"] = {
         "source": "Lago et al. (2021), forecasts published in jeslago/epftoolbox",
         "MAE": {k: mae(real, pub_daily[k]) for k in ("LEAR Ensemble", "DNN Ensemble")},
     }
-    md += ["## Published results quoted for reference (MAE, not recomputed models)", "```",
-           json.dumps(out["published_reference"], indent=1), "```", ""]  # fmt: skip
+    md += [
+        "## Published results quoted for reference (MAE)",
+        "```",
+        json.dumps(out["published_reference"], indent=1),
+        "```",
+        "",
+    ]
+
+    # Our DNNs (published hyperparameters, daily recalibration), with the port check.
+    dnn = dnn_block("A", real, ens, naive, missing, published=pub_daily)
+    if dnn is not None:
+        out["dnn"] = dnn[0]
+        port = ROOT / "results" / "dnn" / "port_check.json"  # scripts/check_dnn_port.py
+        if port.exists():
+            check = json.loads(port.read_text())
+            out["dnn"]["port_check"] = {
+                "cases": len(check["cases"]),
+                "all_ok": check["all_ok"],
+                "max_abs_diff": max(c["max_abs_diff"] for c in check["cases"]),
+                "tolerance": check["tolerance"],
+            }
+        md += ["## Phase A: our DNNs", "```", json.dumps(out["dnn"], indent=1), "```", ""]
 
     out["phase_b"], md_b, frames_b = phase_b(missing)
     md += md_b
@@ -306,13 +400,23 @@ def main() -> None:
             "hours": hours,
             "perfect_hourly_forecast_MAE": gap,
         }
-        md += ["## Quarter-hour products: error of a perfect hourly forecast", "```",
-               json.dumps(out["quarter_hour"], indent=1), "```", ""]  # fmt: skip
+        md += [
+            "## Quarter-hour products: error of a perfect hourly forecast",
+            "```",
+            json.dumps(out["quarter_hour"], indent=1),
+            "```",
+            "",
+        ]
     load_test = ROOT / "results" / "load_test.json"  # written by scripts/load_test.py
     if load_test.exists():
         out["load_test"] = json.loads(load_test.read_text())
-        md += ["## Load test of the containerised service", "```",
-               json.dumps(out["load_test"], indent=1), "```", ""]  # fmt: skip
+        md += [
+            "## Load test of the containerised service",
+            "```",
+            json.dumps(out["load_test"], indent=1),
+            "```",
+            "",
+        ]
     else:
         missing.append("load_test (run scripts/load_test.py)")
     if missing:

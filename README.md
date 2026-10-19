@@ -82,21 +82,34 @@ those used before June 2024 (d-1, d-2):
 | LEAR 84, lags d-1/d-2 | 7.28 | 6.80 | 2.47 |
 
 The long windows match the published MAE closely; the gap comes from the short windows,
-fitted on fewer samples than inputs. For reference, the paper's published DNN ensemble
-(not a model of this project) has an MAE of 5.87.
+fitted on fewer samples than inputs.
 
-### DNN of the paper (in progress)
+### DNN of the paper
 
 The four DNNs of the paper's ensemble are re-implemented (`models/dnn.py`) and recalibrated
 every day, as in the paper. **Their hyperparameters and input features are the published
 ones, for both test periods**: the paper chose them with a hyperparameter search
-(hyperopt, 1 500 trials per DNN) on 2011–2016 data, and this project does not run a new
-search on recent data. Only the daily training is computed, for every test day.
-The port reproduces the original code exactly (same seeds: same epochs, forecasts within
-1e-6 EUR/MWh, `results/dnn/port_check.json`). Every training is recorded (per-epoch
-losses, seeds, hashes of data and weights, machine, versions): summaries in
-`results/dnn/`, per-day records and weights in a GitHub Release. **Results are not
-available yet.**
+(hyperopt, 1 500 trials per DNN) on 2011–2016 data, and this project runs no new search on
+recent data; only the daily training is computed, for every test day.
+
+- **The port is exact.** With the same seeds as the original code, on the same machine,
+  12 trainings (3 days × 4 DNNs) give the same number of epochs and
+  forecasts within 5e-09 EUR/MWh
+  ([`results/dnn/port_check.json`](results/dnn/port_check.json)).
+- **The paper's DNN result is reproduced:** our DNN ensemble has an MAE of
+  5.85 on 2015–2016, the published one
+  5.87; neither is significantly more accurate than the other
+  (GW p = 0.71 that ours is more accurate,
+  p = 1 that the published one is). Day by day the forecasts differ
+  (mean gap 0.87 EUR/MWh): the
+  original training is not seeded, so nobody can match it exactly.
+- **Every training is recorded**: 2,912 trainings on 2015–2016 and
+  14,092 on the extension, all on one machine
+  (x86_64, TensorFlow 2.21.0). Per day: seed, sample
+  sizes, losses of every epoch, epoch kept, hashes of the input data, of the validation
+  draw and of the final weights, machine, versions and code commit
+  ([`results/dnn/`](results/dnn/)); the final weights of every network will be archived in
+  a GitHub Release (not published yet).
 
 ## Results
 
@@ -110,6 +123,7 @@ available yet.**
 | LEAR 1092 | 6.61 | 16.47 | 16.92 | 0.80 |
 | LEAR 1456 | 6.65 | 16.42 | 17.36 | 0.81 |
 | **LEAR ensemble** | **6.28** | **16.04** | **14.97** | **0.76** |
+| **DNN ensemble** | **5.85** | **16.03** | **13.35** | **0.71** |
 
 - **LEAR ensemble vs naive: −1.92 EUR/MWh
   (−23.5 %)**, GW p = 3.1e-14
@@ -117,6 +131,9 @@ available yet.**
 - Ensemble vs the best single window (1092 days):
   −0.33 EUR/MWh, GW p = 6.7e-07
   (DM p = 1.3e-06).
+- **DNN ensemble vs LEAR ensemble: 5.85 vs 6.28**,
+  GW p = 2.8e-08 (DM p = 8.5e-10):
+  the DNN is significantly more accurate, as in the paper.
 
 ### 2. Extension to today, 2017-01-01 to 2026-09-30
 
@@ -133,10 +150,16 @@ of hours with a negative price.
 | LEAR 1092 | 15.65 |
 | LEAR 1456 | 15.55 |
 | **LEAR ensemble** | **14.52** |
+| **DNN ensemble** | **14.46** |
 
 - **LEAR ensemble vs naive: −7.34 EUR/MWh
   (−33.6 %)**, GW p < 10⁻¹⁵
   (DM p < 10⁻¹⁵).
+- **DNN ensemble vs LEAR ensemble: 14.46 vs
+  14.52**, GW p = 0.51
+  (DM p = 0.24), and GW p
+  = 1 the other way: on today's market, with
+  the hyperparameters chosen on 2011–2016, neither model is significantly more accurate.
 - **15-minute products**: even a perfect hourly forecast would miss the quarter-hour prices
   by 7.91 EUR/MWh on average
   (2025-10-01 to 2026-09-30, 8,760 hours):

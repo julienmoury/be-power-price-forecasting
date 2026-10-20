@@ -1,6 +1,6 @@
 # Belgian day-ahead price: today's forecasts vs realised prices
 
-Updated automatically on 2026-10-20 11:17 (Brussels time) by `scripts/live_forecast.py`, every evening. The two models of the backtests, the 4-window LEAR ensemble and the ensemble of the four DNNs of Lago et al. (2021), are recalibrated every evening and forecast the next day, once the French day-ahead generation forecast, one of their inputs, is published on ENTSO-E (by 18:00, after the 12:00 auction: these forecasts use the information of the paper but could not be used to bid). The next evening, they are compared here with the realised prices.
+Updated automatically on 2026-10-20 22:48 (Brussels time) by `scripts/live_forecast.py`, every evening. The two models of the backtests, the 4-window LEAR ensemble and the ensemble of the four DNNs of Lago et al. (2021), are recalibrated every evening and forecast the next day, once the French day-ahead generation forecast, one of their inputs, is published on ENTSO-E (by 18:00, after the 12:00 auction: these forecasts use the information of the paper but could not be used to bid). The next evening, they are compared here with the realised prices.
 
 ## Today, 2026-10-20
 

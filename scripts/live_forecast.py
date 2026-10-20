@@ -7,15 +7,13 @@ cannot be used to bid); needs ENTSOE_API_KEY. Steps: extend the cached ENTSO-E s
 forecast the delivery day with the LEAR ensemble and with the DNN ensemble (the four DNNs
 recalibrated in parallel, as in the backtests), append them to
 results/forecasts/live/forecasts.csv and dnn_forecasts.csv (the training record of each DNN
-to results/dnn/live/summary.csv; weights are not kept) and write the page live/README.md
-(with live/forecast.png). The two models are shown side by side, never averaged. When
-an input is not published yet, no forecast is written and the page says so. A day already
-forecast is not forecast again (the workflow runs twice, the second time as a fallback).
-Then the forecasts of today (made the evening before) are compared with today's realised
-prices, taken from SMARD.de (CC BY 4.0; the ENTSO-E prices are not on its free re-use
-list): quarter-hour prices and their hourly mean, the naive forecast, LEAR and DNN on one
-chart (live/compare.png), and the MAE of each against the hourly mean appended to
-results/forecasts/live/scores.csv.
+to results/dnn/live/summary.csv; weights are not kept), for the API and the next day
+(LEAR and DNN are never averaged). When an input is not published yet, no forecast is
+written. A day already forecast is not forecast again (the workflow runs twice, the second
+time as a fallback). The page live/README.md only shows today: today's forecasts (made the
+evening before) against today's realised prices, taken from SMARD.de (CC BY 4.0; the
+ENTSO-E prices are not on its free re-use list): quarter-hours and their hourly mean, the
+naive forecast, LEAR and DNN on one chart (live/compare.png), with the MAE of each.
 Usage: python scripts/live_forecast.py [--day YYYY-MM-DD]
 """
 
@@ -46,7 +44,6 @@ PAGE = REPO_ROOT / "live"
 ELIA = "https://www.elia.be/en/grid-data/transmission/day-ahead-reference-price"
 # Reference palette (dataviz skill, light mode): categorical slots 1-3, neutral ink and grey.
 BLUE, ORANGE, AQUA, INK, GREY = "#2a78d6", "#eb6834", "#1baf7a", "#52514e", "#8a8984"
-SCORED_DAYS = 10  # live days scored again at each run (late or missed runs)
 
 
 def _dnn_job(job):
@@ -92,60 +89,28 @@ def stored(path, day: pd.Timestamp):
 
 
 def compare(today: pd.Timestamp, get=None) -> dict | None:
-    """Realised prices of ``today`` (SMARD) with the naive, LEAR and DNN forecasts of it, and
-    the scores of the recent live days; ``None`` when today's prices are not complete."""
-    lo = (today - pd.Timedelta(days=SCORED_DAYS + 7)).tz_localize(TZ).tz_convert("UTC")
+    """Realised prices of ``today`` (SMARD) with the naive, LEAR and DNN forecasts of it;
+    ``None`` when there is no LEAR forecast of today or its prices are not complete."""
+    lear = stored(LIVE / "forecasts.csv", today)
+    if lear is None:
+        return None
+    source = naive_source_day(today)
+    lo = source.tz_localize(TZ).tz_convert("UTC")
     hi = (today + pd.Timedelta(days=1)).tz_localize(TZ).tz_convert("UTC")
     quarter = smard_prices(lo, hi, **({"get": get} if get else {}))
     if quarter.empty:
         return None
     daily = to_local_days(quarter)[0]
-    lear = pd.read_csv(LIVE / "forecasts.csv", index_col=0, parse_dates=True)
-    dnn_path = LIVE / "dnn_forecasts.csv"
-    dnn_fc = pd.read_csv(dnn_path, index_col=0, parse_dates=True) if dnn_path.exists() else None
-    path = LIVE / "scores.csv"
-    scores = pd.read_csv(path, index_col=0, parse_dates=True) if path.exists() else pd.DataFrame()
-    for day in lear.index[lear.index > today - pd.Timedelta(days=SCORED_DAYS)]:
-        if day > today or day not in daily.index or naive_source_day(day) not in daily.index:
-            continue
-        real, naive = daily.loc[day].to_numpy(), daily.loc[naive_source_day(day)].to_numpy()
-        if not (np.isfinite(real).all() and np.isfinite(naive).all()):
-            continue
-        local = quarter.tz_convert(TZ)
-        inside = (local.index >= day.tz_localize(TZ)) & (
-            local.index < (day + pd.Timedelta(days=1)).tz_localize(TZ)
-        )
-        row = {
-            "MAE naive": float(np.mean(np.abs(real - naive))),
-            "MAE LEAR": float(np.mean(np.abs(real - lear.loc[day, HOURS].to_numpy(float)))),
-            "MAE DNN": float(np.mean(np.abs(real - dnn_fc.loc[day, HOURS].to_numpy(float))))
-            if dnn_fc is not None and day in dnn_fc.index
-            else np.nan,
-            "MAE perfect hourly vs quarter-hours": intra_hour_deviation(quarter[inside])[0],
-        }
-        scores = pd.concat(
-            [
-                scores.drop(index=day, errors="ignore"),
-                pd.DataFrame([row], pd.DatetimeIndex([day], name="Date")),
-            ]
-        )
-    if len(scores):
-        scores.sort_index().to_csv(path, float_format="%.3f")
-    if today not in scores.index:
+    if today not in daily.index or source not in daily.index:
         return None
-    local = quarter.tz_convert(TZ)
-    q = local[
-        (local.index >= today.tz_localize(TZ))
-        & (local.index < (today + pd.Timedelta(days=1)).tz_localize(TZ))
-    ]
-    return {
-        "quarter": q,
-        "real": daily.loc[today].to_numpy(),
-        "naive": daily.loc[naive_source_day(today)].to_numpy(),
-        "lear": stored(LIVE / "forecasts.csv", today),
-        "dnn": stored(dnn_path, today),
-        "scores": scores.sort_index(),
-    }
+    real, naive = daily.loc[today].to_numpy(), daily.loc[source].to_numpy()
+    if not (np.isfinite(real).all() and np.isfinite(naive).all()):
+        return None
+    q = quarter[quarter.index >= today.tz_localize(TZ)]
+    forecasts = {"naive": naive, "lear": lear, "dnn": stored(LIVE / "dnn_forecasts.csv", today)}
+    mae = {k: None if v is None else float(np.mean(np.abs(real - v))) for k, v in forecasts.items()}
+    mae["perfect"] = intra_hour_deviation(q)[0]
+    return {"quarter": q.tz_convert(TZ), "real": real, **forecasts, "mae": mae}
 
 
 def compare_chart(today: pd.Timestamp, c: dict) -> None:
@@ -182,102 +147,47 @@ def compare_chart(today: pd.Timestamp, c: dict) -> None:
     plt.close(fig)
 
 
-def compare_section(today: pd.Timestamp, c: dict | None) -> list[str]:
-    (PAGE / "compare.png").unlink(missing_ok=True)
-    md = [f"## Today, {today.date()}: forecasts vs realised prices", ""]
-    if c is None:
-        return md + [
-            "Not available: no live forecast of today, or its prices are not complete.",
-            "",
-        ]
-    compare_chart(today, c)
-    s = c["scores"]
-    last = s.loc[today]
-    # Last 30 days: only days scored for the three forecasts, so that the means compare.
-    both = s[s.index > today - pd.Timedelta(days=30)].dropna()
-    fmt = lambda v: "–" if pd.isna(v) else f"{v:.2f}"  # noqa: E731
-    md += [
-        "![Forecasts vs realised prices](compare.png)",
-        "",
-        "Forecasts made the evening before (after the auction, with the information of the "
-        "paper). MAE in EUR/MWh against the hourly mean of the realised prices.",
-        "",
-        "| | Naive | LEAR | DNN | Perfect hourly forecast |",
-        "|---|---|---|---|---|",
-        f"| {today.date()} | {fmt(last['MAE naive'])} | {fmt(last['MAE LEAR'])} | "
-        f"{fmt(last['MAE DNN'])} | {fmt(last['MAE perfect hourly vs quarter-hours'])}* |",
-        f"| Last 30 days, mean of {len(both)} days with the three forecasts | "
-        f"{fmt(both['MAE naive'].mean())} | {fmt(both['MAE LEAR'].mean())} | "
-        f"{fmt(both['MAE DNN'].mean())} | "
-        f"{fmt(both['MAE perfect hourly vs quarter-hours'].mean())}* |",
-        "",
-        f"DNN more accurate than LEAR on {int((both['MAE DNN'] < both['MAE LEAR']).sum())} of "
-        f"these {len(both)} days. *Against the quarter-hour prices: the error a "
-        "perfect hourly forecast still makes, since the models forecast hours.",
-        "",
-        f"Realised prices: {ATTRIBUTION} (www.smard.de), equal to the ENTSO-E prices.",
-        "",
-    ]
-    return md
-
-
-def write_page(day, values, dnn_values, reason: str, now, comparison: list[str]) -> None:
+def write_page(today: pd.Timestamp, c: dict | None, now) -> None:
+    """The live page: today's forecasts (made the evening before) vs today's prices."""
     PAGE.mkdir(exist_ok=True)
+    for old in ("compare.png", "forecast.png"):
+        (PAGE / old).unlink(missing_ok=True)
     md = [
-        "# Live forecast of the Belgian day-ahead price",
+        "# Belgian day-ahead price: today's forecasts vs realised prices",
         "",
         f"Updated automatically on {now:%Y-%m-%d %H:%M} (Brussels time) by "
-        "`scripts/live_forecast.py`, every evening once the French day-ahead generation "
-        "forecast of the next day is published on ENTSO-E (by 18:00, after the 12:00 "
-        "auction: these forecasts use the information of the paper but could not be used "
-        "to bid). Two models of the backtests, recalibrated every day and shown side by side "
-        "(not averaged): the 4-window LEAR ensemble and the ensemble of the four DNNs of "
-        "Lago et al. (2021).",
+        "`scripts/live_forecast.py`, every evening. The two models of the backtests, the "
+        "4-window LEAR ensemble and the ensemble of the four DNNs of Lago et al. (2021), are "
+        "recalibrated every evening and forecast the next day, once the French day-ahead "
+        "generation forecast, one of their inputs, is published on ENTSO-E (by 18:00, after "
+        "the 12:00 auction: these forecasts use the information of the paper but could not "
+        "be used to bid). The next evening, they are compared here with the realised prices.",
         "",
-        f"## Delivery day {day.date()}",
+        f"## Today, {today.date()}",
         "",
     ]
-    (PAGE / "forecast.png").unlink(missing_ok=True)
-    if values is None:
-        md.append(f"No forecast for this day: {reason}.")
+    if c is None:
+        md += ["Not available: no forecast of today, or its prices are not complete.", ""]
     else:
-        fig, ax = plt.subplots(figsize=(7, 3), dpi=150)
-        ax.step(range(25), [*values, values[-1]], where="post", color=BLUE, lw=2, label="LEAR")
-        if dnn_values is not None:
-            ax.step(
-                range(25),
-                [*dnn_values, dnn_values[-1]],
-                where="post",
-                color=AQUA,
-                lw=2,
-                label="DNN",
-            )
-            ax.legend(frameon=False, fontsize=8)
-        ax.set_xticks(range(0, 25, 3))
-        ax.set_xlabel("Hour (Brussels time)", color=INK)
-        ax.set_ylabel("EUR/MWh", color=INK)
-        ax.set_title(f"Forecasts for {day.date()}", color=INK, fontsize=10)
-        for side in ("top", "right"):
-            ax.spines[side].set_visible(False)
-        ax.grid(axis="y", color="#e4e3df")
-        fig.tight_layout()
-        fig.savefig(PAGE / "forecast.png")
-        plt.close(fig)
-        rows = [("LEAR", values)] + ([("DNN", dnn_values)] if dnn_values is not None else [])
-        md += ["![Forecast](forecast.png)", ""]
-        for hours in (range(12), range(12, 24)):
-            md += [
-                "| Hour (EUR/MWh) | " + " | ".join(f"{h:02d}" for h in hours) + " |",
-                "|---" * 13 + "|",
-            ]
-            md += [f"| {n} | " + " | ".join(f"{v[h]:.1f}" for h in hours) + " |" for n, v in rows]
-            md.append("")
-        if dnn_values is None:
-            md += ["No DNN forecast for this day: an input of its days is missing.", ""]
+        compare_chart(today, c)
+        m = c["mae"]
+        fmt = lambda v: "–" if v is None else f"{v:.2f}"  # noqa: E731
         md += [
-            "Hourly prices; since 1 October 2025 each value is the average of four quarter-hours.",
+            "![Forecasts vs realised prices](compare.png)",
+            "",
+            "Mean absolute error (EUR/MWh) against the hourly mean of the realised prices:",
+            "",
+            "| Naive | LEAR | DNN | Perfect hourly forecast* |",
+            "|---|---|---|---|",
+            f"| {fmt(m['naive'])} | {fmt(m['lear'])} | {fmt(m['dnn'])} | {fmt(m['perfect'])} |",
+            "",
+            "*Against the quarter-hour prices: the error a perfect hourly forecast still makes, "
+            "since the models forecast hours. The naive forecast copies the same day of last "
+            "week on Mondays, Saturdays and Sundays, the previous day otherwise.",
+            "",
+            f"Realised prices: {ATTRIBUTION} (www.smard.de), equal to the ENTSO-E prices.",
+            "",
         ]
-    md += ["", *comparison]
     md += [
         f"Official prices: [Elia]({ELIA}) and the "
         "[ENTSO-E Transparency Platform](https://transparency.entsoe.eu/).",
@@ -333,12 +243,11 @@ def main() -> None:
         pd.concat([old, new]).to_csv(path, index=False)
     today = day - pd.Timedelta(days=1)
     try:
-        comparison = compare(today) if (LIVE / "forecasts.csv").exists() else None
-    except OSError as err:  # SMARD unreachable: the forecast is still published
+        comparison = compare(today)
+    except OSError as err:  # SMARD unreachable: tomorrow's forecasts are still stored
         print(f"no comparison: {err}")
         comparison = None
-    PAGE.mkdir(exist_ok=True)
-    write_page(day, values, dnn_values, reason, now, compare_section(today, comparison))
+    write_page(today, comparison, now)
 
 
 if __name__ == "__main__":

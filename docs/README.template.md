@@ -15,9 +15,9 @@
    from the end of the paper's test period to today
    ({{phase_b/test_period/0}} to {{phase_b/test_period/1}}: 2022 crisis, negative prices,
    15-minute products)?
-3. **Tool.** Can it run every day on its own and be served reliably? → **[Live forecast
-   of tomorrow's prices](live/README.md)**, updated every evening, with yesterday's
-   forecasts compared to the realised prices.
+3. **Tool.** Can it run every day on its own and be served reliably? → **[Live: today's forecasts
+   vs realised prices](live/README.md)**, updated every evening: today's LEAR and DNN
+   forecasts against today's prices.
 
 The project only does what the paper does, plus its extension and the tool around it. All
 numbers below are rendered by `scripts/make_report.py` from
@@ -191,15 +191,16 @@ of hours with a negative price.
 
 - **Live forecast** ([`live/README.md`](live/README.md)): every evening, a GitHub Actions
   workflow builds the Docker image, downloads the new ENTSO-E data, recalibrates the four
-  LEAR windows and the four DNNs and publishes both forecasts of the next day side by side
-  (never averaged), then checks that the forecast service of the same image serves them.
+  LEAR windows and the four DNNs and stores both forecasts of the next day (never
+  averaged; served by the API), then checks that the forecast service of the same image
+  serves them.
   **It runs after the auction**: the French day-ahead generation forecast, an input of the
   paper, is published on ENTSO-E up to 18:00 the day before (in the afternoon in October
   2026), after the 12:00 gate closure. The live forecasts use
   the same information as the paper and the backtests, but could not have been used to
-  bid. The page then compares today's forecasts with today's realised prices
+  bid. The page only shows today: today's forecasts against today's realised prices
   (quarter-hours and their hourly mean, the naive forecast, LEAR and DNN on one chart;
-  MAE of each, today and over the last 30 days); the realised prices come from
+  MAE of each); the realised prices come from
   [SMARD.de](https://www.smard.de) (Bundesnetzagentur, CC BY 4.0), equal to the ENTSO-E
   prices at every hour of September 2026. Each DNN training of the day is recorded in
   `results/dnn/live/summary.csv` (its weights are not

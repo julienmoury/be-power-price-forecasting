@@ -16,7 +16,8 @@
    (2017-01-01 to 2026-09-30: 2022 crisis, negative prices,
    15-minute products)?
 3. **Tool.** Can it run every day on its own and be served reliably? → **[Live forecast
-   of tomorrow's prices](live/README.md)**, updated every morning before the auction.
+   of tomorrow's prices](live/README.md)**, updated every evening, with yesterday's
+   forecasts compared to the realised prices.
 
 The project only does what the paper does, plus its extension and the tool around it. All
 numbers below are rendered by `scripts/make_report.py` from
@@ -188,15 +189,23 @@ of hours with a negative price.
 
 ### 3. The forecasting tool
 
-- **Live forecast** ([`live/README.md`](live/README.md)): every morning before the 12:00
-  gate closure, a GitHub Actions workflow builds the Docker image, downloads the new
-  ENTSO-E data, recalibrates the four LEAR windows and the four DNNs and publishes both
-  forecasts of the next day side by side (never averaged), then checks that the forecast
-  service of the same image serves them. Each DNN training of the day is recorded in
+- **Live forecast** ([`live/README.md`](live/README.md)): every evening, a GitHub Actions
+  workflow builds the Docker image, downloads the new ENTSO-E data, recalibrates the four
+  LEAR windows and the four DNNs and publishes both forecasts of the next day side by side
+  (never averaged), then checks that the forecast service of the same image serves them.
+  **It runs after the auction**: the French day-ahead generation forecast, an input of the
+  paper, is published on ENTSO-E up to 18:00 the day before (in the afternoon in October
+  2026), after the 12:00 gate closure. The live forecasts use
+  the same information as the paper and the backtests, but could not have been used to
+  bid. The page then compares today's forecasts with today's realised prices
+  (quarter-hours and their hourly mean, the naive forecast, LEAR and DNN on one chart;
+  MAE of each, today and over the last 30 days); the realised prices come from
+  [SMARD.de](https://www.smard.de) (Bundesnetzagentur, CC BY 4.0), equal to the ENTSO-E
+  prices at every hour of September 2026. Each DNN training of the day is recorded in
   `results/dnn/live/summary.csv` (its weights are not
   kept). The live DNN runs on GitHub's machines, not on the backtest machine, so its
   forecasts are not bit-identical to what the backtest machine would give. When a French
-  forecast is not published yet, the page says so and shows no price.
+  forecast is not published yet, the page says so and shows no forecast.
 - **Service** (`src/be_power_forecast/api/app.py`, FastAPI, same Docker image): `POST
   /forecast` returns the 24 hourly prices of a delivery day from 2017-01-01,
   `GET /forecasts?start=&end=` those of a range of days. Forecasts are computed in batch,
@@ -245,7 +254,10 @@ forecast gets the naive forecast, labelled as such.
   (CC BY 4.0); day-ahead prices and generation forecasts are not. No raw ENTSO-E data are
   committed: they stay in a git-ignored local cache, CI uses synthetic XML fixtures, and
   the repository only holds our forecasts and aggregated metrics. Reproducing the
-  extension needs your own ENTSO-E API token.
+  extension needs your own ENTSO-E API token. The live page shows realised prices from
+  SMARD.de instead, published by the Bundesnetzagentur under CC BY 4.0.
+- The live forecasts are made after the day-ahead auction (see the forecasting tool): the
+  paper's protocol assumes inputs that are, in practice, published after gate closure.
 - The Zenodo record of the paper's dataset names no licence ("Other (Open)").
 - Point forecasts only; MAE is an error measure, not the value of a trading strategy.
 

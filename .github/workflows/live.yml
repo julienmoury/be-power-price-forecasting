@@ -1,12 +1,16 @@
 name: Live forecast
 
-# Every morning, before the 12:00 (Brussels) gate closure of the day-ahead auction: build
-# the Docker image, forecast tomorrow's Belgian prices in it, check that the forecast
-# service of the same image serves them, and commit the forecast and the page
-# live/README.md. Raw ENTSO-E data stay in the Actions cache, never in the repository.
+# Every evening, once the French day-ahead generation forecast of the next day is on
+# ENTSO-E (deadline 18:00 Brussels time, after the 12:00 auction): build the Docker image,
+# forecast tomorrow's Belgian prices in it (LEAR and DNN), compare today's forecasts with
+# today's realised prices (SMARD.de, CC BY 4.0), check that the forecast service of the
+# same image serves the forecasts, and commit them with the page live/README.md. The
+# second run is a fallback (a day already forecast is skipped). Raw ENTSO-E data stay in
+# the Actions cache, never in the repository.
 on:
   schedule:
-    - cron: "15 8 * * *" # 08:15 UTC = 09:15 CET / 10:15 CEST
+    - cron: "30 17 * * *" # 17:30 UTC = 18:30 CET / 19:30 CEST
+    - cron: "30 20 * * *" # fallback
   workflow_dispatch:
 
 permissions:

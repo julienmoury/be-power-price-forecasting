@@ -1,10 +1,11 @@
 """Daily live forecast: update the ENTSO-E series and forecast the next delivery day.
 
-Run every morning by ``scripts/live_forecast.py`` (GitHub Actions, needs ENTSOE_API_KEY),
-before the 12:00 gate closure of the day-ahead auction. The model and its inputs are those
-of the backtests; only our LEAR forecasts are written to the repository, never a price or
-the naive forecast (a copy of past prices, ENTSO-E re-use terms). The raw ENTSO-E data stay
-in the cache.
+Run every evening by ``scripts/live_forecast.py`` (GitHub Actions, needs ENTSOE_API_KEY),
+once the French day-ahead generation forecast of the next day is published (by 18:00, after
+the 12:00 gate closure of the day-ahead auction). The model and its inputs are those
+of the backtests; only our forecasts are written to the repository, never an ENTSO-E price
+(re-use terms; the realised prices shown on the page come from SMARD.de, CC BY 4.0). The raw
+ENTSO-E data stay in the cache.
 """
 
 from __future__ import annotations

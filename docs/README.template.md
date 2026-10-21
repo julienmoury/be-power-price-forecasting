@@ -262,6 +262,29 @@ forecast gets the naive forecast, labelled as such.
 - The Zenodo record of the paper's dataset names no licence ("Other (Open)").
 - Point forecasts only; MAE is an error measure, not the value of a trading strategy.
 
+## What I would do next
+
+This project reproduces a 2021 benchmark on purpose and makes no modelling choice of its
+own. A first version compared French, Belgian and French + Belgian inputs and a LightGBM
+challenger; both were removed to keep the reproduction clean.
+These are the steps I would take to turn it into a forecast usable today:
+
+1. **Forecast before the auction, from Belgian fundamentals.** The merit order drives the
+   Belgian price: wind and solar output push it down, and gas plants often set it. The
+   inputs would be the Belgian load and wind/solar forecasts, weather and the TTF gas
+   price, keeping only series published before the 12:00 gate closure, unlike the French
+   generation forecast used today.
+2. **Compare the input sets after 2022**: French, Belgian, and both.
+3. **Add the other coupled zones** (Netherlands, Germany): Lago et al. (2018) show that
+   neighbouring markets improve the Belgian forecast; this project only uses France.
+4. **Forecast the 96 quarter-hours natively**: any hourly forecast misses today's prices by
+   at least {{quarter_hour/perfect_hourly_forecast_MAE}} EUR/MWh.
+5. **Check what the model learned** (SHAP values): does it react to wind and gas as the
+   merit order predicts?
+
+Every new model would be compared with the same protocol: the LEAR ensemble as benchmark,
+the same days, and the Giacomini-White test.
+
 ## Reproduce
 
 ```bash

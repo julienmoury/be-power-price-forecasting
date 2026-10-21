@@ -73,4 +73,5 @@ jobs:
           if [ -d results/dnn/live ]; then git add results/dnn/live; fi
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "chore(live): forecast of $(TZ=Europe/Brussels date -d tomorrow +%Y-%m-%d)"
+          git pull --rebase
           git push

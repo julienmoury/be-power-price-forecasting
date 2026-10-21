@@ -53,7 +53,7 @@ tells whether one model is really better or just lucky on this sample.
    GitHub Actions job downloads the new data every evening, retrains the models, forecasts
    the next day and updates the live page. The errors since 1 October are computed in SQL
    (DuckDB). A small API (FastAPI, in Docker) serves the forecasts to my
-   [storage project](https://github.com/julienmoury/storage-dispatch), which runs a battery
+   [storage project](https://github.com/julienmoury/be-storage-dispatch), which runs a battery
    on them every evening.
 
 ## Results

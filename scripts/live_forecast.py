@@ -9,12 +9,15 @@ recalibrated in parallel, as in the backtests), append them to
 results/forecasts/live/forecasts.csv and dnn_forecasts.csv (the training record of each DNN
 to results/dnn/live/summary.csv; weights are not kept), for the API and the next day
 (LEAR and DNN are never averaged). When an input is not published yet, no forecast is
-written. A day already forecast is not forecast again (the workflow runs twice, the second
-time as a fallback). The page live/README.md only shows today: today's forecasts (made the
-evening before) against today's realised prices, taken from SMARD.de (CC BY 4.0; the
-ENTSO-E prices are not on its free re-use list): quarter-hours and their hourly mean, the
-naive forecast, LEAR and DNN on one chart (live/compare.png), with the MAE of each.
-Usage: python scripts/live_forecast.py [--day YYYY-MM-DD]
+written. A model that already has a forecast of the day is not run again (the workflow
+runs twice, the second time as a fallback; ``--day`` fills a missing past day).
+
+The realised prices come from SMARD.de (CC BY 4.0; the ENTSO-E prices are not on its free
+re-use list); their hourly means since the first live day are kept in
+results/live/realised.csv. The page live/README.md shows today's forecasts against today's
+prices (live/compare.png) and the errors of each model since the first live day, computed
+in SQL (be_power_forecast.live_report).
+Usage: python scripts/live_forecast.py [--day YYYY-MM-DD] [--page-only]
 """
 
 from __future__ import annotations
@@ -30,16 +33,18 @@ import pandas as pd
 from run_dnn import _init_worker, environment
 
 from be_power_forecast.backtest import HOURS
-from be_power_forecast.config import EXOGENOUS, REPO_ROOT, RESULTS_DIR, TZ
+from be_power_forecast.config import EXOGENOUS, LIVE_START, REPO_ROOT, RESULTS_DIR, TZ
 from be_power_forecast.data.calendar import intra_hour_deviation, to_local_days
 from be_power_forecast.data.smard import ATTRIBUTION, smard_prices
 from be_power_forecast.data.sources import EntsoeSource
 from be_power_forecast.evaluation.metrics import naive_source_day
 from be_power_forecast.live import forecast_day, live_frame, update_raw
+from be_power_forecast.live_report import live_errors
 from be_power_forecast.models import dnn
 from be_power_forecast.models.lear import ensemble
 
 LIVE = RESULTS_DIR / "forecasts" / "live"
+REALISED = RESULTS_DIR / "live" / "realised.csv"
 PAGE = REPO_ROOT / "live"
 ELIA = "https://www.elia.be/en/grid-data/transmission/day-ahead-reference-price"
 # Reference palette (dataviz skill, light mode): categorical slots 1-3, neutral ink and grey.
@@ -86,6 +91,19 @@ def stored(path, day: pd.Timestamp):
         return None
     old = pd.read_csv(path, index_col=0, parse_dates=True)
     return old.loc[day, HOURS].to_numpy(float) if day in old.index else None
+
+
+def update_realised(today: pd.Timestamp, get=None) -> None:
+    """Hourly means of the realised prices (SMARD) from a week before the first live day
+    (the naive forecast copies up to 7 days back) to ``today``, complete days only."""
+    first = pd.Timestamp(LIVE_START) - pd.Timedelta(days=7)
+    lo = first.tz_localize(TZ).tz_convert("UTC")
+    hi = (today + pd.Timedelta(days=1)).tz_localize(TZ).tz_convert("UTC")
+    daily = to_local_days(smard_prices(lo, hi, **({"get": get} if get else {})))[0]
+    daily = daily[np.isfinite(daily.to_numpy()).all(axis=1)]
+    daily.columns, daily.index.name = HOURS, "Date"
+    REALISED.parent.mkdir(parents=True, exist_ok=True)
+    daily.loc[first:today].to_csv(REALISED, float_format="%.2f")
 
 
 def compare(today: pd.Timestamp, get=None) -> dict | None:
@@ -147,27 +165,41 @@ def compare_chart(today: pd.Timestamp, c: dict) -> None:
     plt.close(fig)
 
 
-def write_page(today: pd.Timestamp, c: dict | None, now) -> None:
-    """The live page: today's forecasts (made the evening before) vs today's prices."""
+def table(frame: pd.DataFrame, first: str) -> list[str]:
+    """Markdown rows of a daily or by-hour error table (EUR/MWh)."""
+    fmt = lambda v: "–" if pd.isna(v) else f"{v:.2f}"  # noqa: E731
+    rows = [f"| {first} | Naive | LEAR | DNN |", "|---|---|---|---|"]
+    for _, r in frame.iterrows():
+        key = r.iloc[0]
+        key = f"{key:%Y-%m-%d}" if hasattr(key, "strftime") else f"{key:.0f}"
+        rows.append(f"| {key} | {fmt(r.naive)} | {fmt(r.lear)} | {fmt(r.dnn)} |")
+    return rows
+
+
+def write_page(today: pd.Timestamp, c: dict | None, report: dict | None, now) -> None:
+    """The live page: today's forecasts against today's prices, then every day since the
+    first live day."""
     PAGE.mkdir(exist_ok=True)
-    for old in ("compare.png", "forecast.png"):
-        (PAGE / old).unlink(missing_ok=True)
+    (PAGE / "compare.png").unlink(missing_ok=True)
+    start = pd.Timestamp(LIVE_START)
     md = [
-        "# Belgian day-ahead price: today's forecasts vs realised prices",
+        "# Live: Belgian day-ahead prices",
         "",
-        f"Updated automatically on {now:%Y-%m-%d %H:%M} (Brussels time) by "
-        "`scripts/live_forecast.py`, every evening. The two models of the backtests, the "
-        "4-window LEAR ensemble and the ensemble of the four DNNs of Lago et al. (2021), are "
-        "recalibrated every evening and forecast the next day, once the French day-ahead "
-        "generation forecast, one of their inputs, is published on ENTSO-E (by 18:00, after "
-        "the 12:00 auction: these forecasts use the information of the paper but could not "
-        "be used to bid). The next evening, they are compared here with the realised prices.",
+        f"Since {start:%-d %B %Y}, the day after the end of the backtest, the two models "
+        "of the project forecast every Belgian delivery day: the LEAR ensemble and the DNN "
+        "ensemble, retrained every evening exactly as in the backtest. Each forecast is "
+        "then compared with the realised prices.",
+        "",
+        "The forecasts use the French generation forecast, which is published after the "
+        "12:00 auction: they follow the paper, but could not have been used to bid.",
+        "",
+        f"Updated on {now:%Y-%m-%d}.",
         "",
         f"## Today, {today.date()}",
         "",
     ]
     if c is None:
-        md += ["Not available: no forecast of today, or its prices are not complete.", ""]
+        md += ["Not available yet: no forecast of today, or its prices are not complete.", ""]
     else:
         compare_chart(today, c)
         m = c["mae"]
@@ -175,20 +207,54 @@ def write_page(today: pd.Timestamp, c: dict | None, now) -> None:
         md += [
             "![Forecasts vs realised prices](compare.png)",
             "",
-            "Mean absolute error (EUR/MWh) against the hourly mean of the realised prices:",
+            "Error (MAE, EUR/MWh) against the hourly mean of the realised prices:",
             "",
             "| Naive | LEAR | DNN | Perfect hourly forecast* |",
             "|---|---|---|---|",
             f"| {fmt(m['naive'])} | {fmt(m['lear'])} | {fmt(m['dnn'])} | {fmt(m['perfect'])} |",
             "",
-            "*Against the quarter-hour prices: the error a perfect hourly forecast still makes, "
-            "since the models forecast hours. The naive forecast copies the same day of last "
-            "week on Mondays, Saturdays and Sundays, the previous day otherwise.",
+            "*Against the quarter-hour prices: the error a perfect hourly forecast still "
+            "makes, since the models forecast hours.",
             "",
-            f"Realised prices: {ATTRIBUTION} (www.smard.de), equal to the ENTSO-E prices.",
+        ]
+    if report is not None and len(report["summary"]):
+        s = report["summary"].set_index("model")
+        days = int(s["days"].max())
+        names = {"naive": "Naive", "lear": "LEAR", "dnn": "DNN"}
+        md += [
+            f"## Since {start:%-d %B %Y} ({days} days)",
+            "",
+            "| Model | Error since the start | Last 7 days |",
+            "|---|---|---|",
+            *[
+                f"| {names[k]} | {r['since_start']:.2f} | {r['last_7_days']:.2f} |"
+                for k, r in s.iterrows()
+            ],
+            "",
+            "Errors in EUR/MWh (MAE), on the days where the three models have a forecast. "
+            "The naive forecast copies the same day of last week on Mondays, Saturdays and "
+            "Sundays, the previous day otherwise.",
+            "",
+            "<details>",
+            "<summary>Day by day</summary>",
+            "",
+            *table(report["daily"].iloc[::-1], "Day"),
+            "",
+            "</details>",
+            "",
+            "<details>",
+            "<summary>By hour of the day</summary>",
+            "",
+            *table(report["by_hour"], "Hour"),
+            "",
+            "</details>",
+            "",
+            "These tables are computed in SQL (DuckDB): "
+            "[`src/be_power_forecast/sql/`](../src/be_power_forecast/sql/).",
             "",
         ]
     md += [
+        f"Realised prices: {ATTRIBUTION} (www.smard.de), equal to the ENTSO-E prices. "
         f"Official prices: [Elia]({ELIA}) and the "
         "[ENTSO-E Transparency Platform](https://transparency.entsoe.eu/).",
         "",
@@ -196,42 +262,24 @@ def write_page(today: pd.Timestamp, c: dict | None, now) -> None:
     (PAGE / "README.md").write_text("\n".join(md))
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--day", help="delivery day (default: tomorrow, Brussels time)")
-    args = parser.parse_args()
-    now = pd.Timestamp.now(tz=TZ)
-    tomorrow = now.tz_localize(None).normalize() + pd.Timedelta(days=1)
-    day = pd.Timestamp(args.day) if args.day else tomorrow
-
-    values, dnn_values = (
-        stored(LIVE / "forecasts.csv", day),
-        stored(LIVE / "dnn_forecasts.csv", day),
-    )
-    records, reason = [], ""
-    if values is not None and dnn_values is not None and not args.day:
+def forecast(day: pd.Timestamp) -> None:
+    """Forecast ``day`` with each model that has no forecast of it yet."""
+    values = stored(LIVE / "forecasts.csv", day)
+    dnn_values = stored(LIVE / "dnn_forecasts.csv", day)
+    if values is not None and dnn_values is not None:
         print(f"{day.date()}: already forecast")
-    else:
-        source = EntsoeSource()
-        raw = {name: update_raw(source, name, day) for name in source.columns}
-        frame = live_frame(raw, day)
+        return
+    source = EntsoeSource()
+    raw = {name: update_raw(source, name, day) for name in source.columns}
+    frame = live_frame(raw, day)
+    if values is None:
         values = forecast_day(frame, day)
-        dnn_values, records = dnn_forecast(frame, day) if values is not None else (None, [])
-        end = (day + pd.Timedelta(days=1)).tz_localize(TZ)
-        unpublished = [n for n in EXOGENOUS if raw[n].index[-1] + pd.Timedelta(hours=1) < end]
-        reason = (
-            f"{' and '.join(unpublished)} not published yet"
-            if unpublished
-            else "an input of the previous days is missing"
-        )
-    print(
-        f"{day.date()}: "
-        + ("LEAR ensemble" if values is not None else reason)
-        + (", DNN ensemble" if dnn_values is not None else "")
-    )
-    if values is not None:
-        LIVE.mkdir(parents=True, exist_ok=True)
-        append(LIVE / "forecasts.csv", day, values)
+        if values is not None:
+            LIVE.mkdir(parents=True, exist_ok=True)
+            append(LIVE / "forecasts.csv", day, values)
+    records = []
+    if values is not None and dnn_values is None:
+        dnn_values, records = dnn_forecast(frame, day)
     if records:
         append(LIVE / "dnn_forecasts.csv", day, dnn_values)
         path = RESULTS_DIR / "dnn" / "live" / "summary.csv"
@@ -241,13 +289,41 @@ def main() -> None:
         if len(old):
             old = old[~((old["date"] == str(day.date())) & old["dnn"].isin(new["dnn"]))]
         pd.concat([old, new]).to_csv(path, index=False)
-    today = day - pd.Timedelta(days=1)
-    try:
+    if values is None:
+        end = (day + pd.Timedelta(days=1)).tz_localize(TZ)
+        unpublished = [n for n in EXOGENOUS if raw[n].index[-1] + pd.Timedelta(hours=1) < end]
+        reason = (
+            f"{' and '.join(unpublished)} not published yet"
+            if unpublished
+            else "an input of the previous days is missing"
+        )
+        print(f"{day.date()}: {reason}")
+    else:
+        print(f"{day.date()}: LEAR ensemble" + (", DNN ensemble" if dnn_values is not None else ""))
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--day", help="delivery day (default: tomorrow, Brussels time)")
+    parser.add_argument("--page-only", action="store_true", help="only refresh the page")
+    args = parser.parse_args()
+    now = pd.Timestamp.now(tz=TZ)
+    tomorrow = now.tz_localize(None).normalize() + pd.Timedelta(days=1)
+    day = pd.Timestamp(args.day) if args.day else tomorrow
+    if not args.page_only:
+        forecast(day)
+    today = tomorrow - pd.Timedelta(days=1)
+    try:  # SMARD unreachable: the forecasts are still stored
+        update_realised(today)
         comparison = compare(today)
-    except OSError as err:  # SMARD unreachable: tomorrow's forecasts are still stored
-        print(f"no comparison: {err}")
+    except OSError as err:
+        print(f"no realised prices: {err}")
         comparison = None
-    write_page(today, comparison, now)
+    report = None
+    if REALISED.exists():
+        files = {"lear": LIVE / "forecasts.csv", "dnn": LIVE / "dnn_forecasts.csv"}
+        report = live_errors(files, REALISED, LIVE_START)
+    write_page(today, comparison, report, now)
 
 
 if __name__ == "__main__":

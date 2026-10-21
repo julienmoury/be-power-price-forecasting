@@ -8,8 +8,8 @@ advance. In this project I took the reference benchmark of the field (Lago et al
 checked that I get the same results as the paper, and then ran it, unchanged, on the ten
 years that followed, to see whether it still holds on today's market.
 
-**[Live page: today's forecasts against today's prices](live/README.md)**, updated every
-evening.
+**[Live page](live/README.md)**: the forecasts of every day since 1 October 2026, against
+the realised prices, updated every evening.
 
 ## In short
 
@@ -49,10 +49,12 @@ tells whether one model is really better or just lucky on this sample.
 3. **Extended it to today** with ENTSO-E data, from 2017 to September 2026: the 2022
    crisis, negative prices ({{phase_b/accuracy/negative hours %|.1f}} % of hours) and the switch to
    quarter-hours. Nothing was re-tuned.
-4. **Made it run on its own.** Every evening a GitHub Actions job downloads the new data,
-   retrains the models, forecasts the next day and updates the live page. A small API
-   (FastAPI, in Docker) serves the forecasts to my
-   [storage project](https://github.com/julienmoury/storage-dispatch).
+4. **Made it run on its own.** Since 1 October 2026, the day after the backtest ends, a
+   GitHub Actions job downloads the new data every evening, retrains the models, forecasts
+   the next day and updates the live page. The errors since 1 October are computed in SQL
+   (DuckDB). A small API (FastAPI, in Docker) serves the forecasts to my
+   [storage project](https://github.com/julienmoury/storage-dispatch), which runs a battery
+   on them every evening.
 
 ## Results
 
@@ -132,7 +134,8 @@ src/be_power_forecast/
   models/       LEAR and DNN (adapted from epftoolbox)
   evaluation/   error measures, Diebold-Mariano and Giacomini-White tests
   api/          FastAPI service, with the naive forecast as fallback
-  live.py       daily forecast and live page
+  live.py       daily forecast
+  sql/          live errors in SQL (DuckDB), run by live_report.py
 scripts/        backtests, report, live forecast
 tests/          unit tests and checks against the original code (run in CI)
 ```

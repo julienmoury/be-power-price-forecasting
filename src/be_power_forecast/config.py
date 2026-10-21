@@ -32,6 +32,9 @@ PHASE_B_TEST = ("2017-01-01", "2026-09-30")
 # hours (data/calendar.py).
 QUARTER_HOUR_START = "2025-10-01"
 
+# Live forecasts: from the day after the phase B test period.
+LIVE_START = "2026-10-01"
+
 # Exogenous inputs, as in Lago et al. (2021) for Belgium: French day-ahead forecasts.
 EXOGENOUS = ["Generation forecast FR", "Load forecast FR"]
 

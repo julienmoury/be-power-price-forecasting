@@ -20,6 +20,7 @@ dependencies = [
     "threadpoolctl>=3.1",
     "requests>=2.28",
     "pyarrow>=14",
+    "duckdb>=1.0",
     # DNN of Lago et al. (2021); no wheel for Python 3.14 yet (use 3.11-3.13).
     "tensorflow>=2.16",
     "keras>=3",
@@ -31,6 +32,9 @@ api = ["fastapi>=0.110", "uvicorn>=0.27", "httpx>=0.26", "pydantic>=2.5"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+be_power_forecast = ["sql/*.sql"]
 
 [tool.ruff]
 line-length = 100

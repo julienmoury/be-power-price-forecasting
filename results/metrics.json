@@ -275,10 +275,6 @@
   "training": {
    "trainings": 2912,
    "epochs_mean": 161.73626373626374,
-   "cpu": [
-    "x86_64"
-   ],
-   "machines": 1,
    "commits": [
     "d987d43"
    ],
@@ -362,10 +358,6 @@
    "training": {
     "trainings": 14092,
     "epochs_mean": 148.544777178541,
-    "cpu": [
-     "x86_64"
-    ],
-    "machines": 1,
     "commits": [
      "4ee9d02",
      "d987d43"
@@ -392,102 +384,6 @@
   ],
   "hours": 8760,
   "perfect_hourly_forecast_MAE": 7.910800228310502
- },
- "load_test": {
-  "setup": {
-   "image_id": "sha256:ed71ea3d0657",
-   "image_size_MB": 1177.652727,
-   "docker_version": "29.8.2",
-   "docker_cpus": 8,
-   "docker_memory_GB": 4.106604544,
-   "host": "Darwin arm64",
-   "duration_s": 30,
-   "uvicorn_workers": 1
-  },
-  "scenarios": {
-   "normal": {
-    "health": {
-     "status": "ok",
-     "lear_forecasts": true,
-     "prices": true,
-     "first_day": "2019-01-01",
-     "last_day": "2026-10-01"
-    },
-    "levels": [
-     {
-      "clients": 1,
-      "requests": 10329,
-      "throughput_rps": 344.26666829626356,
-      "p50_ms": 2.8797499999200227,
-      "p95_ms": 3.73961680015782,
-      "p99_ms": 4.5182717604620795,
-      "errors": 0,
-      "fallback_share": 0.011133701229547875
-     },
-     {
-      "clients": 10,
-      "requests": 26546,
-      "throughput_rps": 884.5666597509959,
-      "p50_ms": 6.927645499672508,
-      "p95_ms": 36.7481562498142,
-      "p99_ms": 64.28669389970304,
-      "errors": 0,
-      "fallback_share": 0.013862728848037369
-     },
-     {
-      "clients": 50,
-      "requests": 16351,
-      "throughput_rps": 543.8436677688172,
-      "p50_ms": 61.40866599889705,
-      "p95_ms": 271.1342295006034,
-      "p99_ms": 429.17485399902944,
-      "errors": 0,
-      "fallback_share": 0.012476301143660938
-     }
-    ]
-   },
-   "degraded": {
-    "health": {
-     "status": "ok",
-     "lear_forecasts": false,
-     "prices": true,
-     "first_day": "2019-01-01",
-     "last_day": "2026-10-01"
-    },
-    "levels": [
-     {
-      "clients": 1,
-      "requests": 10201,
-      "throughput_rps": 340.01058143462024,
-      "p50_ms": 2.8962500000488944,
-      "p95_ms": 3.818541001237463,
-      "p99_ms": 4.755917001602938,
-      "errors": 0,
-      "fallback_share": 1.0
-     },
-     {
-      "clients": 10,
-      "requests": 25967,
-      "throughput_rps": 865.4047578309243,
-      "p50_ms": 6.9147089998296,
-      "p95_ms": 37.2968543002571,
-      "p99_ms": 68.12812778010995,
-      "errors": 0,
-      "fallback_share": 1.0
-     },
-     {
-      "clients": 50,
-      "requests": 17191,
-      "throughput_rps": 571.9394039001367,
-      "p50_ms": 58.41095800133189,
-      "p95_ms": 260.60318799954985,
-      "p99_ms": 422.0693161001686,
-      "errors": 0,
-      "fallback_share": 1.0
-     }
-    ]
-   }
-  }
  },
  "missing": [],
  "data_report": {

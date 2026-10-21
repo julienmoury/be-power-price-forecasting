@@ -130,8 +130,6 @@ def dnn_block(phase: str, real, lear_ens, naive, missing: list[str], published=N
         out["training"] = {
             "trainings": len(rec),
             "epochs_mean": float(rec["epochs"].mean()),
-            "cpu": sorted(rec["cpu"].unique()),
-            "machines": int(rec["host"].nunique()),
             "commits": sorted(c[:7] for c in rec["commit"].unique()),
             "tensorflow": sorted(rec["tensorflow"].unique()),
             "vcpu_hours": float(rec["seconds"].sum() / 3600),
@@ -418,18 +416,6 @@ def main() -> None:
             "```",
             "",
         ]
-    load_test = ROOT / "results" / "load_test.json"  # written by scripts/load_test.py
-    if load_test.exists():
-        out["load_test"] = json.loads(load_test.read_text())
-        md += [
-            "## Load test of the containerised service",
-            "```",
-            json.dumps(out["load_test"], indent=1),
-            "```",
-            "",
-        ]
-    else:
-        missing.append("load_test (run scripts/load_test.py)")
     if missing:
         md.append(f"Missing experiments: {sorted(set(missing))}")
     out["missing"] = sorted(set(missing))

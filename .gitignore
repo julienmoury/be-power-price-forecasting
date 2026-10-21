@@ -12,7 +12,7 @@ dist/
 data/processed/
 data/raw/*.parquet
 results/run_log.txt
-# Raw ENTSO-E downloads (never committed), MLflow runs, pickled production models
+# Raw ENTSO-E downloads (never committed), pickled production models
 data/cache/
 mlruns/
 /models/

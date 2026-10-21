@@ -5,7 +5,7 @@ it, and write
 * ``<record-dir>/<phase>/<dnn>/<date>.json``: forecast, seed, sample sizes, the training
   history (per epoch: training loss, validation loss, validation MAE), the epoch kept,
   SHA-256 of the input window, of the validation draw and of the final weights, run time,
-  machine and library versions, code commit
+  library versions, code commit
   (``-dirty`` if src/ or scripts/ had uncommitted changes);
 * ``<record-dir>/<phase>/<dnn>/<date>.npz``: the final weights (``np.load`` + Keras
   ``set_weights`` restores the network that made the forecast).
@@ -28,7 +28,6 @@ import json
 import multiprocessing as mp
 import os
 import platform
-import socket
 import subprocess
 import time
 from concurrent.futures import ProcessPoolExecutor
@@ -76,15 +75,7 @@ def environment() -> dict:
         commit = commit.stdout.strip() + ("-dirty" if status.stdout.strip() else "")
     except OSError:
         commit = ""
-    cpu = platform.processor()
-    if Path("/proc/cpuinfo").exists():
-        names = [x for x in Path("/proc/cpuinfo").read_text().splitlines() if "model name" in x]
-        cpu = names[0].split(":", 1)[1].strip() if names else cpu
     return {
-        "host": socket.gethostname(),
-        "platform": platform.platform(),
-        "cpu": cpu,
-        "cpu_count": os.cpu_count(),
         "python": platform.python_version(),
         "commit": os.environ.get("GIT_COMMIT", commit),
         **{lib: version(lib) for lib in ("tensorflow", "keras", "numpy", "scikit-learn")},

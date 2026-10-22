@@ -1,8 +1,8 @@
-# Adapted from EnergieID/entsoe-py by EnergieID cvba-so and contributors (MIT) — changes:
+# Adapted from the ENTSO-E client of EnergieID cvba-so and contributors (MIT) — changes:
 # kept only the request parameters of documents A44, A65 and A71 and the area codes
 # of BE and FR; one simple retry with back-off instead of the decorators; requests split
-# in calendar years (A44) or calendar months (A65, A71, as entsoe-py's
-# ``month_limited`` at commit 0cae400); token read from ENTSOE_API_KEY only.
+# in calendar years (A44) or calendar months (A65, A71, as in the
+# original client); token read from ENTSOE_API_KEY only.
 """Minimal client of the ENTSO-E Transparency Platform RESTful API."""
 
 from __future__ import annotations
@@ -117,8 +117,8 @@ def _aware(ts) -> pd.Timestamp:
 
 def _parse(kind: str, text: str) -> pd.Series:
     if kind == "prices":
-        # As entsoe-py: before the 15-minute go-live, every resolution (some hourly days
-        # are published as PT15M) is reduced to hours by taking the first value.
+        # As in the original client: before the 15-minute go-live, every resolution (some
+        # hourly days are published as PT15M) is reduced to hours by taking the first value.
         s = pd.concat([x for x in parse_prices(text).values() if len(x)]).sort_index()
         hourly = s[s.index < QUARTER_HOUR_GO_LIVE].resample("1h").first().dropna()
         return pd.concat([hourly, s[s.index >= QUARTER_HOUR_GO_LIVE]])

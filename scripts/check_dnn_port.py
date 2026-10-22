@@ -21,7 +21,7 @@ import pandas as pd
 from run_dnn import _init_worker, environment
 
 from be_power_forecast.config import RESULTS_DIR
-from be_power_forecast.data.sources import EpftoolboxZenodoSource
+from be_power_forecast.data.sources import LagoZenodoSource
 from be_power_forecast.models.dnn import HourlyInputs, forecast_day, load_hyperparameters
 
 REF = Path(__file__).resolve().parents[1] / "tests" / "reference" / "original_dnn_reference.csv"
@@ -30,7 +30,7 @@ TOLERANCE = 1e-6
 
 def run(job):
     name, day = job
-    inputs = HourlyInputs.from_frame(EpftoolboxZenodoSource("BE").load())
+    inputs = HourlyInputs.from_frame(LagoZenodoSource("BE").load())
     t = inputs.dates.get_loc(pd.Timestamp(day))
     forecast, record, _ = forecast_day(inputs, t, load_hyperparameters()[name])
     return forecast, record["epochs"]

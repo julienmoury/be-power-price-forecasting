@@ -1,4 +1,4 @@
-# Adapted from jeslago/epftoolbox (epftoolbox/evaluation/_dm.py) by Jesus Lago (Apache-2.0)
+# Adapted from the code of Lago et al. (2021), by Jesus Lago (Apache-2.0)
 # — changes: plotting removed (see be_power_forecast.report); returns the statistic as well
 # as the p-value; adds a pairwise matrix helper.
 """Diebold-Mariano test for day-ahead forecasts (Diebold & Mariano, 1995).

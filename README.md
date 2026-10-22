@@ -42,7 +42,7 @@ tells whether one model is really better or just lucky on this sample.
 
 ## What I did
 
-1. **Ported the code.** The paper's code (`epftoolbox`) no longer runs with recent
+1. **Ported the code.** The paper's code no longer runs with recent
    libraries. I rewrote the parts I needed and checked them against the original code:
    same LEAR forecasts to 10⁻⁶ EUR/MWh, same DNN training to 5e-09 EUR/MWh.
 2. **Reproduced the paper** on its Belgian dataset (2011–2016).
@@ -117,8 +117,8 @@ the reproduction clean. To turn this into a forecast usable today, I would:
 1. **Forecast before the auction from Belgian fundamentals**: Belgian load, wind and solar
    forecasts, weather and the gas price. Wind and solar push the price down and gas plants
    often set it (the merit order).
-2. **Add the other coupled markets** (Netherlands, Germany), which Lago et al. (2018) show
-   improve the Belgian forecast.
+2. **Add the other coupled markets** (Netherlands, Germany), whose prices move with the
+   Belgian one.
 3. **Forecast the 96 quarter-hours directly.**
 4. **Check what the model learned** (SHAP values): does it react to wind and gas as the
    merit order says it should?
@@ -131,7 +131,7 @@ test.
 ```
 src/be_power_forecast/
   data/         ENTSO-E download, daylight-saving and quarter-hour handling
-  models/       LEAR and DNN (adapted from epftoolbox)
+  models/       LEAR and DNN (adapted from the paper's code)
   evaluation/   error measures, Diebold-Mariano and Giacomini-White tests
   api/          FastAPI service, with the naive forecast as fallback
   live.py       daily forecast
@@ -155,20 +155,11 @@ python scripts/run_experiments.py --phase B # backtests 2017–2026 (long)
 python scripts/make_report.py               # metrics.json, figure, README
 ```
 
-## References
+## Reference
 
 - J. Lago, G. Marcjasz, B. De Schutter, R. Weron (2021). *Forecasting day-ahead
   electricity prices: A review of state-of-the-art algorithms, best practices and an
   open-access benchmark.* Applied Energy 293, 116983.
-- J. Lago, F. De Ridder, P. Vrancx, B. De Schutter (2018). *Forecasting day-ahead
-  electricity prices in Europe: The importance of considering market integration.* Applied
-  Energy 211, 890–903.
-- B. Uniejewski, J. Nowotarski, R. Weron (2016). *Automated variable selection and
-  shrinkage for day-ahead electricity price forecasting.* Energies 9(8), 621.
-- R. Giacomini, H. White (2006). *Tests of conditional predictive ability.* Econometrica
-  74(6), 1545–1578.
-- Code adapted from [jeslago/epftoolbox](https://github.com/jeslago/epftoolbox)
-  (Apache-2.0) and [EnergieID/entsoe-py](https://github.com/EnergieID/entsoe-py) (MIT):
-  see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+- Licences of the adapted code: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 - Data: Zenodo record [4624805](https://zenodo.org/records/4624805), ENTSO-E Transparency
   Platform, SMARD.de.

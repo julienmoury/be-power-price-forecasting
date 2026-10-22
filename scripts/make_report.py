@@ -20,7 +20,7 @@ from be_power_forecast.data.sources import (
     BE_TEST_BEGIN,
     BE_TEST_END,
     EntsoeSource,
-    EpftoolboxZenodoSource,
+    LagoZenodoSource,
 )
 from be_power_forecast.evaluation.dm import dm_matrix, dm_test
 from be_power_forecast.evaluation.gw import gw_matrix, gw_test
@@ -242,7 +242,7 @@ def monthly_figure(phase_a: tuple, phase_b_frames: tuple | None) -> None:
 
 def main() -> None:
     FIG.mkdir(parents=True, exist_ok=True)
-    df = EpftoolboxZenodoSource("BE").load()
+    df = LagoZenodoSource("BE").load()
     real = daily_prices(df, BE_TEST_BEGIN, BE_TEST_END)
     # Naive forecast needs the week before the test period.
     hist = daily_prices(df, pd.Timestamp(BE_TEST_BEGIN) - pd.Timedelta(days=7), BE_TEST_END)
@@ -351,7 +351,7 @@ def main() -> None:
 
     # Published results of the paper, quoted next to ours.
     out["published_reference"] = {
-        "source": "Lago et al. (2021), forecasts published in jeslago/epftoolbox",
+        "source": "Lago et al. (2021), published forecasts",
         "MAE": {k: mae(real, pub_daily[k]) for k in ("LEAR Ensemble", "DNN Ensemble")},
     }
     md += [

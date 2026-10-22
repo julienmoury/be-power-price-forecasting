@@ -1,4 +1,4 @@
-# Adapted from EnergieID/entsoe-py by EnergieID cvba-so and contributors (MIT) — changes:
+# Adapted from the ENTSO-E client of EnergieID cvba-so and contributors (MIT) — changes:
 # xml.etree.ElementTree instead of BeautifulSoup (namespace-agnostic tag matching); kept
 # only the parsers of day-ahead prices (A44), load forecasts (A65) and generation
 # forecasts (A71); PT15M/PT30M/PT60M resolutions only; series
@@ -105,7 +105,7 @@ def parse_generation(xml_text: str) -> pd.DataFrame:
 
     One column per production type code when the document has one, else ``Actual
     Aggregated``; series measured as consumption (``outBiddingZone_Domain``) get the suffix
-    `` (consumption)``. Duplicated timestamps keep the first value, as in entsoe-py.
+    `` (consumption)``. Duplicated timestamps keep the first value, as in the original client.
     """
     columns: dict[str, list[pd.Series]] = {}
     for ts in _extract_timeseries(xml_text):

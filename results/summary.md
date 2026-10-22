@@ -61,7 +61,7 @@
 ## Published results quoted for reference (MAE)
 ```
 {
- "source": "Lago et al. (2021), forecasts published in jeslago/epftoolbox",
+ "source": "Lago et al. (2021), published forecasts",
  "MAE": {
   "LEAR Ensemble": 6.140060611263736,
   "DNN Ensemble": 5.869865859211076

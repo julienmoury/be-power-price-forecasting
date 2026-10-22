@@ -1,4 +1,4 @@
-# Adapted from jeslago/epftoolbox (epftoolbox/models/_dnn.py) by Jesus Lago (Apache-2.0)
+# Adapted from the code of Lago et al. (2021), by Jesus Lago (Apache-2.0)
 # — changes: Keras 3 API (``learning_rate`` instead of ``lr``, no ``batch_input_shape`` on
 # hidden layers, ``negative_slope`` for LeakyReLU); samples built with numpy index arithmetic
 # instead of per-timestamp look-ups (same features, same order); the weekly validation

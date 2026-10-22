@@ -1,7 +1,7 @@
 """DNN port: samples identical to the original code, early stopping, seeding, records.
 
 tests/reference/original_dnn_samples.json holds the SHA-256 of the training, validation
-and test arrays built by the *original* epftoolbox code (scripts/make_original_dnn_reference.py
+and test arrays built by the paper's *original* code (scripts/make_original_dnn_reference.py
 --samples); they depend on the data only, not on the machine.
 """
 
@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from be_power_forecast.data.sources import EpftoolboxZenodoSource
+from be_power_forecast.data.sources import LagoZenodoSource
 from be_power_forecast.models import dnn
 from be_power_forecast.models.scaling import InvariantScaler, MedianScaler, make_scaler
 
@@ -23,7 +23,7 @@ SAMPLES = json.loads((REF / "original_dnn_samples.json").read_text())
 
 @pytest.fixture(scope="module")
 def inputs():
-    return dnn.HourlyInputs.from_frame(EpftoolboxZenodoSource("BE").load())
+    return dnn.HourlyInputs.from_frame(LagoZenodoSource("BE").load())
 
 
 def test_published_hyperparameters():

@@ -1,4 +1,4 @@
-"""Run the ORIGINAL epftoolbox DNN on a few BE test days and save its forecasts to
+"""Run the paper's ORIGINAL DNN on a few BE test days and save its forecasts to
 tests/reference/original_dnn_reference.csv (reference for scripts/check_dnn_port.py).
 
 The original module is executed with the mechanical Keras 3 fixes only (``learning_rate``
@@ -10,7 +10,7 @@ number of epochs of each training is saved with the forecast. ``--samples`` only
 SHA-256 of the training, validation and test arrays of the same days
 (tests/reference/original_dnn_samples.json, machine-independent, checked in CI).
 
-Reproducibility (not part of the package or CI): a clone of jeslago/epftoolbox at commit
+Reproducibility (not part of the package or CI): a clone of the paper's code at commit
 47d6e06 and a Python 3.12 environment with tensorflow, keras, pandas, scikit-learn and
 statsmodels; results depend on the machine (float rounding of TensorFlow kernels), so the
 port must be checked on the machine that produced the reference:

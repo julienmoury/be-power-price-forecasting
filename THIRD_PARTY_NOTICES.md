@@ -3,36 +3,36 @@
 This repository contains code adapted from the projects listed below. Each adapted file
 starts with a header naming its source, authors, license and the changes made.
 
-## jeslago/epftoolbox
+## Code of Lago et al. (2021)
 
-- Source: https://github.com/jeslago/epftoolbox (commit `47d6e06`, 25 Oct 2025)
+- Source: the code published with the paper (commit `47d6e06`, 25 Oct 2025)
 - Authors: Jesus Lago, Grzegorz Marcjasz, Bart De Schutter, Rafał Weron
 - License: Apache License 2.0 (repository `LICENSE` file, introduced by the author in
   commit `82900ec`, 13 Nov 2023, "Change license to Apache 2.0"). Some per-file headers,
-  `setup.py` and the README of epftoolbox still mention AGPL-3.0; these predate the
+  `setup.py` and the README of that code still mention AGPL-3.0; these predate the
   relicensing. The code reused here was taken from the Apache-2.0 licensed commit.
-- No NOTICE file is distributed with epftoolbox.
+- No NOTICE file is distributed with that code.
 
 Adapted files and modifications (Apache-2.0 §4(b)):
 
 | File in this repository | Original file(s) | Modifications |
 |---|---|---|
-| `src/be_power_forecast/models/lear.py` | `epftoolbox/models/_lear.py` | Vectorised feature construction (same features, same order); configurable lags for ablations; re-implementation of the scikit-learn < 1.2 `LassoLarsIC(criterion="aic", normalize=True)` penalty selection on top of `lars_path`; removed file I/O and printing. |
-| `src/be_power_forecast/models/scaling.py` | `epftoolbox/data/_wrangling.py` | Kept the median/MAD and asinh scalers and the name-to-scaler mapping of `DataScaler`; vectorised; zero-MAD guard; errors instead of prints. |
-| `src/be_power_forecast/models/dnn.py` | `epftoolbox/models/_dnn.py` | Keras 3 API (`learning_rate`, no `batch_input_shape` on hidden layers, `negative_slope`); samples built with numpy index arithmetic (same features, same order); vectorised weekly validation shuffle (same permutation); hyperparameters read from a JSON extract of the published trial files; numpy seeded before each day's validation draw, Python and TensorFlow seeded too; samples touching dropped days removed; training history and weight hash returned; no file I/O or printing. |
-| `src/be_power_forecast/evaluation/metrics.py` | `epftoolbox/evaluation/_mae.py`, `_smape.py`, `_rmae.py`, `_ancillary_functions.py` | Inputs restricted to `(n_days, 24)` arrays/frames; vectorised naive forecast; no type-dispatch helpers. |
-| `src/be_power_forecast/evaluation/dm.py` | `epftoolbox/evaluation/_dm.py` | Plotting removed; returns statistic and p-value; pairwise matrix helper. |
-| `src/be_power_forecast/evaluation/gw.py` | `epftoolbox/evaluation/_gw.py` | Plotting removed; returns statistic and p-value; `(T, T)` broadcast of the regression residuals replaced by the equivalent `(T,)` vector; pairwise matrix helper. |
+| `src/be_power_forecast/models/lear.py` | `models/_lear.py` | Vectorised feature construction (same features, same order); configurable lags for ablations; re-implementation of the scikit-learn < 1.2 `LassoLarsIC(criterion="aic", normalize=True)` penalty selection on top of `lars_path`; removed file I/O and printing. |
+| `src/be_power_forecast/models/scaling.py` | `data/_wrangling.py` | Kept the median/MAD and asinh scalers and the name-to-scaler mapping of `DataScaler`; vectorised; zero-MAD guard; errors instead of prints. |
+| `src/be_power_forecast/models/dnn.py` | `models/_dnn.py` | Keras 3 API (`learning_rate`, no `batch_input_shape` on hidden layers, `negative_slope`); samples built with numpy index arithmetic (same features, same order); vectorised weekly validation shuffle (same permutation); hyperparameters read from a JSON extract of the published trial files; numpy seeded before each day's validation draw, Python and TensorFlow seeded too; samples touching dropped days removed; training history and weight hash returned; no file I/O or printing. |
+| `src/be_power_forecast/evaluation/metrics.py` | `evaluation/_mae.py`, `_smape.py`, `_rmae.py`, `_ancillary_functions.py` | Inputs restricted to `(n_days, 24)` arrays/frames; vectorised naive forecast; no type-dispatch helpers. |
+| `src/be_power_forecast/evaluation/dm.py` | `evaluation/_dm.py` | Plotting removed; returns statistic and p-value; pairwise matrix helper. |
+| `src/be_power_forecast/evaluation/gw.py` | `evaluation/_gw.py` | Plotting removed; returns statistic and p-value; `(T, T)` broadcast of the regression residuals replaced by the equivalent `(T,)` vector; pairwise matrix helper. |
 
 Data and reference files from the same project:
 
 - `data/raw/BE.csv`: Belgian benchmark dataset of Lago et al. (2021), Zenodo record
   https://zenodo.org/records/4624805 (file `BE.csv`, SHA-256
   `e05ce0b1d869bff23d81faac4737c623bfeedc65c1965d792c8b509e20c65a20`).
-- `tests/reference/Forecasts_BE_DNN_LEAR_ensembles.csv`: forecasts published in the
-  epftoolbox repository (`forecasts/`), unmodified.
+- `tests/reference/Forecasts_BE_DNN_LEAR_ensembles.csv`: forecasts published with the
+  paper's code (`forecasts/`), unmodified.
 - `data/raw/dnn_hyperparameters_BE.json`: best trial of each of the four BE hyperopt
-  trial files of the epftoolbox repository (`examples/experimental_files/`), decoded as
+  trial files of the paper's code (`examples/experimental_files/`), decoded as
   `format_best_trial` does (`scripts/make_dnn_hyperparameters.py`, SHA-256 of each file
   recorded).
 
@@ -242,9 +242,9 @@ Data and reference files from the same project:
    limitations under the License.
 ```
 
-## EnergieID/entsoe-py
+## ENTSO-E client of EnergieID
 
-- Source: https://github.com/EnergieID/entsoe-py (commit `0cae400`, 4 Sep 2026)
+- Source: open-source ENTSO-E client (commit `0cae400`, 4 Sep 2026)
 - Authors: EnergieID cvba-so and contributors
 - License: MIT (repository `LICENSE` file, reproduced below)
 

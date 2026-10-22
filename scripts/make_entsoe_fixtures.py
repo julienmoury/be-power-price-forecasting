@@ -1,6 +1,6 @@
 """Write the synthetic ENTSO-E XML fixtures of tests/fixtures/entsoe/.
 
-The documents follow the ENTSO-E schema as read by entsoe-py (TimeSeries, Period,
+The documents follow the ENTSO-E schema as read by the original client (TimeSeries, Period,
 timeInterval, resolution, Point/position, value tag) but every value is synthetic, drawn
 from a seeded generator: no real ENTSO-E data is committed.
 """

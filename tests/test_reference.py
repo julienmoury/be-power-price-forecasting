@@ -1,6 +1,6 @@
-"""The adapted building blocks reproduce the original epftoolbox code.
+"""The adapted building blocks reproduce the paper's original code.
 
-References in tests/reference/ were produced by running the *original* epftoolbox code
+References in tests/reference/ were produced by running the paper's *original* code
 (commit 47d6e06) under scikit-learn 0.23.2; see scripts/make_original_*.py.
 """
 
@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from be_power_forecast.data.sources import EpftoolboxZenodoSource
+from be_power_forecast.data.sources import LagoZenodoSource
 from be_power_forecast.evaluation.dm import dm_test
 from be_power_forecast.evaluation.gw import gw_test
 from be_power_forecast.evaluation.metrics import mae, rmae, smape
@@ -22,7 +22,7 @@ REF = Path(__file__).parent / "reference"
 
 @pytest.fixture(scope="module")
 def features():
-    df = EpftoolboxZenodoSource("BE").load()
+    df = LagoZenodoSource("BE").load()
     X, Y, dates = build_features(df)
     return X, Y, {d: i for i, d in enumerate(dates)}
 

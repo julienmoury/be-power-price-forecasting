@@ -1,8 +1,8 @@
-"""Parse the XML fixtures with the ORIGINAL entsoe-py parsers (reference for the adapted ones).
+"""Parse the XML fixtures with the ORIGINAL client's parsers (reference for the adapted ones).
 
 Not run in CI. Run once in a throw-away virtual environment:
 
-    git clone https://github.com/EnergieID/entsoe-py && git -C entsoe-py checkout 0cae400
+    # the original ENTSO-E client, checked out at commit 0cae400 in ./entsoe-py
     python -m venv /tmp/entsoe-ref && /tmp/entsoe-ref/bin/pip install ./entsoe-py
     /tmp/entsoe-ref/bin/python scripts/make_entsoe_reference.py
 

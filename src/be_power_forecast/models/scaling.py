@@ -1,4 +1,4 @@
-# Adapted from jeslago/epftoolbox (epftoolbox/data/_wrangling.py) by Jesus Lago (Apache-2.0)
+# Adapted from the code of Lago et al. (2021), by Jesus Lago (Apache-2.0)
 # — changes: kept the median/MAD and asinh ("Invariant") scalers and the name -> scaler
 # mapping of DataScaler, vectorised the column loops, raise on misuse instead of printing,
 # guard against zero MAD.
@@ -44,7 +44,7 @@ class InvariantScaler(MedianScaler):
 
 
 def make_scaler(name: str):
-    """Scaler named as in epftoolbox's ``DataScaler``; ``None`` for ``"No"`` (no scaling)."""
+    """Scaler named as in the original ``DataScaler``; ``None`` for ``"No"`` (no scaling)."""
     scalers = {
         "Norm": lambda: MinMaxScaler(feature_range=(0, 1)),
         "Norm1": lambda: MinMaxScaler(feature_range=(-1, 1)),

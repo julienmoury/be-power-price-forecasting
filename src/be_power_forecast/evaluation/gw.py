@@ -1,4 +1,4 @@
-# Adapted from jeslago/epftoolbox (epftoolbox/evaluation/_gw.py) by Jesus Lago (Apache-2.0)
+# Adapted from the code of Lago et al. (2021), by Jesus Lago (Apache-2.0)
 # — changes: plotting removed; returns the statistic as well as the p-value; the (T, T)
 # broadcast of the regression residuals is replaced by the equivalent (T,) vector; adds a
 # pairwise matrix helper.

@@ -59,7 +59,7 @@ def validate_standard_frame(df: pd.DataFrame, allow_missing_days: bool = False) 
     return df
 
 
-class EpftoolboxZenodoSource(PriceSource):
+class LagoZenodoSource(PriceSource):
     """Benchmark datasets of Lago et al. (2021), published on Zenodo (record 4624805).
 
     For ``BE`` the columns are: day-ahead price in Belgium (EUR/MWh), and the day-ahead
@@ -148,7 +148,7 @@ class JoinedSource(PriceSource):
         recent: PriceSource | None = None,
         join_day: str = JOIN_DAY,
     ):
-        self.paper = paper or EpftoolboxZenodoSource()
+        self.paper = paper or LagoZenodoSource()
         self.recent = recent or EntsoeSource()
         self.join_day = pd.Timestamp(join_day)
 

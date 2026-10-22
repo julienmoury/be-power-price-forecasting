@@ -1,7 +1,7 @@
-# Adapted from jeslago/epftoolbox (epftoolbox/evaluation/_mae.py, _smape.py, _rmae.py,
-# _ancillary_functions.py) by Jesus Lago (Apache-2.0) — changes: inputs restricted to
-# arrays/frames of shape (n_days, 24) indexed by day; naive forecast written with vectorised
-# day-of-week shifts; rMAE accepts the naive benchmark explicitly; no type-dispatch helpers.
+# Adapted from the code of Lago et al. (2021), by Jesus Lago (Apache-2.0) — changes: inputs
+# restricted to arrays/frames of shape (n_days, 24) indexed by day; naive forecast written
+# with vectorised day-of-week shifts; rMAE accepts the naive benchmark explicitly; no
+# type-dispatch helpers.
 """Point-forecast error metrics used in the electricity price forecasting literature."""
 
 from __future__ import annotations
@@ -59,7 +59,7 @@ def naive_forecast(prices: pd.DataFrame, m: str | None = None) -> pd.DataFrame:
 def rmae(p_real: pd.DataFrame, p_pred: pd.DataFrame, m: str | None = None) -> float:
     """Relative MAE: MAE of the forecast divided by the MAE of the naive forecast.
 
-    As in epftoolbox, the naive MAE is computed over the same price series ``p_real``
+    As in Lago et al. (2021), the naive MAE is computed over the same price series ``p_real``
     (the first week, which has no naive forecast, is excluded from the denominator only).
     """
     naive = naive_forecast(p_real, m=m)

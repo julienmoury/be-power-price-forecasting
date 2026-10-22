@@ -20,7 +20,7 @@ import pandas as pd
 
 from be_power_forecast.config import RESULTS_DIR, TZ
 from be_power_forecast.data.compare import compare, largest_daily_gaps, local_hourly, monthly
-from be_power_forecast.data.sources import EntsoeSource, EpftoolboxZenodoSource
+from be_power_forecast.data.sources import EntsoeSource, LagoZenodoSource
 
 OVERLAP = ("2015-01-01", "2016-12-31")
 UNITS = {"Price": "EUR/MWh", "Generation forecast FR": "MW", "Load forecast FR": "MW"}
@@ -143,7 +143,7 @@ def to_markdown(rep: dict, months: dict) -> str:
 
 
 def main() -> None:
-    csv = EpftoolboxZenodoSource().load()
+    csv = LagoZenodoSource().load()
     entsoe = EntsoeSource()  # phase B download window, read from the cache
     # Same bounds as a download of the overlap only: local Brussels days, end day included.
     lo = pd.Timestamp(OVERLAP[0], tz=TZ)

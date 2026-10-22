@@ -1,11 +1,11 @@
-"""Evaluate the published BE forecasts with the ORIGINAL epftoolbox metric code and save
+"""Evaluate the published BE forecasts with the paper's ORIGINAL metric code and save
 the values to tests/reference/original_metrics_reference.json.
 
-Reproducibility (not part of the package or CI): needs a clone of jeslago/epftoolbox at
+Reproducibility (not part of the package or CI): needs a clone of the paper's code at
 commit 47d6e06 and a Python 3.8 environment with scikit-learn==0.23.2, numpy==1.19.5,
 pandas==1.1.5, scipy==1.5.4, statsmodels==0.12.1, matplotlib==3.3.4 (e.g. with uv):
 
-    git clone https://github.com/jeslago/epftoolbox && git -C epftoolbox checkout 47d6e06
+    # the paper's code, checked out at commit 47d6e06 in ./epftoolbox
     uv venv -p 3.8 legacy && uv pip install -p legacy/bin/python <the pins above>
     EPFTOOLBOX_DIR=epftoolbox legacy/bin/python scripts/make_original_metrics_reference.py
 

@@ -41,7 +41,7 @@ from be_power_forecast.config import CACHE_DIR, PHASE_B_TEST, REPO_ROOT, RESULTS
 from be_power_forecast.data.sources import (
     BE_TEST_BEGIN,
     BE_TEST_END,
-    EpftoolboxZenodoSource,
+    LagoZenodoSource,
     validate_standard_frame,
 )
 from be_power_forecast.models.dnn import (
@@ -61,7 +61,7 @@ def load_phase(phase: str):
             pd.read_parquet(CACHE_DIR / "phase_b_FR.parquet"), allow_missing_days=True
         )
         return df, PHASE_B_TEST
-    return EpftoolboxZenodoSource("BE").load(), (BE_TEST_BEGIN, BE_TEST_END)
+    return LagoZenodoSource("BE").load(), (BE_TEST_BEGIN, BE_TEST_END)
 
 
 def environment() -> dict:

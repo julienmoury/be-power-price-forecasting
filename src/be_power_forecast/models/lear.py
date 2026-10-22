@@ -1,4 +1,4 @@
-# Adapted from jeslago/epftoolbox (epftoolbox/models/_lear.py) by Jesus Lago (Apache-2.0)
+# Adapted from the code of Lago et al. (2021), by Jesus Lago (Apache-2.0)
 # — changes: feature matrix built once for the whole history with numpy reshapes instead of
 # per-day timestamp look-ups (same features, same order); configurable price/exogenous lags
 # for ablation studies; the LassoLarsIC(criterion="aic", normalize=True) selection of the

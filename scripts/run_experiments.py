@@ -25,7 +25,7 @@ from be_power_forecast.config import CACHE_DIR, PHASE_B_TEST
 from be_power_forecast.data.sources import (
     BE_TEST_BEGIN,
     BE_TEST_END,
-    EpftoolboxZenodoSource,
+    LagoZenodoSource,
     validate_standard_frame,
 )
 from be_power_forecast.models.lear import DEFAULT_SPEC, FeatureSpec
@@ -35,7 +35,7 @@ OUT = Path(__file__).resolve().parents[1] / "results" / "forecasts"
 PAPER_WINDOWS = (56, 84, 1092, 1456)
 
 
-# Exogenous lags D-1, D-2, D (epftoolbox before commit f234b08, June 2024) instead of
+# Exogenous lags D-1, D-2, D (the paper's code before commit f234b08, June 2024) instead of
 # D-1, D-7, D: checks whether the library version explains the gap to published forecasts.
 LAGS_D2 = FeatureSpec(exogenous_lags=(1, 2, 0))
 
@@ -61,7 +61,7 @@ def main() -> None:
         out, (begin, end) = OUT / "phase_b", PHASE_B_TEST
         runs = [(f"lear_cw{cw}", cw, [], DEFAULT_SPEC) for cw in PAPER_WINDOWS]
     else:
-        df = EpftoolboxZenodoSource("BE").load()
+        df = LagoZenodoSource("BE").load()
         out, (begin, end), runs = OUT, (BE_TEST_BEGIN, BE_TEST_END), experiments()
     out.mkdir(parents=True, exist_ok=True)
     for name, cw, drop, spec in runs:

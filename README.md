@@ -160,6 +160,5 @@ python scripts/make_report.py               # metrics.json, figure, README
 - J. Lago, G. Marcjasz, B. De Schutter, R. Weron (2021). *Forecasting day-ahead
   electricity prices: A review of state-of-the-art algorithms, best practices and an
   open-access benchmark.* Applied Energy 293, 116983.
-- Licences of the adapted code: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 - Data: Zenodo record [4624805](https://zenodo.org/records/4624805), ENTSO-E Transparency
   Platform, SMARD.de.

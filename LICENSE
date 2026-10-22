@@ -20,5 +20,5 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-Files that are adapted from third-party projects keep their original license; see
-THIRD_PARTY_NOTICES.md.
+Files adapted from third-party code keep their original license, named in their
+header; the full texts are in LICENSES/.

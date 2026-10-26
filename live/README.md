@@ -4,9 +4,9 @@ Since 1 October 2026, the day after the end of the backtest, the two models of t
 
 The forecasts use the French generation forecast, which is published after the 12:00 auction: they follow the paper, but could not have been used to bid.
 
-Updated on 2026-10-26.
+Updated on 2026-10-27.
 
-## Today, 2026-10-26
+## Today, 2026-10-27
 
 ![Forecasts vs realised prices](compare.png)
 
@@ -14,17 +14,17 @@ Error (MAE, EUR/MWh) against the hourly mean of the realised prices:
 
 | Naive | LEAR | DNN | Perfect hourly forecast* |
 |---|---|---|---|
-| 63.96 | 61.97 | 86.09 | 13.90 |
+| 71.46 | 42.08 | 54.59 | 10.37 |
 
 *Against the quarter-hour prices: the error a perfect hourly forecast still makes, since the models forecast hours.
 
-## Since 1 October 2026 (25 days)
+## Since 1 October 2026 (26 days)
 
 | Model | Error since the start | Last 7 days |
 |---|---|---|
-| DNN | 29.76 | 33.99 |
-| LEAR | 31.99 | 38.90 |
-| Naive | 45.57 | 55.07 |
+| DNN | 30.72 | 41.41 |
+| LEAR | 32.38 | 42.86 |
+| Naive | 46.57 | 64.80 |
 
 Errors in EUR/MWh (MAE), on the days where the three models have a forecast. The naive forecast copies the same day of last week on Mondays, Saturdays and Sundays, the previous day otherwise.
 
@@ -33,6 +33,7 @@ Errors in EUR/MWh (MAE), on the days where the three models have a forecast. The
 
 | Day | Naive | LEAR | DNN |
 |---|---|---|---|
+| 2026-10-27 | 71.46 | 42.08 | 54.59 |
 | 2026-10-26 | 63.96 | 61.97 | 86.09 |
 | 2026-10-25 | 166.68 | – | – |
 | 2026-10-24 | 125.89 | 46.39 | 32.45 |
@@ -67,30 +68,30 @@ Errors in EUR/MWh (MAE), on the days where the three models have a forecast. The
 
 | Hour | Naive | LEAR | DNN |
 |---|---|---|---|
-| 0 | 49.03 | 15.41 | 14.51 |
-| 1 | 46.99 | 16.49 | 13.82 |
-| 2 | 45.57 | 18.84 | 15.09 |
-| 3 | 43.44 | 23.47 | 17.41 |
-| 4 | 43.90 | 25.20 | 17.46 |
-| 5 | 44.68 | 27.31 | 17.23 |
-| 6 | 42.15 | 27.31 | 24.15 |
-| 7 | 40.46 | 28.98 | 29.47 |
-| 8 | 43.40 | 32.51 | 32.80 |
-| 9 | 46.80 | 37.28 | 33.28 |
-| 10 | 48.96 | 36.08 | 30.61 |
-| 11 | 53.48 | 37.84 | 32.08 |
-| 12 | 55.18 | 42.34 | 34.06 |
-| 13 | 50.86 | 38.03 | 32.63 |
-| 14 | 53.73 | 38.96 | 32.01 |
-| 15 | 46.03 | 36.56 | 29.35 |
-| 16 | 47.21 | 39.63 | 32.49 |
-| 17 | 43.91 | 45.28 | 40.68 |
-| 18 | 48.58 | 38.38 | 45.26 |
-| 19 | 50.73 | 37.68 | 48.47 |
-| 20 | 39.27 | 33.97 | 39.27 |
-| 21 | 37.27 | 29.49 | 34.85 |
-| 22 | 33.81 | 27.80 | 33.21 |
-| 23 | 38.26 | 32.87 | 34.17 |
+| 0 | 50.34 | 15.14 | 14.47 |
+| 1 | 48.23 | 16.46 | 13.87 |
+| 2 | 46.60 | 18.40 | 14.66 |
+| 3 | 44.66 | 22.76 | 17.06 |
+| 4 | 44.76 | 24.28 | 17.01 |
+| 5 | 44.36 | 26.99 | 17.00 |
+| 6 | 41.09 | 26.95 | 23.29 |
+| 7 | 41.87 | 27.92 | 29.32 |
+| 8 | 46.03 | 31.99 | 31.76 |
+| 9 | 50.82 | 37.48 | 33.17 |
+| 10 | 51.53 | 36.48 | 31.01 |
+| 11 | 57.12 | 39.24 | 33.40 |
+| 12 | 58.11 | 43.42 | 34.99 |
+| 13 | 51.66 | 38.34 | 33.01 |
+| 14 | 53.57 | 38.55 | 31.41 |
+| 15 | 44.72 | 36.11 | 30.01 |
+| 16 | 46.74 | 41.07 | 35.50 |
+| 17 | 42.93 | 46.11 | 43.24 |
+| 18 | 47.57 | 39.44 | 47.57 |
+| 19 | 49.92 | 38.22 | 50.66 |
+| 20 | 39.84 | 34.97 | 42.03 |
+| 21 | 38.54 | 31.53 | 38.24 |
+| 22 | 35.76 | 30.14 | 36.87 |
+| 23 | 40.83 | 35.03 | 37.71 |
 
 </details>
 

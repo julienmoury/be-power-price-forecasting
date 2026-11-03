@@ -4,19 +4,11 @@ Since 1 October 2026, the day after the end of the backtest, the two models of t
 
 The forecasts use the French generation forecast, which is published after the 12:00 auction: they follow the paper, but could not have been used to bid.
 
-Updated on 2026-11-02.
+Updated on 2026-11-03.
 
-## Today, 2026-11-02
+## Today, 2026-11-03
 
-![Forecasts vs realised prices](compare.png)
-
-Error (MAE, EUR/MWh) against the hourly mean of the realised prices:
-
-| Naive | LEAR | DNN | Perfect hourly forecast* |
-|---|---|---|---|
-| 89.83 | 25.81 | 16.09 | 7.75 |
-
-*Against the quarter-hour prices: the error a perfect hourly forecast still makes, since the models forecast hours.
+Not available yet: no forecast of today, or its prices are not complete.
 
 ## Since 1 October 2026 (32 days)
 
@@ -33,6 +25,7 @@ Errors in EUR/MWh (MAE), on the days where the three models have a forecast. The
 
 | Day | Naive | LEAR | DNN |
 |---|---|---|---|
+| 2026-11-03 | 13.31 | – | – |
 | 2026-11-02 | 89.84 | 25.81 | 16.10 |
 | 2026-11-01 | 227.41 | 45.46 | 27.00 |
 | 2026-10-31 | 210.64 | 35.99 | 62.34 |

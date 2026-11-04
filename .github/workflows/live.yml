@@ -75,3 +75,25 @@ jobs:
           git commit -m "chore(live): forecast of $(TZ=Europe/Brussels date -d tomorrow +%Y-%m-%d)"
           git pull --rebase
           git push
+      # Feeds the GenAI assistant of be-power-genai-assistant: copies the three live CSV
+      # files, as they are, to the Databricks Volume workspace.be_power.live. Skipped when the
+      # DATABRICKS_HOST / DATABRICKS_TOKEN secrets are not set; a Databricks failure never
+      # fails the forecast.
+      - name: Install the Databricks CLI
+        uses: databricks/setup-cli@v1.23.0
+      - name: Copy the forecasts to Databricks
+        continue-on-error: true
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: |
+          if [ -z "$DATABRICKS_HOST" ] || [ -z "$DATABRICKS_TOKEN" ]; then
+            echo "::warning::DATABRICKS_HOST or DATABRICKS_TOKEN not set, nothing copied"
+            exit 0
+          fi
+          for file in results/forecasts/live/forecasts.csv \
+                      results/forecasts/live/dnn_forecasts.csv \
+                      results/live/realised.csv; do
+            databricks fs cp --overwrite "$file" dbfs:/Volumes/workspace/be_power/live/
+          done
+          databricks fs ls dbfs:/Volumes/workspace/be_power/live/ -l

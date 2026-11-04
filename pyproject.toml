@@ -27,8 +27,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7", "ruff>=0.5"]
+dev = ["pytest>=7", "ruff>=0.5", "boto3==1.43.114", "moto[s3]==5.2.4"]
 api = ["fastapi>=0.110", "uvicorn>=0.27", "httpx>=0.26", "pydantic>=2.5"]
+# AWS deployment (docs/aws.md): S3 state of the live run and of the API on Lambda.
+aws = ["boto3==1.43.114"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

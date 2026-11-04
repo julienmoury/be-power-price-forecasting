@@ -6,6 +6,7 @@ venv
 .pytest_cache
 .ruff_cache
 data
+!data/raw
 models
 results
 !results/forecasts/phase_b

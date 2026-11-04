@@ -1,7 +1,7 @@
 variable "region" {
   description = "AWS region of every resource."
   type        = string
-  default     = "eu-west-1"
+  default     = "eu-central-1"
 }
 
 variable "image_tag" {

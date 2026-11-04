@@ -24,11 +24,11 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  AWS_REGION: ${{ vars.AWS_REGION || 'eu-west-1' }}
+  AWS_REGION: ${{ vars.AWS_REGION || 'eu-central-1' }}
   TF_IN_AUTOMATION: "true"
   TF_INPUT: "false"
   TF_VAR_budget_email: ${{ vars.BUDGET_EMAIL }}
-  TF_VAR_region: ${{ vars.AWS_REGION || 'eu-west-1' }}
+  TF_VAR_region: ${{ vars.AWS_REGION || 'eu-central-1' }}
 
 jobs:
   plan:

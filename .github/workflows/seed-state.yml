@@ -34,7 +34,7 @@ jobs:
       - uses: aws-actions/configure-aws-credentials@v6.3.0
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION || 'eu-west-1' }}
+          aws-region: ${{ vars.AWS_REGION || 'eu-central-1' }}
       - name: Copy to S3
         run: |
           if [ -z "$BUCKET" ]; then echo "::error::DATA_BUCKET is not set"; exit 1; fi

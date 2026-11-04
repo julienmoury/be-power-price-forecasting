@@ -5,9 +5,9 @@ all the time) and a public page. GitHub Actions only tests and deploys. The code
 forecast is unchanged: AWS runs `scripts/live_forecast.py` on a working directory filled
 from S3, and serves `src/be_power_forecast/api/app.py` as it is.
 
-Region: `eu-west-1` (Ireland). Infrastructure: Terraform in [`infra/`](../infra), plus a
+Region: `eu-central-1` (Frankfurt). Infrastructure: Terraform in [`infra/`](../infra), plus a
 CloudFormation stack deployed once by hand ([`infra/bootstrap/bootstrap.yaml`](../infra/bootstrap/bootstrap.yaml)).
-Expected cost: about 1.5 $ a month (see [Costs](#9-costs)).
+Expected cost: about 1.7 $ a month (see [Costs](#9-costs)).
 
 ## Architecture
 
@@ -109,7 +109,7 @@ GitHub CLI to the repository (`gh auth status`). After step 4, every push to `ma
 deploys through `.github/workflows/deploy.yml` with OIDC: no AWS key is stored anywhere.
 
 ```bash
-export AWS_REGION=eu-west-1
+export AWS_REGION=eu-central-1
 ```
 
 ```bash
@@ -481,18 +481,18 @@ An empty list (the tag index can lag by a few minutes). The ECS service-linked r
 
 ## 9. Costs
 
-Prices of `eu-west-1`, on a paid plan (on the free plan, they come out of the credits).
+Prices of `eu-central-1`, on a paid plan (on the free plan, they come out of the credits).
 
 | Service | Use | Per month |
 |---|---|---|
-| ECS Fargate | ~20 min a day (full run 10-20 min, fallback 1-3 min), 2 vCPU and 8 GB: 0.117 $/h | ~1.20 $ |
+| ECS Fargate | ~20 min a day (full run 10-20 min, fallback 1-3 min), 2 vCPU and 8 GB: 0.134 $/h | ~1.35 $ |
 | Public IPv4 of the task | while it runs, 0.005 $/h | ~0.05 $ |
 | ECR | the last 5 images, ~1 GB each, layers shared in part, 0.10 $/GB | 0.10-0.40 $ |
 | S3 | a few tens of MB, a few thousand requests | < 0.05 $ |
 | Lambda | well inside the free 1 M requests and 400,000 GB-s | 0 $ |
 | CloudFront | well inside the free 1 TB and 10 M requests | 0 $ |
 | EventBridge Scheduler, SSM (standard), CloudWatch Logs (14 days), DynamoDB (on demand), Budgets | free tiers | 0 $ |
-| **Total** | | **about 1.5 $** |
+| **Total** | | **about 1.7 $** |
 
 No NAT gateway (~32 $), load balancer, database or Secrets Manager. The budget alerts at
 4 $ and 5 $. The API is public and without authentication: abnormal traffic would show in

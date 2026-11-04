@@ -12,7 +12,7 @@ terraform {
   #   terraform init -backend-config=bucket=... -backend-config=dynamodb_table=...
   backend "s3" {
     key     = "be-power-forecast/terraform.tfstate"
-    region  = "eu-west-1"
+    region  = "eu-central-1"
     encrypt = true
   }
 }

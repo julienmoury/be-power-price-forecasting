@@ -32,7 +32,7 @@ jobs:
       - uses: aws-actions/configure-aws-credentials@v6.3.0
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION || 'eu-west-1' }}
+          aws-region: ${{ vars.AWS_REGION || 'eu-central-1' }}
       - name: Build the image
         run: docker build -t be-power-forecast .
       - name: Forecast

@@ -8,9 +8,9 @@ advance. In this project I took the reference benchmark of the field (Lago et al
 checked that I get the same results as the paper, and then ran it, unchanged, on the ten
 years that followed, to see whether it still holds on today's market.
 
-**[Live page](__LIVE_PAGE_URL__)**: the forecasts of every day since 1 October 2026, against
+**[Live page](https://dkx1i5wqs8b2p.cloudfront.net/)**: the forecasts of every day since 1 October 2026, against
 the realised prices, updated every evening. The forecasts are also served by a public API,
-`__API_URL__` (`GET /health`, `POST /forecast`, `GET /forecasts`;
+`https://ivqhqjlyjymcnufukn7vjp5mee0yezkr.lambda-url.eu-central-1.on.aws/` (`GET /health`, `POST /forecast`, `GET /forecasts`;
 [schema](docs/openapi.json)).
 
 ## In short

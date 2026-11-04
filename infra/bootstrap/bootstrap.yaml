@@ -1,0 +1,428 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  be-power-forecast bootstrap, deployed once by hand (docs/aws.md): the GitHub OIDC
+  provider, the deploy role of .github/workflows/deploy.yml, the read-only role of
+  .github/workflows/sync-databricks.yml, the permissions boundary of every role Terraform
+  creates, and the Terraform state bucket and lock table.
+
+Parameters:
+  GitHubRepository:
+    Type: String
+    Default: julienmoury/be-power-price-forecasting
+    Description: Only workflows of this repository can assume the roles.
+  GitHubImmutableSubjectPrefix:
+    Type: String
+    Default: repo:julienmoury@120372976/be-power-price-forecasting@1405525267
+    Description: >-
+      Subject prefix of the same repository when it uses GitHub's immutable OIDC subject
+      (owner and repository IDs; gh api repos/<repo>/actions/oidc/customization/sub).
+  ExistingOidcProviderArn:
+    Type: String
+    Default: ""
+    Description: >-
+      ARN of an existing token.actions.githubusercontent.com provider (an account has at
+      most one); leave empty to create it.
+
+Conditions:
+  CreateOidcProvider: !Equals [!Ref ExistingOidcProviderArn, ""]
+
+Resources:
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Condition: CreateOidcProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      # AWS trusts GitHub's certificate authority; the thumbprints are only kept for tools
+      # that still require them.
+      ThumbprintList:
+        - 6938fd4d98bab03faadb97b34396831e3780aea1
+        - 1c58a3a8518e8759bf075b76b750d4f2df264fcd
+
+  # ---------------------------------------------------------------- Terraform state
+  StateBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub be-power-forecast-tfstate-${AWS::AccountId}
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      LifecycleConfiguration:
+        Rules:
+          - Id: old-versions
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 90
+
+  StateBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref StateBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: s3:*
+            Resource:
+              - !GetAtt StateBucket.Arn
+              - !Sub ${StateBucket.Arn}/*
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+
+  LockTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    Properties:
+      TableName: be-power-forecast-tflock
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: LockID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: LockID
+          KeyType: HASH
+
+  # ------------------------------------------------- boundary of the workload roles
+  # Every role Terraform creates (infra/iam.tf) must carry this boundary: whatever its own
+  # policy says, it can do no more than the workloads of the project need.
+  WorkloadBoundary:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: be-power-forecast-boundary
+      Description: Permissions boundary of the be-power-forecast workload roles.
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: Buckets
+            Effect: Allow
+            Action:
+              - s3:ListBucket
+              - s3:GetObject
+              - s3:PutObject
+              - s3:DeleteObject
+            Resource:
+              - !Sub arn:${AWS::Partition}:s3:::be-power-forecast-data-${AWS::AccountId}
+              - !Sub arn:${AWS::Partition}:s3:::be-power-forecast-data-${AWS::AccountId}/*
+              - !Sub arn:${AWS::Partition}:s3:::be-power-forecast-site-${AWS::AccountId}
+              - !Sub arn:${AWS::Partition}:s3:::be-power-forecast-site-${AWS::AccountId}/*
+          - Sid: PullImage
+            Effect: Allow
+            Action:
+              - ecr:GetAuthorizationToken
+              - ecr:BatchGetImage
+              - ecr:GetDownloadUrlForLayer
+              - ecr:BatchCheckLayerAvailability
+            Resource: "*"
+          - Sid: Logs
+            Effect: Allow
+            Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource:
+              - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/ecs/be-power-forecast*
+              - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/be-power-forecast*
+          - Sid: EntsoeKey
+            Effect: Allow
+            Action:
+              - ssm:GetParameters
+              - ssm:GetParameter
+            Resource: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/be-power-forecast/*
+          - Sid: RefreshApi
+            Effect: Allow
+            Action:
+              - lambda:GetFunctionConfiguration
+              - lambda:UpdateFunctionConfiguration
+            Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:be-power-forecast-*
+          - Sid: RunLiveTask
+            Effect: Allow
+            Action: ecs:RunTask
+            Resource: !Sub arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/be-power-forecast-*
+          - Sid: PassWorkloadRoles
+            Effect: Allow
+            Action: iam:PassRole
+            Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/be-power-forecast/*
+
+  # ---------------------------------------------------------------- deploy role
+  DeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: be-power-forecast-github-deploy
+      Description: Assumed by the workflows of the repository (Terraform, ECR, S3, SSM).
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !If
+                - CreateOidcProvider
+                - !GetAtt GitHubOidcProvider.Arn
+                - !Ref ExistingOidcProviderArn
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                token.actions.githubusercontent.com:sub:
+                  - !Sub repo:${GitHubRepository}:*
+                  - !Sub ${GitHubImmutableSubjectPrefix}:*
+      ManagedPolicyArns:
+        - !Ref DeployPolicyState
+        - !Ref DeployPolicyServices
+        - !Ref DeployPolicyIam
+
+  DeployPolicyState:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: be-power-forecast-deploy-state
+      Description: Terraform state, buckets, image registry and the ENTSO-E key parameter.
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: TerraformState
+            Effect: Allow
+            Action:
+              - s3:ListBucket
+              - s3:GetObject
+              - s3:PutObject
+              - s3:DeleteObject
+            Resource:
+              - !GetAtt StateBucket.Arn
+              - !Sub ${StateBucket.Arn}/*
+          - Sid: TerraformLock
+            Effect: Allow
+            Action:
+              - dynamodb:DescribeTable
+              - dynamodb:GetItem
+              - dynamodb:PutItem
+              - dynamodb:DeleteItem
+            Resource: !GetAtt LockTable.Arn
+          - Sid: ProjectBuckets
+            Effect: Allow
+            Action: s3:*
+            Resource:
+              - !Sub arn:${AWS::Partition}:s3:::be-power-forecast-data-${AWS::AccountId}
+              - !Sub arn:${AWS::Partition}:s3:::be-power-forecast-data-${AWS::AccountId}/*
+              - !Sub arn:${AWS::Partition}:s3:::be-power-forecast-site-${AWS::AccountId}
+              - !Sub arn:${AWS::Partition}:s3:::be-power-forecast-site-${AWS::AccountId}/*
+          - Sid: Registry
+            Effect: Allow
+            Action: ecr:*
+            Resource: !Sub arn:${AWS::Partition}:ecr:${AWS::Region}:${AWS::AccountId}:repository/be-power-forecast
+          - Sid: RegistryLogin
+            Effect: Allow
+            Action: ecr:GetAuthorizationToken
+            Resource: "*"
+          - Sid: EntsoeKey
+            Effect: Allow
+            Action:
+              - ssm:PutParameter
+              - ssm:GetParameter
+              - ssm:GetParameters
+              - ssm:DeleteParameter
+              - ssm:AddTagsToResource
+              - ssm:ListTagsForResource
+            Resource: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/be-power-forecast/*
+
+  DeployPolicyServices:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: be-power-forecast-deploy-services
+      Description: ECS, Scheduler, Lambda, CloudFront, logs, budget of be-power-forecast.
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: EcsProject
+            Effect: Allow
+            Action: ecs:*
+            Resource:
+              - !Sub arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:cluster/be-power-forecast
+              - !Sub arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/be-power-forecast-*
+              - !Sub arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task/be-power-forecast/*
+          - Sid: EcsTaskDefinitions
+            Effect: Allow
+            Action:
+              - ecs:RegisterTaskDefinition
+              - ecs:DeregisterTaskDefinition
+              - ecs:DescribeTaskDefinition
+              - ecs:ListTaskDefinitions
+              - ecs:ListClusters
+            Resource: "*"
+          - Sid: Schedules
+            Effect: Allow
+            Action: scheduler:*
+            Resource: !Sub arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/default/be-power-forecast-*
+          - Sid: Api
+            Effect: Allow
+            Action: lambda:*
+            Resource:
+              - !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:be-power-forecast-*
+          - Sid: Logs
+            Effect: Allow
+            Action: logs:*
+            Resource:
+              - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/ecs/be-power-forecast*
+              - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/be-power-forecast*
+          - Sid: LogGroupsList
+            Effect: Allow
+            Action: logs:DescribeLogGroups
+            Resource: "*"
+          - Sid: Page
+            Effect: Allow
+            Action:
+              - cloudfront:*Distribution*
+              - cloudfront:*OriginAccessControl*
+              - cloudfront:GetCachePolicy
+              - cloudfront:ListCachePolicies
+              - cloudfront:CreateInvalidation
+              - cloudfront:GetInvalidation
+              - cloudfront:TagResource
+              - cloudfront:UntagResource
+              - cloudfront:ListTagsForResource
+            Resource: "*"
+          - Sid: DefaultVpc
+            Effect: Allow
+            Action: ec2:Describe*
+            Resource: "*"
+          - Sid: Budget
+            Effect: Allow
+            Action:
+              - budgets:ViewBudget
+              - budgets:ModifyBudget
+              - budgets:ListTagsForResource
+              - budgets:TagResource
+              - budgets:UntagResource
+            Resource: !Sub arn:${AWS::Partition}:budgets::${AWS::AccountId}:budget/be-power-forecast-*
+
+  DeployPolicyIam:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: be-power-forecast-deploy-iam
+      Description: >-
+        Roles under /be-power-forecast/ only, always with the workload boundary, so the
+        deploy role cannot grant itself or anyone more.
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: RolesWithBoundary
+            Effect: Allow
+            Action:
+              - iam:CreateRole
+              - iam:PutRolePolicy
+              - iam:DeleteRolePolicy
+              - iam:PutRolePermissionsBoundary
+            Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/be-power-forecast/*
+            Condition:
+              StringEquals:
+                iam:PermissionsBoundary: !Ref WorkloadBoundary
+          - Sid: Roles
+            Effect: Allow
+            Action:
+              - iam:GetRole
+              - iam:GetRolePolicy
+              - iam:ListRolePolicies
+              - iam:ListAttachedRolePolicies
+              - iam:ListInstanceProfilesForRole
+              - iam:ListRoleTags
+              - iam:TagRole
+              - iam:UntagRole
+              - iam:UpdateRole
+              - iam:UpdateRoleDescription
+              - iam:UpdateAssumeRolePolicy
+              - iam:DeleteRole
+              - iam:PassRole
+            Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/be-power-forecast/*
+          - Sid: KeepTheBoundary
+            Effect: Deny
+            Action:
+              - iam:DeleteRolePermissionsBoundary
+              - iam:AttachRolePolicy
+            Resource: "*"
+          - Sid: EcsServiceLinkedRole
+            Effect: Allow
+            Action: iam:CreateServiceLinkedRole
+            Resource: "*"
+            Condition:
+              StringEquals:
+                iam:AWSServiceName: ecs.amazonaws.com
+
+  # ------------------------------------------------------------- read-only role
+  ReadOnlyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: be-power-forecast-github-readonly
+      Description: Read state/ of the data bucket (.github/workflows/sync-databricks.yml).
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !If
+                - CreateOidcProvider
+                - !GetAtt GitHubOidcProvider.Arn
+                - !Ref ExistingOidcProviderArn
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                token.actions.githubusercontent.com:sub:
+                  - !Sub repo:${GitHubRepository}:*
+                  - !Sub ${GitHubImmutableSubjectPrefix}:*
+      Policies:
+        - PolicyName: read-state
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: ReadState
+                Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub arn:${AWS::Partition}:s3:::be-power-forecast-data-${AWS::AccountId}/state/*
+              - Sid: ListState
+                Effect: Allow
+                Action: s3:ListBucket
+                Resource: !Sub arn:${AWS::Partition}:s3:::be-power-forecast-data-${AWS::AccountId}
+                Condition:
+                  StringLike:
+                    s3:prefix:
+                      - state/*
+
+Outputs:
+  DeployRoleArn:
+    Description: GitHub variable AWS_DEPLOY_ROLE_ARN.
+    Value: !GetAtt DeployRole.Arn
+  ReadOnlyRoleArn:
+    Description: GitHub variable AWS_READONLY_ROLE_ARN.
+    Value: !GetAtt ReadOnlyRole.Arn
+  StateBucket:
+    Description: GitHub variable TF_STATE_BUCKET.
+    Value: !Ref StateBucket
+  LockTable:
+    Description: GitHub variable TF_LOCK_TABLE.
+    Value: !Ref LockTable
+  DataBucket:
+    Description: GitHub variable DATA_BUCKET (created by Terraform).
+    Value: !Sub be-power-forecast-data-${AWS::AccountId}
+  SiteBucket:
+    Description: GitHub variable SITE_BUCKET (created by Terraform).
+    Value: !Sub be-power-forecast-site-${AWS::AccountId}
+  PermissionsBoundaryArn:
+    Value: !Ref WorkloadBoundary

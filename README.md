@@ -8,8 +8,10 @@ advance. In this project I took the reference benchmark of the field (Lago et al
 checked that I get the same results as the paper, and then ran it, unchanged, on the ten
 years that followed, to see whether it still holds on today's market.
 
-**[Live page](live/README.md)**: the forecasts of every day since 1 October 2026, against
-the realised prices, updated every evening.
+**[Live page](__LIVE_PAGE_URL__)**: the forecasts of every day since 1 October 2026, against
+the realised prices, updated every evening. The forecasts are also served by a public API,
+`__API_URL__` (`GET /health`, `POST /forecast`, `GET /forecasts`;
+[schema](docs/openapi.json)).
 
 ## In short
 
@@ -50,9 +52,11 @@ tells whether one model is really better or just lucky on this sample.
    crisis, negative prices (2.3 % of hours) and the switch to
    quarter-hours. Nothing was re-tuned.
 4. **Made it run on its own.** Since 1 October 2026, the day after the backtest ends, a
-   GitHub Actions job downloads the new data every evening, retrains the models, forecasts
-   the next day and updates the live page. The errors since 1 October are computed in SQL
-   (DuckDB). A small API (FastAPI, in Docker) serves the forecasts to my
+   scheduled task on AWS (ECS Fargate) downloads the new data every evening, retrains the
+   models, forecasts the next day and updates the live page (S3 and CloudFront). The errors
+   since 1 October are computed in SQL (DuckDB). The infrastructure is in Terraform and
+   deployed by GitHub Actions ([docs/aws.md](docs/aws.md)). A small API (FastAPI, in Docker,
+   on AWS Lambda) serves the forecasts to my
    [storage project](https://github.com/julienmoury/be-storage-dispatch), which runs a battery
    on them every evening.
 
@@ -136,7 +140,9 @@ src/be_power_forecast/
   api/          FastAPI service, with the naive forecast as fallback
   live.py       daily forecast
   sql/          live errors in SQL (DuckDB), run by live_report.py
-scripts/        backtests, report, live forecast
+  cloud.py      S3 state of the AWS deployment
+scripts/        backtests, report, live forecast (aws_run.py: on AWS)
+infra/          AWS infrastructure (Terraform), see docs/aws.md
 tests/          unit tests and checks against the original code (run in CI)
 ```
 

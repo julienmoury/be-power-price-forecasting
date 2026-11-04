@@ -1,20 +1,23 @@
-name: Live forecast
+name: Live forecast fallback (GitHub Actions)
 
-# Every evening, once the French day-ahead generation forecast of the next day is on
-# ENTSO-E (deadline 18:00 Brussels time, after the 12:00 auction): build the Docker image,
-# forecast tomorrow's Belgian prices in it (LEAR and DNN), compare today's forecasts with
-# today's realised prices (SMARD.de, CC BY 4.0), check that the forecast service of the
-# same image serves the forecasts, and commit them with the page live/README.md. The
-# second run is a fallback (a day already forecast is skipped). Raw ENTSO-E data stay in
-# the Actions cache, never in the repository.
+# The daily live forecast runs on AWS (ECS Fargate, 17:30 and 20:30 UTC, docs/aws.md). This
+# workflow is its fallback, run by hand when AWS cannot run it: the same image and the same
+# script (scripts/aws_run.py), on GitHub's runner. It reads and writes the S3 state, the
+# source of truth of the live forecasts (nothing is committed to the repository any more),
+# publishes the page and refreshes the API, then checks that the forecast service of the
+# image serves the forecasts it just wrote. A day already forecast is skipped. The ENTSO-E
+# data stay in the private bucket. The Databricks copy is .github/workflows/sync-databricks.yml.
 on:
-  schedule:
-    - cron: "30 17 * * *" # 17:30 UTC = 18:30 CET / 19:30 CEST
-    - cron: "30 20 * * *" # fallback
   workflow_dispatch:
+    inputs:
+      day:
+        description: "Delivery day YYYY-MM-DD (default: tomorrow, Brussels time)"
+        required: false
+        default: ""
 
 permissions:
-  contents: write
+  contents: read
+  id-token: write
 
 concurrency:
   group: live-forecast
@@ -25,75 +28,45 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 75
     steps:
-      - uses: actions/checkout@v7
-      - name: Restore the ENTSO-E cache
-        uses: actions/cache@v6
+      - uses: actions/checkout@v7.0.1
+      - uses: aws-actions/configure-aws-credentials@v6.3.0
         with:
-          path: data/cache
-          key: entsoe-${{ github.run_id }}
-          restore-keys: entsoe-
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'eu-central-1' }}
       - name: Build the image
         run: docker build -t be-power-forecast .
       - name: Forecast
         env:
           ENTSOE_API_KEY: ${{ secrets.ENTSOE_API_KEY }}
+          DAY: ${{ inputs.day }}
         run: |
-          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/repo" \
-            -e BE_REPO_ROOT=/repo -e ENTSOE_API_KEY -e GIT_COMMIT=${{ github.sha }} \
-            be-power-forecast python scripts/live_forecast.py
+          mkdir -p work
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/work:/work" \
+            -e BE_WORK_DIR=/work -e BE_DATA_BUCKET=${{ vars.DATA_BUCKET }} \
+            -e BE_SITE_BUCKET=${{ vars.SITE_BUCKET }} -e BE_API_FUNCTION=be-power-forecast-api \
+            -e ENTSOE_API_KEY -e GIT_COMMIT=${{ github.sha }} -e AWS_REGION \
+            -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN \
+            be-power-forecast python scripts/aws_run.py ${DAY:+--day "$DAY"}
       - name: Check the forecast service
         # Serves the forecasts just written; when there is a forecast for tomorrow, the
         # service must return it (24 LEAR prices, and 24 DNN prices when the DNN ensemble
         # forecast it). No forecast (an input not published yet) is not a failure: the
         # page says so.
         run: |
-          docker run -d --name service -p 8000:8000 \
-            -v "$PWD/results/forecasts:/forecasts:ro" -v "$PWD/data/cache:/data:ro" \
-            -e BE_FORECAST_DIR=/forecasts/phase_b \
-            -e BE_LIVE_PATH=/forecasts/live/forecasts.csv \
-            -e BE_DNN_LIVE_PATH=/forecasts/live/dnn_forecasts.csv be-power-forecast
+          live=work/results/forecasts/live
+          docker run -d --name service -p 8000:8000 -v "$PWD/$live:/live:ro" \
+            -e BE_LIVE_PATH=/live/forecasts.csv -e BE_DNN_LIVE_PATH=/live/dnn_forecasts.csv \
+            be-power-forecast
           for i in $(seq 30); do curl -sf localhost:8000/health && break; sleep 1; done
           day=$(TZ=Europe/Brussels date -d tomorrow +%Y-%m-%d)
-          if grep -q "^$day," results/forecasts/live/forecasts.csv; then
+          if grep -q "^$day," $live/forecasts.csv; then
             curl -sf -X POST localhost:8000/forecast -H "Content-Type: application/json" \
               -d "{\"delivery_day\": \"$day\"}" | tee answer.json
             python3 -c "import json; a = json.load(open('answer.json')); \
               assert a['model'] == 'lear_ensemble' and len(a['prices']) == 24, a"
-            if grep -qs "^$day," results/forecasts/live/dnn_forecasts.csv; then
+            if grep -qs "^$day," $live/dnn_forecasts.csv; then
               python3 -c "import json; a = json.load(open('answer.json')); \
                 assert len(a['dnn_prices'] or []) == 24, a"
             fi
           fi
           docker rm -f service
-      - name: Commit the forecast
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add results/forecasts/live results/live live
-          if [ -d results/dnn/live ]; then git add results/dnn/live; fi
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m "chore(live): forecast of $(TZ=Europe/Brussels date -d tomorrow +%Y-%m-%d)"
-          git pull --rebase
-          git push
-      # Feeds the GenAI assistant of be-power-genai-assistant: copies the three live CSV
-      # files, as they are, to the Databricks Volume workspace.be_power.live. Skipped when the
-      # DATABRICKS_HOST / DATABRICKS_TOKEN secrets are not set; a Databricks failure never
-      # fails the forecast.
-      - name: Install the Databricks CLI
-        uses: databricks/setup-cli@v1.23.0
-      - name: Copy the forecasts to Databricks
-        continue-on-error: true
-        env:
-          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-        run: |
-          if [ -z "$DATABRICKS_HOST" ] || [ -z "$DATABRICKS_TOKEN" ]; then
-            echo "::warning::DATABRICKS_HOST or DATABRICKS_TOKEN not set, nothing copied"
-            exit 0
-          fi
-          for file in results/forecasts/live/forecasts.csv \
-                      results/forecasts/live/dnn_forecasts.csv \
-                      results/live/realised.csv; do
-            databricks fs cp --overwrite "$file" dbfs:/Volumes/workspace/be_power/live/
-          done
-          databricks fs ls dbfs:/Volumes/workspace/be_power/live/ -l

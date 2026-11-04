@@ -1,0 +1,54 @@
+name: Seed the AWS state
+
+# Run by hand, once, after the first deployment (docs/aws.md): copies the live files of the
+# repository (results/forecasts/live, results/dnn/live, results/live, live) to state/ of
+# the private data bucket, and the ENTSO-E cache of the former GitHub Actions workflow to
+# cache/ (so that the first run on AWS does not download 2015-2026 again). Refuses to
+# overwrite a state/ that is not empty unless asked to: from then on S3 is the source of
+# truth of the live forecasts, not the repository.
+on:
+  workflow_dispatch:
+    inputs:
+      overwrite:
+        description: "Overwrite a state/ that is not empty"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    env:
+      BUCKET: ${{ vars.DATA_BUCKET }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Restore the ENTSO-E cache of the former workflow
+        uses: actions/cache/restore@v6.1.0
+        with:
+          path: data/cache
+          key: entsoe-seed
+          restore-keys: entsoe-
+      - uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'eu-central-1' }}
+      - name: Copy to S3
+        run: |
+          if [ -z "$BUCKET" ]; then echo "::error::DATA_BUCKET is not set"; exit 1; fi
+          # aws s3 ls fails when there is no object under the prefix.
+          if aws s3 ls "s3://$BUCKET/state/" > /dev/null && [ "${{ inputs.overwrite }}" != "true" ]; then
+            echo "::error::s3://$BUCKET/state/ is not empty; re-run with overwrite to replace it"
+            exit 1
+          fi
+          for dir in results/forecasts/live results/dnn/live results/live live; do
+            aws s3 sync --no-progress "$dir" "s3://$BUCKET/state/$dir"
+          done
+          if [ -d data/cache ]; then
+            aws s3 sync --no-progress data/cache "s3://$BUCKET/cache"
+          else
+            echo "::warning::no ENTSO-E cache found: the first run downloads 2015-2026"
+          fi
+          aws s3 ls --recursive "s3://$BUCKET/" | tee -a "$GITHUB_STEP_SUMMARY"

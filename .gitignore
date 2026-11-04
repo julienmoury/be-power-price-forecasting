@@ -14,7 +14,6 @@ data/raw/*.parquet
 results/run_log.txt
 # Raw ENTSO-E downloads (never committed), pickled production models
 data/cache/
-mlruns/
 /models/
 # DNN training records and weights (archived outside the repository, see scripts/run_dnn.py)
 artifacts/

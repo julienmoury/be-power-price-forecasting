@@ -17,7 +17,7 @@ resource "aws_lambda_function" "api" {
   image_uri     = local.image
   architectures = ["x86_64"]
   memory_size   = 2048
-  timeout       = 30
+  timeout       = 60 # a cold start can take over 30 s, see docs/aws.md
 
   image_config {
     command = ["python", "-m", "be_power_forecast.cloud"]
@@ -31,6 +31,9 @@ resource "aws_lambda_function" "api" {
       BE_DATA_BUCKET               = aws_s3_bucket.data.bucket
       BE_API_DIR                   = "/tmp/api"
       BE_PRICE_PATH                = "/tmp/no-entsoe-prices.parquet"
+      # Past the 10 s init window, keep starting during the first request instead of
+      # letting Lambda restart the init from scratch.
+      AWS_LWA_ASYNC_INIT = "true"
       # Changed by scripts/aws_run.py after each new forecast, so that Lambda starts new
       # execution environments, which read the new files.
       BE_STATE_VERSION = "deploy"

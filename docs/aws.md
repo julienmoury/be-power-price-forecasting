@@ -40,7 +40,7 @@ seed-state.yml (one-off), live.yml (fallback, by hand).
 | ECS Fargate `be-power-forecast-live` | 2 vCPU, 8 GB, default VPC, public subnet, public IP (no NAT gateway). Logs: `/ecs/be-power-forecast-live`, 14 days. |
 | EventBridge Scheduler | `cron(30 17 * * ? *)` and `cron(30 20 * * ? *)` UTC, as the former crons; the second run skips a day already forecast. |
 | SSM `/be-power-forecast/entsoe-api-key` | `SecureString`, standard tier; injected into the task as `ENTSOE_API_KEY`. |
-| Lambda `be-power-forecast-api` | Same image, AWS Lambda Web Adapter 1.1.0, 2048 MB, 30 s, public function URL (no authentication, CORS for any origin, `GET` and `POST`, no credentials). Reserved concurrency left unset. Logs: 14 days. |
+| Lambda `be-power-forecast-api` | Same image, AWS Lambda Web Adapter 1.1.0 (async init), 2048 MB, 60 s, public function URL (no authentication, CORS for any origin, `GET` and `POST`, no credentials). Reserved concurrency left unset. Logs: 14 days. |
 | S3 `be-power-forecast-site-<account>` + CloudFront | Private bucket read by CloudFront through Origin Access Control: `index.html` and `compare.png`. |
 | Budget `be-power-forecast-monthly` | 5 $ a month, e-mail at 80 % and 100 % of actual costs. |
 
@@ -88,6 +88,13 @@ At a cold start, `python -m be_power_forecast.cloud` copies
 Web Adapter (readiness check: `/health`). A file it cannot fetch keeps the copy of the
 image (the live forecasts as of the build), so the service always starts. The phase B
 backtests come from the image.
+
+A cold start is slow: about 10 s when the image is already cached, 40 s or more on the
+first pulls of a new image (measured on 2026-11-04: the image also carries TensorFlow for
+the evening run). Past the 10 s init window, Lambda would restart the init from scratch,
+so the first request failed after the 30 s timeout. With `AWS_LWA_ASYNC_INIT=true` the
+adapter ends the init phase after 9.8 s and keeps waiting for `/health` during the first
+request, which the 60 s timeout leaves time for: that request is slow, not lost.
 
 The ENTSO-E prices are not given to Lambda: `BE_PRICE_PATH` points to a file that does not
 exist. `app.py` then behaves exactly as it does locally without `prices_BE.parquet`: the

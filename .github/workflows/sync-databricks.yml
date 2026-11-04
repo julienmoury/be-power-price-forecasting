@@ -1,0 +1,61 @@
+name: Sync Databricks
+
+# Feeds the GenAI assistant of julienmoury/be-power-genai-assistant: copies the three live
+# CSV files of the S3 state (written by the live forecast task, 17:30 and 20:30 UTC), as
+# they are, to the Databricks Volume workspace.be_power.live, 45 minutes after each run.
+# AWS: OIDC, read-only role on state/ (infra/bootstrap/bootstrap.yaml). Databricks: the
+# secrets DATABRICKS_HOST and DATABRICKS_TOKEN; without them, nothing is copied and the run
+# succeeds.
+on:
+  schedule:
+    - cron: "15 18 * * *"
+    - cron: "15 21 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+    steps:
+      - name: Check the configuration
+        id: check
+        run: |
+          if [ -z "$DATABRICKS_HOST" ] || [ -z "$DATABRICKS_TOKEN" ]; then
+            echo "::warning::DATABRICKS_HOST or DATABRICKS_TOKEN not set, nothing copied"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          elif [ -z "${{ vars.AWS_READONLY_ROLE_ARN }}" ] || [ -z "${{ vars.DATA_BUCKET }}" ]; then
+            echo "::warning::AWS_READONLY_ROLE_ARN or DATA_BUCKET not set (docs/aws.md), nothing copied"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.check.outputs.ready == 'true'
+        uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_READONLY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'eu-west-1' }}
+      - name: Download the live files
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          for file in results/forecasts/live/forecasts.csv \
+                      results/forecasts/live/dnn_forecasts.csv \
+                      results/live/realised.csv; do
+            aws s3 cp --no-progress "s3://${{ vars.DATA_BUCKET }}/state/$file" "$file"
+          done
+      - if: steps.check.outputs.ready == 'true'
+        uses: databricks/setup-cli@v1.21.0
+      - name: Copy them to Databricks
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          for file in results/forecasts/live/forecasts.csv \
+                      results/forecasts/live/dnn_forecasts.csv \
+                      results/live/realised.csv; do
+            databricks fs cp --overwrite "$file" dbfs:/Volumes/workspace/be_power/live/
+          done
+          databricks fs ls dbfs:/Volumes/workspace/be_power/live/ -l

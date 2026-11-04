@@ -21,3 +21,48 @@ jobs:
           ruff format --check .
       - name: Tests
         run: pytest -q
+
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: hashicorp/setup-terraform@v4.0.1
+        with:
+          terraform_version: 1.16.6
+          terraform_wrapper: false
+      - name: Format and validate
+        run: |
+          terraform fmt -check -recursive
+          terraform init -backend=false
+          terraform validate
+
+  image:
+    # The image of the AWS deployment: the forecast service answers on /health and
+    # /forecast, as the default command (local, Fargate image) and as on Lambda (port 8080,
+    # python -m be_power_forecast.cloud, which needs no bucket to start).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Build the image
+        run: docker build --provenance=false -t be-power-forecast .
+      - name: Check the forecast service
+        run: |
+          docker run --rm --entrypoint test be-power-forecast -x /opt/extensions/lambda-adapter
+          docker run --rm be-power-forecast python -c "import boto3, be_power_forecast.cloud"
+          docker run --rm be-power-forecast python scripts/aws_run.py --help
+          docker run -d --name local -p 8000:8000 be-power-forecast
+          docker run -d --name lambda -p 8080:8080 be-power-forecast python -m be_power_forecast.cloud
+          for port in 8000 8080; do
+            for i in $(seq 30); do curl -sf localhost:$port/health && break; sleep 1; done
+            echo
+            curl -sf -X POST localhost:$port/forecast -H "Content-Type: application/json" \
+              -d '{"delivery_day": "2026-09-30"}' | tee answer.json
+            echo
+            python3 -c "import json; a = json.load(open('answer.json')); \
+              assert a['model'] == 'lear_ensemble' and len(a['prices']) == 24, a; \
+              assert len(a['dnn_prices']) == 24, a"
+          done
+          docker rm -f local lambda

@@ -10,6 +10,12 @@ Parameters:
     Type: String
     Default: julienmoury/be-power-price-forecasting
     Description: Only workflows of this repository can assume the roles.
+  GitHubImmutableSubjectPrefix:
+    Type: String
+    Default: repo:julienmoury@120372976/be-power-price-forecasting@1405525267
+    Description: >-
+      Subject prefix of the same repository when it uses GitHub's immutable OIDC subject
+      (owner and repository IDs; gh api repos/<repo>/actions/oidc/customization/sub).
   ExistingOidcProviderArn:
     Type: String
     Default: ""
@@ -174,7 +180,9 @@ Resources:
               StringEquals:
                 token.actions.githubusercontent.com:aud: sts.amazonaws.com
               StringLike:
-                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubRepository}:*
+                token.actions.githubusercontent.com:sub:
+                  - !Sub repo:${GitHubRepository}:*
+                  - !Sub ${GitHubImmutableSubjectPrefix}:*
       ManagedPolicyArns:
         - !Ref DeployPolicyState
         - !Ref DeployPolicyServices
@@ -376,7 +384,9 @@ Resources:
               StringEquals:
                 token.actions.githubusercontent.com:aud: sts.amazonaws.com
               StringLike:
-                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubRepository}:*
+                token.actions.githubusercontent.com:sub:
+                  - !Sub repo:${GitHubRepository}:*
+                  - !Sub ${GitHubImmutableSubjectPrefix}:*
       Policies:
         - PolicyName: read-state
           PolicyDocument:

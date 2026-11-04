@@ -19,3 +19,9 @@ data/cache/
 artifacts/
 # macOS
 .DS_Store
+# Terraform (infra/)
+.terraform/
+*.tfplan
+tfplan
+*.tfstate
+*.tfstate.*

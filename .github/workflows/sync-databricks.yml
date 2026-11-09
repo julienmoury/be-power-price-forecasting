@@ -2,7 +2,9 @@ name: Sync Databricks
 
 # Feeds the GenAI assistant of julienmoury/be-power-genai-assistant: copies the three live
 # CSV files of the S3 state (written by the live forecast task, 17:30 and 20:30 UTC), as
-# they are, to the Databricks Volume workspace.be_power.live, 45 minutes after each run.
+# they are, to the Databricks Volume workspace.be_power.live, 45 minutes after each run,
+# then refreshes their Delta copies as they are (workspace.be_power.*_csv), which the
+# deployed agent reads: a Model Serving endpoint can be given access to tables, not to a Volume.
 # AWS: OIDC, read-only role on state/ (infra/bootstrap/bootstrap.yaml). Databricks: the
 # secrets DATABRICKS_HOST and DATABRICKS_TOKEN; without them, nothing is copied and the run
 # succeeds.
@@ -59,3 +61,13 @@ jobs:
             databricks fs cp --overwrite "$file" dbfs:/Volumes/workspace/be_power/live/
           done
           databricks fs ls dbfs:/Volumes/workspace/be_power/live/ -l
+      - name: Refresh the table copies read by the deployed agent
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          warehouse=$(databricks warehouses list -o json | jq -r '.[0].id')
+          for pair in lear_forecasts_csv:forecasts.csv dnn_forecasts_csv:dnn_forecasts.csv realised_csv:realised.csv; do
+            table=${pair%%:*}; file=${pair#*:}
+            state=$(databricks api post /api/2.0/sql/statements --json "{\"warehouse_id\": \"$warehouse\", \"wait_timeout\": \"50s\", \"statement\": \"CREATE OR REPLACE TABLE workspace.be_power.$table AS SELECT * FROM read_files('/Volumes/workspace/be_power/live/$file', format => 'csv', header => true)\"}" | jq -r .status.state)
+            echo "$table: $state"
+            [ "$state" = "SUCCEEDED" ]
+          done

@@ -57,8 +57,8 @@ tells whether one model is really better or just lucky on this sample.
    since 1 October are computed in SQL (DuckDB). The infrastructure is in Terraform and
    deployed by GitHub Actions ([docs/aws.md](docs/aws.md)). A small API (FastAPI, in Docker,
    on AWS Lambda) serves the forecasts to my
-   [storage project](https://github.com/julienmoury/be-storage-dispatch), which runs a battery
-   on them every evening.
+   [storage project](https://github.com/julienmoury/be-storage-dispatch), which computes what
+   they are worth to a battery.
 
 ## Results
 

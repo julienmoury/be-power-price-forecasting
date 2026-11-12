@@ -137,6 +137,40 @@ def dnn_block(phase: str, real, lear_ens, naive, missing: list[str], published=N
     return out, ens
 
 
+def lgbm_block(real, lear_ens, dnn_ens, naive, missing: list[str]) -> dict | None:
+    """The LightGBM challenger against the paper's models on the phase B test days, with
+    its tuning on 2015-2016 (scripts/tune_lgbm.py); ``None`` if a piece is missing."""
+    fc, tuning = load("phase_b/lgbm"), ROOT / "results" / "lgbm_tuning.json"
+    if fc is None or dnn_ens is None or not tuning.exists():
+        missing.append("phase_b/lgbm, results/lgbm_tuning.json or the DNN forecasts")
+        return None
+    tuning = json.loads(tuning.read_text())
+    fc = fc.loc[real.index]
+    R, F = real.to_numpy(), fc.to_numpy()
+    others = {"lear": lear_ens, "dnn": dnn_ens, "naive": naive}
+    tests = {}
+    for name, other in others.items():
+        tests[f"gw_p_lgbm_better_than_{name}"] = float(gw_test(R, other.to_numpy(), F)[1])
+        tests[f"gw_p_{name}_better_than_lgbm"] = float(gw_test(R, F, other.to_numpy())[1])
+    by_year = lambda f: (real - f).abs().mean(axis=1).groupby(real.index.year).mean()  # noqa: E731
+    years = pd.DataFrame(
+        {"LightGBM": by_year(fc), "LEAR ens.": by_year(lear_ens), "DNN ens.": by_year(dnn_ens)}
+    )
+    return {
+        "tuning": {
+            "period": tuning["tuning_period"],
+            "configurations": len(tuning["scores"]),
+            "retrain_every_days": tuning["retrain_every_days"],
+            "best": tuning["best"],
+            "worst_MAE": max(t["MAE"] for t in tuning["scores"]),
+        },
+        "accuracy": scores(real, fc),
+        "gain vs naive %": 100 * (1 - mae(real, fc) / mae(real, naive)),
+        "tests": tests,
+        "MAE by year": {str(y): row.to_dict() for y, row in years.iterrows()},
+    }
+
+
 def phase_b(missing: list[str]) -> tuple[dict | None, list[str], tuple | None]:
     """Phase B: the paper's protocol on the joined BE.csv + ENTSO-E frame, 2017-2026.
 
@@ -188,6 +222,9 @@ def phase_b(missing: list[str]) -> tuple[dict | None, list[str], tuple | None]:
     if dnn is not None:
         out["dnn"] = dnn[0]
     dnn_ens = None if dnn is None else dnn[1]
+    lgbm = lgbm_block(real, ens, dnn_ens, naive, missing)
+    if lgbm is not None:
+        out["lgbm"] = lgbm
     md = [
         f"## Phase B: 4-window LEAR on BE.csv + ENTSO-E data, {begin} to {end}",
         f"{len(real)} of {out['test_days']} test days evaluated (days depending on a "
@@ -199,6 +236,9 @@ def phase_b(missing: list[str]) -> tuple[dict | None, list[str], tuple | None]:
     ]
     if "dnn" in out:
         md += ["### Phase B: our DNNs", "```", json.dumps(out["dnn"], indent=1), "```", ""]
+    if "lgbm" in out:
+        md += ["### Phase B: LightGBM challenger (beyond the paper)", "```"]
+        md += [json.dumps(out["lgbm"], indent=1), "```", ""]
     return out, md, (real, ens, naive, dnn_ens)
 
 

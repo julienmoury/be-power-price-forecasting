@@ -23,6 +23,10 @@ the realised prices, updated every evening. The forecasts are also served by a p
 - **The neural network is no longer better.** It was clearly better in 2015–2016; on
   2017–2026 the two models are statistically tied (14.46 vs
   14.52 EUR/MWh).
+- **A tuned LightGBM does not beat them.** Beyond the paper, I tuned a gradient-boosting
+  challenger on 2015–2016 and tracked the 24 trials
+  with MLflow. On 2017–2026 it beats the naive forecast but makes more error than both
+  models of the paper (16.41 EUR/MWh).
 - **Hourly forecasts have a floor.** Since October 2025 the market sets 96 quarter-hour
   prices a day; even a perfect hourly forecast would miss them by
   7.91 EUR/MWh on average.
@@ -80,6 +84,7 @@ The LEAR beats the naive forecast by 23 %, and the DNN beats the LEAR
 | Naive | 21.87 |
 | LEAR ensemble | 14.52 |
 | DNN ensemble | 14.46 |
+| LightGBM (challenger, beyond the paper) | 16.41 |
 
 Errors are much larger than in 2015–2016 because prices are much more volatile, but both
 models still beat the naive forecast by a third. Between the two, the test does not
@@ -90,6 +95,39 @@ separate them: for "the DNN is better", GW p = 0.51; for
 
 Every single model (each history length, each network) is in
 [`results/summary.md`](results/summary.md).
+
+## Challenger beyond the paper: LightGBM
+
+To see whether a popular modern model does better, I added a LightGBM challenger, kept
+apart from the reproduction. It gets exactly the inputs of the LEAR and, like it, one
+model per hour retrained every day on the past only.
+
+**Tuning before the test.** I chose its settings on 2015-01-04 to
+2016-12-31 only, before the test period: 24
+configurations (history length, tree size, learning rate, number of trees), each backtested
+with a weekly retraining and recorded as one MLflow run with its settings, its error and its
+duration. The best one (1456 days of history,
+15 leaves, learning rate 0.03,
+300 trees) had an error of 6.38 EUR/MWh,
+against 7.12 for the worst. I froze it, then ran the 2017–2026
+test once, with no re-tuning.
+
+![MLflow comparison of the tuning runs](results/figures/mlflow_tuning.png)
+
+*Each line is one configuration, coloured by its error: the longest history and the
+slowest learning rate win.*
+
+**Result: it loses.** On 2017–2026 it makes 25 % less
+error than the naive forecast, but more than the LEAR ensemble
+(16.41 vs 14.52 EUR/MWh) and the DNN
+ensemble (14.46). The GW test is clear: for "the LEAR is
+better", p < 10⁻¹⁵; for "the DNN is better",
+p < 10⁻¹⁵. The gap is widest in the 2022 crisis
+(50.94 vs 41.43 EUR/MWh
+for the LEAR). A likely reason: a tree can only predict values close to those it saw in
+training, so it cannot follow
+prices that rise above their past range, while a linear model can. The yearly errors are
+in [`results/summary.md`](results/summary.md). LightGBM is also in the live forecast.
 
 ## What I take away
 
@@ -115,8 +153,9 @@ Every single model (each history length, each network) is in
 
 ## What I would do next
 
-At first I had also tried Belgian inputs and a LightGBM model, but I removed them to keep
-the reproduction clean. To turn this into a forecast usable today, I would:
+With the paper's inputs, neither the DNN nor LightGBM beats the linear model, so the next
+gain is more likely to come from better inputs than from a more complex model. To turn this
+into a forecast usable today, I would:
 
 1. **Forecast before the auction from Belgian fundamentals**: Belgian load, wind and solar
    forecasts, weather and the gas price. Wind and solar push the price down and gas plants
@@ -135,13 +174,13 @@ test.
 ```
 src/be_power_forecast/
   data/         ENTSO-E download, daylight-saving and quarter-hour handling
-  models/       LEAR and DNN (adapted from the paper's code)
+  models/       LEAR and DNN (adapted from the paper's code), LightGBM challenger
   evaluation/   error measures, Diebold-Mariano and Giacomini-White tests
   api/          FastAPI service, with the naive forecast as fallback
   live.py       daily forecast
   sql/          live errors in SQL (DuckDB), run by live_report.py
   cloud.py      S3 state of the AWS deployment
-scripts/        backtests, report, live forecast (aws_run.py: on AWS)
+scripts/        backtests, LightGBM tuning, report, live forecast (aws_run.py: on AWS)
 infra/          AWS infrastructure (Terraform), see docs/aws.md
 tests/          unit tests and checks against the original code (run in CI)
 ```
@@ -157,7 +196,9 @@ pytest -q                                   # tests, including the checks agains
 export ENTSOE_API_KEY=...                   # your own token
 python scripts/build_phase_b.py             # download ENTSO-E data
 python scripts/run_experiments.py           # backtests on the paper's period (long)
-python scripts/run_experiments.py --phase B # backtests 2017–2026 (long)
+pip install -e ".[experiments]"             # MLflow, for the LightGBM tuning
+python scripts/tune_lgbm.py                 # tuning on 2015–2016, tracked in mlruns/ (long)
+python scripts/run_experiments.py --phase B # backtests 2017–2026, LightGBM included (long)
 python scripts/make_report.py               # metrics.json, figure, README
 ```
 

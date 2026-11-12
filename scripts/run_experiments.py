@@ -4,11 +4,13 @@ Phase A: the paper's dataset (BE.csv), test 2015-01-04 to 2016-12-31, plus a dia
 the gap to the published forecasts (exogenous lags of the pre-2024 library).
 Phase B: the same 4-window protocol on the ENTSO-E standard frame built by
 scripts/build_phase_b.py (data/cache/phase_b_FR.parquet), test 2019-01-01 to 2026-09-30;
-forecasts go to results/forecasts/phase_b/.
+forecasts go to results/forecasts/phase_b/. With --phase B, the LightGBM challenger (frozen
+configuration of models/lgbm.py, retrained every day) follows, into phase_b/lgbm.csv.
 
 Each experiment is skipped if its CSV already exists, so the script can be resumed; a CSV
 that starts after the test period (phase B moved from 2019 to 2017 with the join of
 BE.csv and ENTSO-E) is extended with the missing first days only.
+LightGBM is computed year by year, appended to its CSV, so that a stopped run resumes.
 Usage: python scripts/run_experiments.py [--phase A|B] [--only NAME ...] [--n-jobs N]
 """
 
@@ -29,6 +31,7 @@ from be_power_forecast.data.sources import (
     validate_standard_frame,
 )
 from be_power_forecast.models.lear import DEFAULT_SPEC, FeatureSpec
+from be_power_forecast.models.lgbm import lgbm_backtest
 
 OUT = Path(__file__).resolve().parents[1] / "results" / "forecasts"
 
@@ -79,6 +82,20 @@ def main() -> None:
         fc.to_csv(path, float_format="%.6f")
         runtime = time.time() - start
         print(f"{name}: {len(fc)} days in {runtime:.0f}s", flush=True)
+    if args.phase == "B" and (not args.only or "lgbm" in args.only):
+        run_lgbm(df, out / "lgbm.csv", begin, end, args.n_jobs)
+
+
+def run_lgbm(df: pd.DataFrame, path: Path, begin: str, end: str, n_jobs: int | None) -> None:
+    for year in range(pd.Timestamp(begin).year, pd.Timestamp(end).year + 1):
+        old = pd.read_csv(path, index_col=0, parse_dates=True) if path.exists() else None
+        if old is not None and (old.index.year == year).any():
+            continue
+        lo, hi = max(begin, f"{year}-01-01"), min(end, f"{year}-12-31")
+        start = time.time()
+        fc = lgbm_backtest(df, lo, hi, n_jobs=n_jobs)
+        pd.concat([old, fc]).to_csv(path, float_format="%.6f")
+        print(f"lgbm {year}: {len(fc)} days in {time.time() - start:.0f}s", flush=True)
 
 
 if __name__ == "__main__":

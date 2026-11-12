@@ -39,3 +39,7 @@ LIVE_START = "2026-10-01"
 EXOGENOUS = ["Generation forecast FR", "Load forecast FR"]
 
 PAPER_WINDOWS = (56, 84, 1092, 1456)
+
+# LightGBM challenger (beyond the paper): its configuration is chosen on the paper's test
+# period, before the phase B test period, on the phase B frame.
+LGBM_TUNING = PHASE_A_TEST

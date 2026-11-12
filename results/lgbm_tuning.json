@@ -1,0 +1,303 @@
+{
+ "scores": [
+  {
+   "calibration_window": 364,
+   "num_leaves": 15,
+   "learning_rate": 0.03,
+   "n_estimators": 300,
+   "MAE": 6.98837046631725,
+   "MAE 2015": 7.6669513563824605,
+   "MAE 2016": 6.307909850794796,
+   "seconds": 288,
+   "days": 723
+  },
+  {
+   "calibration_window": 364,
+   "num_leaves": 15,
+   "learning_rate": 0.03,
+   "n_estimators": 600,
+   "MAE": 7.043643108496594,
+   "MAE 2015": 7.7232090130872155,
+   "MAE 2016": 6.362194749876637,
+   "seconds": 690,
+   "days": 723
+  },
+  {
+   "calibration_window": 364,
+   "num_leaves": 15,
+   "learning_rate": 0.1,
+   "n_estimators": 300,
+   "MAE": 7.098601573582293,
+   "MAE 2015": 7.779301807889646,
+   "MAE 2016": 6.416015743058022,
+   "seconds": 338,
+   "days": 723
+  },
+  {
+   "calibration_window": 364,
+   "num_leaves": 15,
+   "learning_rate": 0.1,
+   "n_estimators": 600,
+   "MAE": 7.120801149083598,
+   "MAE 2015": 7.801336435139236,
+   "MAE 2016": 6.438380723731406,
+   "seconds": 746,
+   "days": 723
+  },
+  {
+   "calibration_window": 364,
+   "num_leaves": 31,
+   "learning_rate": 0.03,
+   "n_estimators": 300,
+   "MAE": 6.981623376451134,
+   "MAE 2015": 7.652457130145633,
+   "MAE 2016": 6.308931357510946,
+   "seconds": 317,
+   "days": 723
+  },
+  {
+   "calibration_window": 364,
+   "num_leaves": 31,
+   "learning_rate": 0.03,
+   "n_estimators": 600,
+   "MAE": 7.040151002311719,
+   "MAE 2015": 7.713824830963227,
+   "MAE 2016": 6.364611041170873,
+   "seconds": 580,
+   "days": 723
+  },
+  {
+   "calibration_window": 364,
+   "num_leaves": 31,
+   "learning_rate": 0.1,
+   "n_estimators": 300,
+   "MAE": 7.08999838802168,
+   "MAE 2015": 7.7791061285659175,
+   "MAE 2016": 6.398981761769566,
+   "seconds": 311,
+   "days": 723
+  },
+  {
+   "calibration_window": 364,
+   "num_leaves": 31,
+   "learning_rate": 0.1,
+   "n_estimators": 600,
+   "MAE": 7.110777236506305,
+   "MAE 2015": 7.7992520117738735,
+   "MAE 2016": 6.420395328897272,
+   "seconds": 640,
+   "days": 723
+  },
+  {
+   "calibration_window": 728,
+   "num_leaves": 15,
+   "learning_rate": 0.03,
+   "n_estimators": 300,
+   "MAE": 6.616293316330539,
+   "MAE 2015": 7.326258955890163,
+   "MAE 2016": 5.904361012949422,
+   "seconds": 784,
+   "days": 723
+  },
+  {
+   "calibration_window": 728,
+   "num_leaves": 15,
+   "learning_rate": 0.03,
+   "n_estimators": 600,
+   "MAE": 6.676346595281023,
+   "MAE 2015": 7.37634992509055,
+   "MAE 2016": 5.974404198075902,
+   "seconds": 1245,
+   "days": 723
+  },
+  {
+   "calibration_window": 728,
+   "num_leaves": 15,
+   "learning_rate": 0.1,
+   "n_estimators": 300,
+   "MAE": 6.742255324338999,
+   "MAE 2015": 7.411930799133851,
+   "MAE 2016": 6.070724792827263,
+   "seconds": 609,
+   "days": 723
+  },
+  {
+   "calibration_window": 728,
+   "num_leaves": 15,
+   "learning_rate": 0.1,
+   "n_estimators": 600,
+   "MAE": 6.762450588749038,
+   "MAE 2015": 7.421374395325623,
+   "MAE 2016": 6.1017015084700255,
+   "seconds": 1215,
+   "days": 723
+  },
+  {
+   "calibration_window": 728,
+   "num_leaves": 31,
+   "learning_rate": 0.03,
+   "n_estimators": 300,
+   "MAE": 6.68442963129101,
+   "MAE 2015": 7.356660502174594,
+   "MAE 2016": 6.0103366250310195,
+   "seconds": 1090,
+   "days": 723
+  },
+  {
+   "calibration_window": 728,
+   "num_leaves": 31,
+   "learning_rate": 0.03,
+   "n_estimators": 600,
+   "MAE": 6.74836660413285,
+   "MAE 2015": 7.38800464255875,
+   "MAE 2016": 6.106956715184995,
+   "seconds": 2000,
+   "days": 723
+  },
+  {
+   "calibration_window": 728,
+   "num_leaves": 31,
+   "learning_rate": 0.1,
+   "n_estimators": 300,
+   "MAE": 6.83764180005684,
+   "MAE 2015": 7.481569172643889,
+   "MAE 2016": 6.191930695135754,
+   "seconds": 1045,
+   "days": 723
+  },
+  {
+   "calibration_window": 728,
+   "num_leaves": 31,
+   "learning_rate": 0.1,
+   "n_estimators": 600,
+   "MAE": 6.869960688339826,
+   "MAE 2015": 7.493183988398792,
+   "MAE 2016": 6.2450110079482855,
+   "seconds": 2107,
+   "days": 723
+  },
+  {
+   "calibration_window": 1456,
+   "num_leaves": 15,
+   "learning_rate": 0.03,
+   "n_estimators": 300,
+   "MAE": 6.377198280967138,
+   "MAE 2015": 7.096516564799031,
+   "MAE 2016": 5.655887425711888,
+   "seconds": 746,
+   "days": 723
+  },
+  {
+   "calibration_window": 1456,
+   "num_leaves": 15,
+   "learning_rate": 0.03,
+   "n_estimators": 600,
+   "MAE": 6.4284219377491,
+   "MAE 2015": 7.164594475064931,
+   "MAE 2016": 5.690210141327132,
+   "seconds": 1392,
+   "days": 723
+  },
+  {
+   "calibration_window": 1456,
+   "num_leaves": 15,
+   "learning_rate": 0.1,
+   "n_estimators": 300,
+   "MAE": 6.547885864852114,
+   "MAE 2015": 7.266741760724382,
+   "MAE 2016": 5.827038678409562,
+   "seconds": 682,
+   "days": 723
+  },
+  {
+   "calibration_window": 1456,
+   "num_leaves": 15,
+   "learning_rate": 0.1,
+   "n_estimators": 600,
+   "MAE": 6.568462252207961,
+   "MAE 2015": 7.286502822385085,
+   "MAE 2016": 5.8484326499804835,
+   "seconds": 1312,
+   "days": 723
+  },
+  {
+   "calibration_window": 1456,
+   "num_leaves": 31,
+   "learning_rate": 0.03,
+   "n_estimators": 300,
+   "MAE": 6.429449969106645,
+   "MAE 2015": 7.122565465739209,
+   "MAE 2016": 5.734414484948781,
+   "seconds": 1372,
+   "days": 723
+  },
+  {
+   "calibration_window": 1456,
+   "num_leaves": 31,
+   "learning_rate": 0.03,
+   "n_estimators": 600,
+   "MAE": 6.470785629621775,
+   "MAE 2015": 7.157638909176917,
+   "MAE 2016": 5.7820297094030435,
+   "seconds": 2655,
+   "days": 723
+  },
+  {
+   "calibration_window": 1456,
+   "num_leaves": 31,
+   "learning_rate": 0.1,
+   "n_estimators": 300,
+   "MAE": 6.571984088720061,
+   "MAE 2015": 7.241923077315764,
+   "MAE 2016": 5.900189313452347,
+   "seconds": 1313,
+   "days": 723
+  },
+  {
+   "calibration_window": 1456,
+   "num_leaves": 31,
+   "learning_rate": 0.1,
+   "n_estimators": 600,
+   "MAE": 6.585288847586663,
+   "MAE 2015": 7.24545425311534,
+   "MAE 2016": 5.923294729023282,
+   "seconds": 2620,
+   "days": 723
+  }
+ ],
+ "tuning_period": [
+  "2015-01-04",
+  "2016-12-31"
+ ],
+ "retrain_every_days": 7,
+ "grid": {
+  "calibration_window": [
+   364,
+   728,
+   1456
+  ],
+  "num_leaves": [
+   15,
+   31
+  ],
+  "learning_rate": [
+   0.03,
+   0.1
+  ],
+  "n_estimators": [
+   300,
+   600
+  ]
+ },
+ "best": {
+  "calibration_window": 1456,
+  "num_leaves": 15,
+  "learning_rate": 0.03,
+  "n_estimators": 300,
+  "MAE": 6.377198280967138,
+  "MAE 2015": 7.096516564799031,
+  "MAE 2016": 5.655887425711888,
+  "seconds": 746,
+  "days": 723
+ }
+}

@@ -21,6 +21,7 @@ def test_errors_since_the_first_live_day(tmp_path):
     files = {
         "lear": daily_file(tmp_path / "lear.csv", live, 110.0),  # always 10 too high
         "dnn": daily_file(tmp_path / "dnn.csv", live[:-1], 100.0),  # no forecast of 10-07
+        "lgbm": daily_file(tmp_path / "lgbm.csv", live[1:], 95.0),  # none of 10-01
     }
     out = live_errors(files, realised, "2026-10-01")
 
@@ -31,9 +32,12 @@ def test_errors_since_the_first_live_day(tmp_path):
     assert daily.loc[pd.Timestamp("2026-10-07"), "naive"] == 30
     assert daily.loc[pd.Timestamp("2026-10-06"), "lear"] == 20
 
-    # The summary only keeps the 6 days where the three models have a forecast.
+    assert daily.loc[pd.Timestamp("2026-10-06"), "lgbm"] == 35
+
+    # The summary only keeps the 5 days where every model has a forecast.
     summary = out["summary"].set_index("model")
-    assert (summary["days"] == 6).all()
-    assert summary.loc["lear", "since_start"] == (5 * 10 + 20) / 6
-    assert summary.loc["dnn", "since_start"] == 30 / 6
+    assert (summary["days"] == 5).all()
+    assert summary.loc["lear", "since_start"] == (4 * 10 + 20) / 5
+    assert summary.loc["dnn", "since_start"] == 30 / 5
+    assert summary.loc["lgbm", "since_start"] == (4 * 5 + 35) / 5
     assert list(out["by_hour"]["hour"]) == list(range(24))

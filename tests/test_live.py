@@ -39,3 +39,4 @@ def test_no_forecast_when_a_french_forecast_is_not_published():
     # Never the naive forecast: it is a copy of past prices, which are not published.
     frame = live_frame(raw(DAY - pd.Timedelta(days=1)), DAY)
     assert forecast_day(frame, DAY) is None
+    assert forecast_day(frame, DAY, "lgbm") is None

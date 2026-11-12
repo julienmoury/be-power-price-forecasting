@@ -11,6 +11,7 @@ from be_power_forecast.api.app import (
     create_app,
     load_dnn_forecasts,
     load_lear_forecasts,
+    load_lgbm_forecasts,
     load_prices,
 )
 from be_power_forecast.backtest import HOURS
@@ -57,6 +58,7 @@ def test_health(api):
         "status": "ok",
         "lear_forecasts": True,
         "dnn_forecasts": False,
+        "lgbm_forecasts": False,
         "prices": True,
         "first_day": "2019-01-01",
         "last_day": "2019-02-01",  # day after the last known prices
@@ -175,3 +177,25 @@ def test_dnn_ensemble_is_served_next_to_the_lear(data_dir):
         np.testing.assert_allclose(body["dnn_prices"], expected)
         assert post(c, "2019-01-20").json()["dnn_prices"] == list(range(24))
         assert post(c, "2019-01-25").json()["dnn_prices"] is None
+
+
+def test_lgbm_is_served_next_to_the_lear(data_dir):
+    # LightGBM backtest for the first ten days, live forecast for 2019-01-20.
+    days = FORECAST_DAYS[:10]
+    backtest = pd.DataFrame(np.arange(240.0).reshape(10, 24), pd.Index(days, name="Date"), HOURS)
+    backtest.to_csv(data_dir / "lgbm.csv")
+    live = pd.DataFrame([np.ones(24)], pd.DatetimeIndex(["2019-01-20"], name="Date"), HOURS)
+    live.to_csv(data_dir / "lgbm_live.csv")
+    app_ = create_app(
+        lambda: load_lear_forecasts(data_dir),
+        lambda: load_prices(data_dir / "frame.parquet"),
+        first_day="2019-01-01",
+        lgbm_loader=lambda: load_lgbm_forecasts(data_dir, data_dir / "lgbm_live.csv"),
+    )
+    with TestClient(app_) as c:
+        assert c.get("/health").json()["lgbm_forecasts"] is True
+        body = post(c, "2019-01-03").json()
+        assert body["model"] == "lear_ensemble" and body["dnn_prices"] is None
+        assert body["lgbm_prices"] == list(range(48, 72))
+        assert post(c, "2019-01-20").json()["lgbm_prices"] == [1.0] * 24
+        assert post(c, "2019-01-25").json()["lgbm_prices"] is None

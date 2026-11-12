@@ -171,6 +171,20 @@
               }
             ],
             "title": "Dnn Prices"
+          },
+          "lgbm_prices": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lgbm Prices"
           }
         },
         "type": "object",

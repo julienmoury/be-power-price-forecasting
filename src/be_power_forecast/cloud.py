@@ -10,7 +10,7 @@ The private data bucket holds
 The daily run (``scripts/aws_run.py``, an ECS Fargate task) downloads both into a working
 directory, runs ``scripts/live_forecast.py`` unchanged on it and uploads what changed. On
 Lambda, ``python -m be_power_forecast.cloud`` copies the live forecast files of ``state/``
-to ``/tmp``, points ``BE_LIVE_PATH`` and ``BE_DNN_LIVE_PATH`` at them and starts the
+to ``/tmp``, points the ``BE_*_LIVE_PATH`` variables at them and starts the
 unchanged forecast service (``api/app.py``) behind the AWS Lambda Web Adapter. The phase B
 backtest forecasts are those of the image; the ENTSO-E prices (naive fallback) are not given
 to Lambda, so the service runs as it does locally when the price file is missing.
@@ -34,6 +34,7 @@ STATE_PATHS = ("results/forecasts/live", "results/dnn/live", "results/live", "li
 API_FILES = {
     "BE_LIVE_PATH": "results/forecasts/live/forecasts.csv",
     "BE_DNN_LIVE_PATH": "results/forecasts/live/dnn_forecasts.csv",
+    "BE_LGBM_LIVE_PATH": "results/forecasts/live/lgbm_forecasts.csv",
 }
 
 

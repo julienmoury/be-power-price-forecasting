@@ -63,6 +63,6 @@ jobs:
             echo
             python3 -c "import json; a = json.load(open('answer.json')); \
               assert a['model'] == 'lear_ensemble' and len(a['prices']) == 24, a; \
-              assert len(a['dnn_prices']) == 24, a"
+              assert len(a['dnn_prices']) == 24 and len(a['lgbm_prices']) == 24, a"
           done
           docker rm -f local lambda

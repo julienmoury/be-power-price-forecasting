@@ -1,14 +1,16 @@
-"""Forecast the next Belgian delivery day with the LEAR and DNN ensembles; publish in live/.
+"""Forecast the next Belgian delivery day with the LEAR and DNN ensembles and the LightGBM
+challenger; publish in live/.
 
 Run every evening by .github/workflows/live.yml, after the French day-ahead generation
 forecast of the next day is published on ENTSO-E (deadline 18:00 Brussels time, so after
 the 12:00 gate closure of the auction: the forecasts use the information of the paper but
 cannot be used to bid); needs ENTSOE_API_KEY. Steps: extend the cached ENTSO-E series,
-forecast the delivery day with the LEAR ensemble and with the DNN ensemble (the four DNNs
-recalibrated in parallel, as in the backtests), append them to
-results/forecasts/live/forecasts.csv and dnn_forecasts.csv (the training record of each DNN
-to results/dnn/live/summary.csv; weights are not kept), for the API and the next day
-(LEAR and DNN are never averaged). When an input is not published yet, no forecast is
+forecast the delivery day with the LEAR ensemble, the LightGBM challenger (frozen
+configuration, models/lgbm.py) and the DNN ensemble (the four DNNs recalibrated in
+parallel, as in the backtests), append them to results/forecasts/live/forecasts.csv,
+lgbm_forecasts.csv and dnn_forecasts.csv (the training record of each DNN to
+results/dnn/live/summary.csv; weights are not kept), for the API and the next day (the
+models are never averaged). When an input is not published yet, no forecast is
 written. A model that already has a forecast of the day is not run again (the workflow
 runs twice, the second time as a fallback; ``--day`` fills a missing past day).
 
@@ -47,8 +49,10 @@ LIVE = RESULTS_DIR / "forecasts" / "live"
 REALISED = RESULTS_DIR / "live" / "realised.csv"
 PAGE = REPO_ROOT / "live"
 ELIA = "https://www.elia.be/en/grid-data/transmission/day-ahead-reference-price"
-# Reference palette (dataviz skill, light mode): categorical slots 1-3, neutral ink and grey.
+# Reference palette (dataviz skill, light mode): categorical slots 1-4, neutral ink and grey.
 BLUE, ORANGE, AQUA, INK, GREY = "#2a78d6", "#eb6834", "#1baf7a", "#52514e", "#8a8984"
+YELLOW = "#eda100"
+MODELS = {"naive": "Naive", "lear": "LEAR", "dnn": "DNN", "lgbm": "LightGBM"}
 
 
 def _dnn_job(job):
@@ -107,7 +111,7 @@ def update_realised(today: pd.Timestamp, get=None) -> None:
 
 
 def compare(today: pd.Timestamp, get=None) -> dict | None:
-    """Realised prices of ``today`` (SMARD) with the naive, LEAR and DNN forecasts of it;
+    """Realised prices of ``today`` (SMARD) with the naive and models' forecasts of it;
     ``None`` when there is no LEAR forecast of today or its prices are not complete."""
     lear = stored(LIVE / "forecasts.csv", today)
     if lear is None:
@@ -125,7 +129,12 @@ def compare(today: pd.Timestamp, get=None) -> dict | None:
     if not (np.isfinite(real).all() and np.isfinite(naive).all()):
         return None
     q = quarter[quarter.index >= today.tz_localize(TZ)]
-    forecasts = {"naive": naive, "lear": lear, "dnn": stored(LIVE / "dnn_forecasts.csv", today)}
+    forecasts = {
+        "naive": naive,
+        "lear": lear,
+        "dnn": stored(LIVE / "dnn_forecasts.csv", today),
+        "lgbm": stored(LIVE / "lgbm_forecasts.csv", today),
+    }
     mae = {k: None if v is None else float(np.mean(np.abs(real - v))) for k, v in forecasts.items()}
     mae["perfect"] = intra_hour_deviation(q)[0]
     return {"quarter": q.tz_convert(TZ), "real": real, **forecasts, "mae": mae}
@@ -148,6 +157,7 @@ def compare_chart(today: pd.Timestamp, c: dict) -> None:
         ("naive", ORANGE, 1.6, "Naive"),
         ("lear", BLUE, 1.6, "LEAR"),
         ("dnn", AQUA, 1.6, "DNN"),
+        ("lgbm", YELLOW, 1.6, "LightGBM"),
     ]:
         v = c[key]
         if v is not None:
@@ -168,11 +178,11 @@ def compare_chart(today: pd.Timestamp, c: dict) -> None:
 def table(frame: pd.DataFrame, first: str) -> list[str]:
     """Markdown rows of a daily or by-hour error table (EUR/MWh)."""
     fmt = lambda v: "–" if pd.isna(v) else f"{v:.2f}"  # noqa: E731
-    rows = [f"| {first} | Naive | LEAR | DNN |", "|---|---|---|---|"]
+    rows = [f"| {first} | {' | '.join(MODELS.values())} |", "|---" * (len(MODELS) + 1) + "|"]
     for _, r in frame.iterrows():
         key = r.iloc[0]
         key = f"{key:%Y-%m-%d}" if hasattr(key, "strftime") else f"{key:.0f}"
-        rows.append(f"| {key} | {fmt(r.naive)} | {fmt(r.lear)} | {fmt(r.dnn)} |")
+        rows.append(f"| {key} | {' | '.join(fmt(r[k]) for k in MODELS)} |")
     return rows
 
 
@@ -187,8 +197,9 @@ def write_page(today: pd.Timestamp, c: dict | None, report: dict | None, now) ->
         "",
         f"Since {start:%-d %B %Y}, the day after the end of the backtest, the two models "
         "of the project forecast every Belgian delivery day: the LEAR ensemble and the DNN "
-        "ensemble, retrained every evening exactly as in the backtest. Each forecast is "
-        "then compared with the realised prices.",
+        "ensemble, retrained every evening exactly as in the backtest. A LightGBM challenger, "
+        "beyond the paper, forecasts with the same inputs. Each forecast is then compared "
+        "with the realised prices.",
         "",
         "The forecasts use the French generation forecast, which is published after the "
         "12:00 auction: they follow the paper, but could not have been used to bid.",
@@ -209,9 +220,9 @@ def write_page(today: pd.Timestamp, c: dict | None, report: dict | None, now) ->
             "",
             "Error (MAE, EUR/MWh) against the hourly mean of the realised prices:",
             "",
-            "| Naive | LEAR | DNN | Perfect hourly forecast* |",
-            "|---|---|---|---|",
-            f"| {fmt(m['naive'])} | {fmt(m['lear'])} | {fmt(m['dnn'])} | {fmt(m['perfect'])} |",
+            f"| {' | '.join(MODELS.values())} | Perfect hourly forecast* |",
+            "|---" * (len(MODELS) + 1) + "|",
+            f"| {' | '.join(fmt(m[k]) for k in [*MODELS, 'perfect'])} |",
             "",
             "*Against the quarter-hour prices: the error a perfect hourly forecast still "
             "makes, since the models forecast hours.",
@@ -220,18 +231,17 @@ def write_page(today: pd.Timestamp, c: dict | None, report: dict | None, now) ->
     if report is not None and len(report["summary"]):
         s = report["summary"].set_index("model")
         days = int(s["days"].max())
-        names = {"naive": "Naive", "lear": "LEAR", "dnn": "DNN"}
         md += [
             f"## Since {start:%-d %B %Y} ({days} days)",
             "",
             "| Model | Error since the start | Last 7 days |",
             "|---|---|---|",
             *[
-                f"| {names[k]} | {r['since_start']:.2f} | {r['last_7_days']:.2f} |"
+                f"| {MODELS[k]} | {r['since_start']:.2f} | {r['last_7_days']:.2f} |"
                 for k, r in s.iterrows()
             ],
             "",
-            "Errors in EUR/MWh (MAE), on the days where the three models have a forecast. "
+            "Errors in EUR/MWh (MAE), on the days where every model has a forecast. "
             "The naive forecast copies the same day of last week on Mondays, Saturdays and "
             "Sundays, the previous day otherwise.",
             "",
@@ -266,7 +276,8 @@ def forecast(day: pd.Timestamp) -> None:
     """Forecast ``day`` with each model that has no forecast of it yet."""
     values = stored(LIVE / "forecasts.csv", day)
     dnn_values = stored(LIVE / "dnn_forecasts.csv", day)
-    if values is not None and dnn_values is not None:
+    lgbm_values = stored(LIVE / "lgbm_forecasts.csv", day)
+    if values is not None and dnn_values is not None and lgbm_values is not None:
         print(f"{day.date()}: already forecast")
         return
     source = EntsoeSource()
@@ -277,6 +288,10 @@ def forecast(day: pd.Timestamp) -> None:
         if values is not None:
             LIVE.mkdir(parents=True, exist_ok=True)
             append(LIVE / "forecasts.csv", day, values)
+    if values is not None and lgbm_values is None:
+        lgbm_values = forecast_day(frame, day, "lgbm")
+        if lgbm_values is not None:
+            append(LIVE / "lgbm_forecasts.csv", day, lgbm_values)
     records = []
     if values is not None and dnn_values is None:
         dnn_values, records = dnn_forecast(frame, day)
@@ -299,7 +314,8 @@ def forecast(day: pd.Timestamp) -> None:
         )
         print(f"{day.date()}: {reason}")
     else:
-        print(f"{day.date()}: LEAR ensemble" + (", DNN ensemble" if dnn_values is not None else ""))
+        done = ["LEAR ensemble", "LightGBM"] + ["DNN ensemble"] * (dnn_values is not None)
+        print(f"{day.date()}: {', '.join(done)}")
 
 
 def main() -> None:
@@ -321,7 +337,8 @@ def main() -> None:
         comparison = None
     report = None
     if REALISED.exists():
-        files = {"lear": LIVE / "forecasts.csv", "dnn": LIVE / "dnn_forecasts.csv"}
+        files = {m: LIVE / f"{m}_forecasts.csv" for m in ("dnn", "lgbm")}
+        files = {"lear": LIVE / "forecasts.csv", **{m: f for m, f in files.items() if f.exists()}}
         report = live_errors(files, REALISED, LIVE_START)
     write_page(today, comparison, report, now)
 

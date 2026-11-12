@@ -18,6 +18,7 @@ from be_power_forecast.data.calendar import standard_frame, to_local_days
 from be_power_forecast.data.entsoe_client import EntsoeClient
 from be_power_forecast.data.sources import EntsoeSource, JoinedSource, PriceSource
 from be_power_forecast.models.lear import DEFAULT_SPEC, LEAR, build_features, ensemble
+from be_power_forecast.models.lgbm import CONFIG, LGBM
 
 OVERLAP_DAYS = 7  # re-downloaded every day: late publications and corrections
 
@@ -69,10 +70,13 @@ def live_frame(raw: dict[str, pd.Series], day: pd.Timestamp) -> pd.DataFrame:
     return frame
 
 
-def forecast_day(frame: pd.DataFrame, day: pd.Timestamp) -> np.ndarray | None:
-    """LEAR ensemble forecast of ``day``, or ``None`` when an input is missing."""
+def forecast_day(frame: pd.DataFrame, day: pd.Timestamp, model: str = "lear") -> np.ndarray | None:
+    """LEAR ensemble (or, with ``model="lgbm"``, LightGBM) forecast of ``day``, or ``None``
+    when an input is missing."""
     X, Y, dates = build_features(frame)
     t = int(np.flatnonzero(dates == day)[0])
     if not np.isfinite(X[t]).all():
         return None
+    if model == "lgbm":
+        return LGBM(**CONFIG).forecast_days(X, Y, np.array([t]), DEFAULT_SPEC)[0]
     return ensemble([LEAR(cw).forecast_day(X, Y, t, DEFAULT_SPEC) for cw in PAPER_WINDOWS])

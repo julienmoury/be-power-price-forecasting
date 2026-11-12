@@ -55,7 +55,7 @@ seed-state.yml (one-off), live.yml (fallback, by hand).
 | `data/raw/dnn_hyperparameters_BE.json` | yes | | image |
 | `data/cache/{prices_BE,generation_FR,load_FR}_2015-01-01_2026-09-30.parquet` (ENTSO-E download of phase B, read the first time only) | yes | if missing | `cache/` |
 | `data/cache/{prices_BE,generation_FR,load_FR}_live.parquet` (ENTSO-E series, extended every day) | yes | yes | `cache/` |
-| `results/forecasts/live/forecasts.csv`, `dnn_forecasts.csv` | yes | yes | `state/` |
+| `results/forecasts/live/forecasts.csv`, `dnn_forecasts.csv`, `lgbm_forecasts.csv` | yes | yes | `state/` |
 | `results/dnn/live/summary.csv` (DNN training records) | yes | yes | `state/` |
 | `results/live/realised.csv` (SMARD, CC BY 4.0) | yes | yes | `state/` |
 | `live/README.md`, `live/compare.png` (page; the chart is removed on days without one) | | yes | `state/`, and the site bucket as HTML |
@@ -83,8 +83,8 @@ with the Terraform variable `task_memory` (2 vCPU allows 4 to 16 GB).
 ### The API on Lambda
 
 At a cold start, `python -m be_power_forecast.cloud` copies
-`state/results/forecasts/live/forecasts.csv` and `dnn_forecasts.csv` to `/tmp/api`, points
-`BE_LIVE_PATH` and `BE_DNN_LIVE_PATH` at them, and starts uvicorn on port 8080 behind the
+`state/results/forecasts/live/forecasts.csv`, `dnn_forecasts.csv` and `lgbm_forecasts.csv`
+to `/tmp/api`, points `BE_LIVE_PATH`, `BE_DNN_LIVE_PATH` and `BE_LGBM_LIVE_PATH` at them, and starts uvicorn on port 8080 behind the
 Web Adapter (readiness check: `/health`). A file it cannot fetch keeps the copy of the
 image (the live forecasts as of the build), so the service always starts. The phase B
 backtests come from the image.
@@ -377,8 +377,8 @@ Lambda, see above), and `last_day` is the last day forecast.
 curl -s -X POST "${API_URL}forecast" -H 'Content-Type: application/json' -d "{\"delivery_day\": \"$(curl -s "${API_URL}health" | python3 -c 'import json, sys; print(json.load(sys.stdin)["last_day"])')\"}"
 ```
 
-Check: `"model": "lear_ensemble"`, 24 `prices`, and 24 `dnn_prices` when the DNN ensemble
-forecast that day.
+Check: `"model": "lear_ensemble"`, 24 `prices`, and 24 `dnn_prices` (`lgbm_prices`) when
+the DNN ensemble (LightGBM) forecast that day.
 
 ```bash
 PAGE_URL=https://$(aws cloudfront list-distributions --query "DistributionList.Items[?Comment=='Live page of be-power-forecast'].DomainName" --output text)/ && echo "$PAGE_URL"

@@ -1,6 +1,6 @@
 # One image for the two jobs of the project, so that what runs every morning is what is
 # tested:
-# * the forecast service (src/be_power_forecast/api/app.py), the default command. The LEAR
+# * the forecast service (src/be_power_forecast/api/app.py), the default command. The
 #   backtest and live forecasts (our own results) are copied into the image; the ENTSO-E
 #   prices are not (re-use terms): mount data/cache read-only at /data (prices_BE.parquet,
 #   written by scripts/build_phase_b.py) for the naive fallback.
@@ -14,6 +14,9 @@
 # (python -m be_power_forecast.cloud, behind the AWS Lambda Web Adapter, an extension that
 # only starts on Lambda).
 FROM python:3.11-slim
+# OpenMP runtime of LightGBM.
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:1.1.0 /lambda-adapter /opt/extensions/lambda-adapter
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -23,7 +26,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     BE_FORECAST_DIR=/app/forecasts \
     BE_PRICE_PATH=/data/prices_BE.parquet \
     BE_LIVE_PATH=/app/live/forecasts.csv \
-    BE_DNN_LIVE_PATH=/app/live/dnn_forecasts.csv
+    BE_DNN_LIVE_PATH=/app/live/dnn_forecasts.csv \
+    BE_LGBM_LIVE_PATH=/app/live/lgbm_forecasts.csv
 
 WORKDIR /app
 COPY pyproject.toml README.md ./

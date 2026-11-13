@@ -70,9 +70,12 @@ tells whether one model is really better or just lucky on this sample.
 
 | Model | Error (MAE, EUR/MWh) | Paper |
 |---|---:|---:|
-| Naive | 8.20 | |
+| Naive | 8.20 | —* |
 | LEAR ensemble | 6.28 | 6.14 |
 | DNN ensemble | **5.85** | 5.87 |
+
+\* The Paper column is computed from the forecasts the paper publishes (Zenodo), LEAR and
+DNN only: no naive forecast is published.
 
 The LEAR beats the naive forecast by 23 %, and the DNN beats the LEAR
 (GW p = 2.8e-08), as in the paper.
@@ -92,6 +95,8 @@ separate them: for "the DNN is better", GW p = 0.51; for
 "the LEAR is better", p = 1.
 
 ![Monthly error](results/figures/monthly_mae.png)
+
+*Monthly error of each model; the LightGBM challenger (see below) runs on 2017–2026 only.*
 
 Every single model (each history length, each network) is in
 [`results/summary.md`](results/summary.md).

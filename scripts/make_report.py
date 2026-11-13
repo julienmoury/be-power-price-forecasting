@@ -38,6 +38,7 @@ PAPER_WINDOWS = [56, 84, 1092, 1456]
 # Reference palette (dataviz skill, light mode): categorical slots 1-3 + neutral ink.
 BLUE, ORANGE, GREY, INK = "#2a78d6", "#eb6834", "#8a8984", "#52514e"
 AQUA = "#1baf7a"  # categorical slot 3
+YELLOW = "#eda100"  # categorical slot 4
 
 
 def load(name: str) -> pd.DataFrame | None:
@@ -239,7 +240,8 @@ def phase_b(missing: list[str]) -> tuple[dict | None, list[str], tuple | None]:
     if "lgbm" in out:
         md += ["### Phase B: LightGBM challenger (beyond the paper)", "```"]
         md += [json.dumps(out["lgbm"], indent=1), "```", ""]
-    return out, md, (real, ens, naive, dnn_ens)
+    lgbm_fc = None if lgbm is None else load("phase_b/lgbm").loc[real.index]
+    return out, md, (real, ens, naive, dnn_ens, lgbm_fc)
 
 
 def _xy(series: pd.Series):
@@ -247,9 +249,10 @@ def _xy(series: pd.Series):
 
 
 def monthly_figure(phase_a: tuple, phase_b_frames: tuple | None) -> None:
-    """Monthly MAE of the LEAR and DNN ensembles and the naive forecast, phase A then B."""
+    """Monthly MAE of the LEAR and DNN ensembles and the naive forecast, phase A then B,
+    and of the LightGBM challenger on phase B."""
     frames = [phase_a] if phase_b_frames is None else [phase_a, phase_b_frames]
-    real, ens, naive = (pd.concat(parts) for parts in list(zip(*frames, strict=True))[:3])
+    real, ens, naive = (pd.concat(parts) for parts in zip(*(f[:3] for f in frames), strict=True))
     monthly = lambda f: (real - f).abs().mean(axis=1).resample("MS").mean()  # noqa: E731
     fig, ax = plt.subplots(figsize=(7.5, 3.6), dpi=150)
     style(ax)
@@ -259,6 +262,10 @@ def monthly_figure(phase_a: tuple, phase_b_frames: tuple | None) -> None:
     if all(len(f) > 3 and f[3] is not None for f in frames):
         dnn = pd.concat([f[3] for f in frames])
         ax.plot(*_xy(monthly(dnn)), color=AQUA, lw=1.8, label="DNN ensemble")
+    if phase_b_frames is not None and len(phase_b_frames) > 4 and phase_b_frames[4] is not None:
+        lgbm = phase_b_frames[4]
+        err = (real.loc[lgbm.index] - lgbm).abs().mean(axis=1).resample("MS").mean()
+        ax.plot(*_xy(err), color=YELLOW, lw=1.8, label="LightGBM (challenger)")
     if phase_b_frames is not None:
         start = phase_b_frames[0].index[0]
         ax.axvline(start, color=GREY, lw=1, ls=":")

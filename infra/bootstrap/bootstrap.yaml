@@ -1,9 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >-
   be-power-forecast bootstrap, deployed once by hand (docs/aws.md): the GitHub OIDC
-  provider, the deploy role of .github/workflows/deploy.yml, the read-only role of
-  .github/workflows/sync-databricks.yml, the permissions boundary of every role Terraform
-  creates, and the Terraform state bucket and lock table.
+  provider, the deploy role of .github/workflows/deploy.yml, the permissions boundary of
+  every role Terraform creates, and the Terraform state bucket and lock table.
 
 Parameters:
   GitHubRepository:
@@ -363,55 +362,10 @@ Resources:
               StringEquals:
                 iam:AWSServiceName: ecs.amazonaws.com
 
-  # ------------------------------------------------------------- read-only role
-  ReadOnlyRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: be-power-forecast-github-readonly
-      Description: Read state/ of the data bucket (.github/workflows/sync-databricks.yml).
-      MaxSessionDuration: 3600
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Federated: !If
-                - CreateOidcProvider
-                - !GetAtt GitHubOidcProvider.Arn
-                - !Ref ExistingOidcProviderArn
-            Action: sts:AssumeRoleWithWebIdentity
-            Condition:
-              StringEquals:
-                token.actions.githubusercontent.com:aud: sts.amazonaws.com
-              StringLike:
-                token.actions.githubusercontent.com:sub:
-                  - !Sub repo:${GitHubRepository}:*
-                  - !Sub ${GitHubImmutableSubjectPrefix}:*
-      Policies:
-        - PolicyName: read-state
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Sid: ReadState
-                Effect: Allow
-                Action: s3:GetObject
-                Resource: !Sub arn:${AWS::Partition}:s3:::be-power-forecast-data-${AWS::AccountId}/state/*
-              - Sid: ListState
-                Effect: Allow
-                Action: s3:ListBucket
-                Resource: !Sub arn:${AWS::Partition}:s3:::be-power-forecast-data-${AWS::AccountId}
-                Condition:
-                  StringLike:
-                    s3:prefix:
-                      - state/*
-
 Outputs:
   DeployRoleArn:
     Description: GitHub variable AWS_DEPLOY_ROLE_ARN.
     Value: !GetAtt DeployRole.Arn
-  ReadOnlyRoleArn:
-    Description: GitHub variable AWS_READONLY_ROLE_ARN.
-    Value: !GetAtt ReadOnlyRole.Arn
   StateBucket:
     Description: GitHub variable TF_STATE_BUCKET.
     Value: !Ref StateBucket

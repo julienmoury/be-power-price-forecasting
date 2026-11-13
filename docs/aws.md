@@ -29,8 +29,8 @@ EventBridge Scheduler ──17:30 / 20:30 UTC──▶ ECS Fargate task (2 vCPU,
           └──── state/results/forecasts/live/*.csv ──▶ Lambda (same image, Web Adapter)
                                                        public function URL: the API
 GitHub Actions: ci.yml (tests, Terraform checks, image), deploy.yml (plan / apply, image
-to ECR), sync-secrets.yml (ENTSO-E key to SSM), sync-databricks.yml (3 CSV to Databricks),
-seed-state.yml (one-off), live.yml (fallback, by hand).
+to ECR), sync-secrets.yml (ENTSO-E key to SSM), seed-state.yml (one-off), live.yml (fallback, by
+hand).
 ```
 
 | Piece | What it is |
@@ -164,9 +164,9 @@ every region.
 ### 2. Deploy the bootstrap stack
 
 The stack creates the GitHub OIDC provider, the deploy role (only workflows of
-`julienmoury/be-power-price-forecasting` can assume it), the read-only role of
-`sync-databricks.yml`, the permissions boundary of the roles Terraform creates, and the
-Terraform state bucket and lock table (DynamoDB, on demand).
+`julienmoury/be-power-price-forecasting` can assume it), the permissions boundary of the
+roles Terraform creates, and the Terraform state bucket and lock table (DynamoDB, on
+demand).
 
 ```bash
 aws iam list-open-id-connect-providers --query 'OpenIDConnectProviderList[].Arn' --output text
@@ -184,8 +184,7 @@ aws cloudformation deploy --region "$AWS_REGION" --stack-name be-power-forecast-
 aws cloudformation describe-stacks --region "$AWS_REGION" --stack-name be-power-forecast-bootstrap --query 'Stacks[0].{status: StackStatus, outputs: Outputs[].[OutputKey, OutputValue]}' --output table
 ```
 
-Check: `CREATE_COMPLETE`, and seven outputs (`DeployRoleArn`, `ReadOnlyRoleArn`,
-`StateBucket`, `LockTable`, `DataBucket`, `SiteBucket`, `PermissionsBoundaryArn`).
+Check: `CREATE_COMPLETE`, and six outputs (`DeployRoleArn`, `StateBucket`, `LockTable`, `DataBucket`, `SiteBucket`, `PermissionsBoundaryArn`).
 
 ### 3. Set the GitHub variables
 
@@ -201,10 +200,6 @@ gh variable set AWS_REGION --repo "$REPO" --body "$AWS_REGION"
 
 ```bash
 gh variable set AWS_DEPLOY_ROLE_ARN --repo "$REPO" --body "$(out DeployRoleArn)"
-```
-
-```bash
-gh variable set AWS_READONLY_ROLE_ARN --repo "$REPO" --body "$(out ReadOnlyRoleArn)"
 ```
 
 ```bash
@@ -233,8 +228,8 @@ gh variable set BUDGET_EMAIL --repo "$REPO" --body "name@example.com"
 gh variable list --repo "$REPO"
 ```
 
-Check: the eight variables are listed. The secrets `ENTSOE_API_KEY` (already there),
-`DATABRICKS_HOST` and `DATABRICKS_TOKEN` (optional) are managed in GitHub only:
+Check: the seven variables are listed. The secret `ENTSOE_API_KEY` (already there) is
+managed in GitHub only:
 
 ```bash
 gh secret list --repo "$REPO"
@@ -474,7 +469,7 @@ aws s3api delete-bucket --bucket "$STATE_BUCKET"
 ```
 
 ```bash
-for v in AWS_REGION AWS_DEPLOY_ROLE_ARN AWS_READONLY_ROLE_ARN TF_STATE_BUCKET TF_LOCK_TABLE DATA_BUCKET SITE_BUCKET BUDGET_EMAIL; do gh variable delete "$v" --repo "$REPO"; done
+for v in AWS_REGION AWS_DEPLOY_ROLE_ARN TF_STATE_BUCKET TF_LOCK_TABLE DATA_BUCKET SITE_BUCKET BUDGET_EMAIL; do gh variable delete "$v" --repo "$REPO"; done
 ```
 
 Check:
@@ -514,24 +509,9 @@ risk described above.
   only under `/be-power-forecast/` and only with the permissions boundary of the bootstrap
   stack, cannot remove that boundary or attach managed policies, so it cannot grant more
   than the workloads need.
-* The read-only role of `sync-databricks.yml` can read `state/` and nothing else.
 * Each workload role has its own minimal policy (`infra/iam.tf`); the API can only read
   `state/results/forecasts/live/`.
 * The ENTSO-E key is a `SecureString` in SSM, copied from the GitHub secret by
   `sync-secrets.yml` and injected by ECS; it is never printed.
 * Both buckets are private (public access blocked, owner-enforced, encrypted); CloudFront
   reads the site bucket through Origin Access Control.
-
-## Databricks
-
-`sync-databricks.yml` replaces the last step of the former `live.yml` with the same three
-files and the same destination: `results/forecasts/live/forecasts.csv`,
-`results/forecasts/live/dnn_forecasts.csv` and `results/live/realised.csv`, copied to
-`dbfs:/Volumes/workspace/be_power/live/` with `databricks fs cp --overwrite`. It runs at
-18:15 and 21:15 UTC (45 minutes after each run on AWS) and by hand, reads the files from
-`state/` with the read-only role, and succeeds without copying anything when
-`DATABRICKS_HOST` or `DATABRICKS_TOKEN` is not set.
-
-```bash
-gh workflow run sync-databricks.yml --repo "$REPO"
-```

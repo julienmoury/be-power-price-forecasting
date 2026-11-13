@@ -6,7 +6,7 @@ name: Live forecast fallback (GitHub Actions)
 # source of truth of the live forecasts (nothing is committed to the repository any more),
 # publishes the page and refreshes the API, then checks that the forecast service of the
 # image serves the forecasts it just wrote. A day already forecast is skipped. The ENTSO-E
-# data stay in the private bucket. The Databricks copy is .github/workflows/sync-databricks.yml.
+# data stay in the private bucket.
 on:
   workflow_dispatch:
     inputs:

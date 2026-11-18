@@ -50,34 +50,11 @@ resource "aws_lambda_function" "api" {
   }
 }
 
+# Private function URL: AWS signs and checks each request (SigV4) before Lambda runs, so
+# an unsigned or unauthorised call is refused without invoking the function. Callers are
+# principals of this account allowed by their own IAM policy (docs/aws.md, "Calling the
+# API"); no resource-based permission is granted to anyone else.
 resource "aws_lambda_function_url" "api" {
   function_name      = aws_lambda_function.api.function_name
-  authorization_type = "NONE"
-
-  # Any site may read the forecasts (the service has no write endpoint; POST /forecast is a
-  # query), without credentials.
-  cors {
-    allow_origins     = ["*"]
-    allow_methods     = ["GET", "POST"]
-    allow_headers     = ["content-type"]
-    allow_credentials = false
-    max_age           = 86400
-  }
-}
-
-# A public function URL needs both permissions.
-resource "aws_lambda_permission" "url" {
-  statement_id           = "FunctionURLAllowPublicAccess"
-  action                 = "lambda:InvokeFunctionUrl"
-  function_name          = aws_lambda_function.api.function_name
-  principal              = "*"
-  function_url_auth_type = "NONE"
-}
-
-resource "aws_lambda_permission" "invoke" {
-  statement_id             = "FunctionURLAllowInvokeAction"
-  action                   = "lambda:InvokeFunction"
-  function_name            = aws_lambda_function.api.function_name
-  principal                = "*"
-  invoked_via_function_url = true
+  authorization_type = "AWS_IAM"
 }

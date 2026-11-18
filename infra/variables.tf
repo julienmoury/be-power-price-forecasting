@@ -20,7 +20,7 @@ variable "budget_email" {
 }
 
 variable "budget_usd" {
-  description = "Monthly budget, in USD; alerts at 80 % and 100 %."
+  description = "Monthly budget, in USD; alerts at 80 % and 100 % of the actual spend, and when the forecast exceeds it."
   type        = number
   default     = 5
 }

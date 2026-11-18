@@ -1,7 +1,7 @@
 # Running on AWS
 
 The live forecast runs on AWS: the computation every evening, the data, the API (online
-all the time) and a public page. GitHub Actions only tests and deploys. The code of the
+all the time, signed requests only) and a public page. GitHub Actions only tests and deploys. The code of the
 forecast is unchanged: AWS runs `scripts/live_forecast.py` on a working directory filled
 from S3, and serves `src/be_power_forecast/api/app.py` as it is.
 
@@ -27,7 +27,7 @@ EventBridge Scheduler ──17:30 / 20:30 UTC──▶ ECS Fargate task (2 vCPU,
           live/                                                     │
           │                                                         ▼
           └──── state/results/forecasts/live/*.csv ──▶ Lambda (same image, Web Adapter)
-                                                       public function URL: the API
+                                                       private function URL: the API
 GitHub Actions: ci.yml (tests, Terraform checks, image), deploy.yml (plan / apply, image
 to ECR), sync-secrets.yml (ENTSO-E key to SSM), seed-state.yml (one-off), live.yml (fallback, by
 hand).
@@ -40,7 +40,7 @@ hand).
 | ECS Fargate `be-power-forecast-live` | 2 vCPU, 8 GB, default VPC, public subnet, public IP (no NAT gateway). Logs: `/ecs/be-power-forecast-live`, 14 days. |
 | EventBridge Scheduler | `cron(30 17 * * ? *)` and `cron(30 20 * * ? *)` UTC, as the former crons; the second run skips a day already forecast. |
 | SSM `/be-power-forecast/entsoe-api-key` | `SecureString`, standard tier; injected into the task as `ENTSOE_API_KEY`. |
-| Lambda `be-power-forecast-api` | Same image, AWS Lambda Web Adapter 1.1.0 (async init), 2048 MB, 60 s, public function URL (no authentication, CORS for any origin, `GET` and `POST`, no credentials). Reserved concurrency left unset. Logs: 14 days. |
+| Lambda `be-power-forecast-api` | Same image, AWS Lambda Web Adapter 1.1.0 (async init), 2048 MB, 60 s, private function URL (`AWS_IAM`: signed requests of allowed principals of the account only, see [Calling the API](#calling-the-api)). Reserved concurrency left unset. Logs: 14 days. |
 | S3 `be-power-forecast-site-<account>` + CloudFront | Private bucket read by CloudFront through Origin Access Control: `index.html` and `compare.png`. |
 | Budget `be-power-forecast-monthly` | 5 $ a month, e-mail at 80 % and 100 % of actual costs. |
 
@@ -362,14 +362,18 @@ API_URL=$(aws lambda get-function-url-config --region "$AWS_REGION" --function-n
 ```
 
 ```bash
-curl -s "${API_URL}health"
+pip install awscurl
+```
+
+```bash
+eval "$(aws configure export-credentials --format env)" && awscurl --service lambda --region "$AWS_REGION" "${API_URL}health"
 ```
 
 Check: `"status": "ok"`, `"lear_forecasts": true`, `"prices": false` (no ENTSO-E prices on
 Lambda, see above), and `last_day` is the last day forecast.
 
 ```bash
-curl -s -X POST "${API_URL}forecast" -H 'Content-Type: application/json' -d "{\"delivery_day\": \"$(curl -s "${API_URL}health" | python3 -c 'import json, sys; print(json.load(sys.stdin)["last_day"])')\"}"
+awscurl --service lambda --region "$AWS_REGION" -X POST "${API_URL}forecast" -H 'Content-Type: application/json' -d "{\"delivery_day\": \"$(awscurl --service lambda --region "$AWS_REGION" "${API_URL}health" | python3 -c 'import json, sys; print(json.load(sys.stdin)["last_day"])')\"}"
 ```
 
 Check: `"model": "lear_ensemble"`, 24 `prices`, and 24 `dnn_prices` (`lgbm_prices`) when
@@ -392,7 +396,7 @@ curl -s -o /dev/null -w '%{http_code}\n' "https://$(out DataBucket).s3.$AWS_REGI
 
 Check: `403`: the ENTSO-E data are not public.
 
-Finally, put the two URLs in the README (and its template, which `make_report.py`
+Finally, put the page URL in the README (and its template, which `make_report.py`
 renders), on a branch and through a pull request:
 
 ```bash
@@ -400,13 +404,13 @@ git switch -c readme-aws-urls origin/main
 ```
 
 ```bash
-sed -i '' -e "s#__LIVE_PAGE_URL__#$PAGE_URL#" -e "s#__API_URL__#$API_URL#" README.md docs/README.template.md
+sed -i '' -e "s#__LIVE_PAGE_URL__#$PAGE_URL#" README.md docs/README.template.md
 ```
 
 (On Linux: `sed -i` without `''`.)
 
 ```bash
-git diff --stat && git commit -am "docs: link the live page and the API on AWS" && git push -u origin readme-aws-urls && gh pr create --repo "$REPO" --fill
+git diff --stat && git commit -am "docs: link the live page on AWS" && git push -u origin readme-aws-urls && gh pr create --repo "$REPO" --fill
 ```
 
 From then on, the schedules run every evening; nothing else is needed. If AWS cannot run
@@ -497,9 +501,45 @@ Prices of `eu-central-1`, on a paid plan (on the free plan, they come out of the
 | **Total** | | **about 1.7 $** |
 
 No NAT gateway (~32 $), load balancer, database or Secrets Manager. The budget alerts at
-4 $ and 5 $. The API is public and without authentication: abnormal traffic would show in
-the budget alerts first. Lowering `task_memory` back to 4 GB would save about 0.2 $, at the
+4 $ and 5 $ of actual spend, and as soon as AWS forecasts more than 5 $ for the month. The
+API is private (signed requests only): a request without valid credentials is refused
+before Lambda runs, so nobody outside the account can run up its bill. The live page is
+static and cached by CloudFront, far inside its free tier. Lowering `task_memory` back to 4 GB would save about 0.2 $, at the
 risk described above.
+
+## Calling the API
+
+The function URL uses `AWS_IAM` authentication: AWS checks the signature (SigV4) of each
+request before Lambda runs, and refuses any request that is unsigned or comes from a
+principal without permission (`403`), without invoking the function. The owner of the
+account calls it with their usual credentials:
+
+```bash
+aws login
+```
+
+```bash
+eval "$(aws configure export-credentials --format env)" && awscurl --service lambda --region eu-central-1 "$(aws lambda get-function-url-config --region eu-central-1 --function-name be-power-forecast-api --query FunctionUrl --output text)health"
+```
+
+To let someone else call it, give them an IAM user that can do nothing else (the deploy
+role cannot create users: run this as the account owner). The user needs both
+permissions, `lambda:InvokeFunctionUrl` and `lambda:InvokeFunction` through the URL:
+
+```bash
+NAME=api-guest-firstname
+```
+
+```bash
+ARN=$(aws lambda get-function --region eu-central-1 --function-name be-power-forecast-api --query Configuration.FunctionArn --output text) && aws iam create-user --user-name "$NAME" --path /be-power-forecast-api-users/ && aws iam put-user-policy --user-name "$NAME" --policy-name invoke-api --policy-document "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"lambda:InvokeFunctionUrl\",\"Resource\":\"$ARN\",\"Condition\":{\"StringEquals\":{\"lambda:FunctionUrlAuthType\":\"AWS_IAM\"}}},{\"Effect\":\"Allow\",\"Action\":\"lambda:InvokeFunction\",\"Resource\":\"$ARN\",\"Condition\":{\"Bool\":{\"lambda:InvokedViaFunctionUrl\":\"true\"}}}]}"
+```
+
+Then create an access key for that user in the IAM console (Users, the user, Security
+credentials, Create access key) and pass it to them through a safe channel, never by plain
+e-mail or chat. They call the API with `awscurl --service lambda --region eu-central-1
+--access_key ... --secret_key ...`, or with the key in their environment. To revoke the
+access, delete the user (console, or `aws iam delete-user-policy` then `aws iam
+delete-access-key` and `aws iam delete-user`).
 
 ## Security
 
@@ -511,6 +551,8 @@ risk described above.
   than the workloads need.
 * Each workload role has its own minimal policy (`infra/iam.tf`); the API can only read
   `state/results/forecasts/live/`.
+* The API is private: its function URL accepts signed requests of allowed principals of the
+  account only, and grants no resource-based permission to anyone else.
 * The ENTSO-E key is a `SecureString` in SSM, copied from the GitHub secret by
   `sync-secrets.yml` and injected by ECS; it is never printed.
 * Both buckets are private (public access blocked, owner-enforced, encrypted); CloudFront

@@ -1,5 +1,5 @@
 output "api_url" {
-  description = "Public URL of the forecast service (GET /health, POST /forecast, GET /forecasts)."
+  description = "URL of the forecast service, signed requests only (GET /health, POST /forecast, GET /forecasts)."
   value       = aws_lambda_function_url.api.function_url
 }
 

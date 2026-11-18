@@ -4,7 +4,7 @@
 #   of the repository) and a private site bucket behind CloudFront (the live page);
 # * ECS Fargate, run every evening by EventBridge Scheduler (scripts/aws_run.py), in the
 #   default VPC with a public IP (no NAT gateway);
-# * Lambda with a public function URL: the forecast service (api/app.py);
+# * Lambda with a private function URL (signed requests): the forecast service (api/app.py);
 # * a monthly budget with e-mail alerts.
 # The IAM roles live under the path /be-power-forecast/ with the permissions boundary of
 # the bootstrap stack, the only roles the deploy role may create.

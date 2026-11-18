@@ -9,9 +9,11 @@ checked that I get the same results as the paper, and then ran it, unchanged, on
 years that followed, to see whether it still holds on today's market.
 
 **[Live page](https://dkx1i5wqs8b2p.cloudfront.net/)**: the forecasts of every day since 1 October 2026, against
-the realised prices, updated every evening. The forecasts are also served by a public API,
-`https://ivqhqjlyjymcnufukn7vjp5mee0yezkr.lambda-url.eu-central-1.on.aws/` (`GET /health`, `POST /forecast`, `GET /forecasts`;
-[schema](docs/openapi.json)).
+the realised prices, updated every evening. The forecasts are also served by an API on AWS
+(`GET /health`, `POST /forecast`, `GET /forecasts`; [schema](docs/openapi.json)), private to
+keep the costs under control: it answers signed requests of allowed AWS users only
+([docs/aws.md](docs/aws.md#calling-the-api)). Anyone can run the same service locally from
+the Docker image of this repository.
 
 ## In short
 
